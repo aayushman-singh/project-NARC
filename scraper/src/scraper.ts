@@ -1,6 +1,6 @@
 import { Actor } from 'apify';
 import { PlaywrightCrawler } from 'crawlee';
-import { router } from './routes.js';
+import { router } from './handlers/instagramHandler.js';
 
 interface Input {
     startUrls: string[];

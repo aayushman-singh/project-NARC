@@ -1,15 +1,19 @@
 {
-    "extends": "@/tsconfig",
-    "compilerOptions": {
-        "module": "NodeNext",
-        "moduleResolution": "NodeNext",
-        "target": "ES2022",
-        "outDir": "dist",
-        "noUnusedLocals": false,
-        "skipLibCheck": true,
-        "lib": ["DOM"]
-    },
-    "include": [
-        "./src/**/*"
-    ]
+  "compilerOptions": {
+    "target": "ES2020",                         // Specifies ECMAScript target version
+    "module": "NodeNext",                       // Module code generation
+    "strict": true,                             // Enable all strict type-checking options
+    "esModuleInterop": true,                    // Allows default imports from modules with no default export
+    "forceConsistentCasingInFileNames": true,   // Disallows inconsistently-cased references to the same file
+    "skipLibCheck": true,                       // Skip type checking of declaration files
+    "outDir": "./dist",                         // Redirect output structure to the `dist` folder
+    "rootDir": "./src",                         // Specifies the root directory of input files
+    "moduleResolution": "NodeNext",                 // Use Node.js style module resolution
+    "resolveJsonModule": true,                  // Include modules importing JSON files
+    "allowSyntheticDefaultImports": true,       // Allow default imports from modules with no default export
+    "noImplicitAny": true,                      // Raise error on expressions and declarations with an implied `any` type
+    "strictNullChecks": true                    // Enable strict null checks
+  },
+  "include": ["src/**/*.ts"],                   // Include all .ts files under src
+  "exclude": ["node_modules", "dist"]           // Exclude node_modules and dist directories
 }
