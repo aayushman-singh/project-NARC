@@ -1,12 +1,7 @@
 {
 	"actorSpecification": 1,
-	"name": "narc",
-	"title": "Project Playwright Crawler Typescript",
-	"description": "Crawlee and Playwright project in typescript.",
+	"name": "my-crawler",
 	"version": "0.0",
-	"meta": {
-		"templateId": "ts-crawlee-playwright-chrome"
-	},
-	"input": "./input_schema.json",
-	"dockerfile": "./Dockerfile"
+	"buildTag": "latest",
+	"environmentVariables": {}
 }
