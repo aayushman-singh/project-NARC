@@ -1,0 +1,91 @@
+
+body {
+    margin: 0;
+    font-family: Arial, sans-serif;
+  }
+  
+
+  .services-container {
+    display: flex;
+    height: 100vh;
+    background-color: #ffffff; 
+  }
+  
+
+  .left-nav {
+    width: 200px;
+    margin-top: 100px;
+    padding-top: 200px;
+    background-color: #f5f5f5; 
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0, 0, 0, 0.1);
+  }
+  
+  .nav-btn {
+    display: block;
+    background-color: #ffffff; 
+    border: none;
+    padding: 10px 20px;
+    margin-bottom: 10px;
+    cursor: pointer;
+    color: #000000; 
+    text-align: left;
+    width: 100%;
+    border-radius: 5px;
+  }
+  
+  .nav-btn:hover {
+    background-color: #e0e0e0; 
+  }
+  
+
+  .main-content {
+    flex: 1;
+    padding: 20px;
+  }
+  
+  .back-btn {
+    background-color: #ffffff; 
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    color: #000000; 
+    border-radius: 5px;
+    margin-bottom: 20px;
+  }
+  
+  .back-btn:hover {
+    background-color: #e0e0e0; 
+  }
+  
+  /* Tags Section */
+  .tags-section {
+    margin-top: 20px;
+  }
+  
+  .tags-section input {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    width: calc(100% - 22px);
+  }
+  
+  .tags-section button {
+    margin-top: 10px;
+    background-color: #ffffff; 
+    border: none;
+    padding: 10px 20px;
+    cursor: pointer;
+    color: #000000;
+    border-radius: 5px;
+  }
+  
+  .tags-section button:hover {
+    background-color: #e0e0e0; 
+  }
+  
+  /* Report Section */
+  .report-section {
+    margin-top: 20px;
+  }
+  
