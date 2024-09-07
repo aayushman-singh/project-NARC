@@ -1,8 +1,8 @@
 {
-    "name": "my-crawler",
+    "name": "scraper",
     "version": "0.0.1",
     "type": "module",
-    "description": "This is an example of a Crawlee project.",
+    "description": "This is a Crawlee project.",
     "dependencies": {
         "apify": "^3.2.5",
         "crawlee": "^3.11.3",
@@ -21,6 +21,6 @@
         "build": "tsc",
         "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
     },
-    "author": "It's not you it's me",
+    "author": "aayushman-singh",
     "license": "ISC"
 }

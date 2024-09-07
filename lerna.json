@@ -1,0 +1,8 @@
+{
+  "packages": [
+    "scraper",
+    "frontend",
+    "backend"
+  ],
+  "version": "independent"
+}

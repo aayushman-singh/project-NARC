@@ -1,8 +1,18 @@
 {
+  "name": "project-narc",
+  "version": "1.0.0",
+  "description": "Monorepo for Project NARC containing scraper, frontend, and backend",
   "dependencies": {
     "pg": "^8.12.0"
   },
   "devDependencies": {
-    "@types/pg": "^8.11.8"
-  }
+    "@types/pg": "^8.11.8",
+    "lerna": "^8.1.8"
+  },
+  "private": true,
+  "workspaces": [
+    "scraper",
+    "frontend",
+    "backend"
+  ]
 }
