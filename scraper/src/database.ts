@@ -1,34 +1,19 @@
-import pg from 'pg';
-const { Pool } = pg;
-// Set up the connection pool
-const pool = new Pool({
-    user: 'postgres',
-    host: 'localhost',
-    database: 'test',
-    password: 'secret',
-    port: 5432,
-});
+const { MongoClient } = require('mongodb');
 
-// Function to insert data
-export const insertPost = async (imageUrl: string, altText: string, comments: string[]) => {
-    const client = await pool.connect();
-    try {
-        await client.query(`
-            INSERT INTO instagram_posts (image_url, alt_text, comments)
-            VALUES ($1, $2, $3);
-        `, [imageUrl, altText, comments]);
-    } finally {
-        client.release();
-    }
-};
+// Replace with your MongoDB connection string (local or Atlas)
+const uri = 'mongodb+srv://username:password@cluster.mongodb.net/myFirstDatabase?retryWrites=true&w=majority'; 
 
-// Function to fetch data
-export const fetchPosts = async () => {
-    const client = await pool.connect();
+const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true });
+
+// Function to connect to MongoDB
+async function connectToDB() {
     try {
-        const result = await client.query('SELECT * FROM instagram_posts');
-        return result.rows;
-    } finally {
-        client.release();
+        await client.connect();
+        console.log("Connected successfully to MongoDB");
+    } catch (error) {
+        console.error("Error connecting to MongoDB:", error);
     }
-};
+}
+
+// Call this function before inserting data
+connectToDB();
