@@ -1,4 +1,5 @@
 {
+
   "name": "project-narc",
   "version": "1.0.0",
   "description": "Monorepo for Project NARC containing scraper, frontend, and backend",
@@ -9,10 +10,15 @@
     "@types/pg": "^8.11.8",
     "lerna": "^8.1.8"
   },
+
   "private": true,
   "workspaces": [
     "scraper",
     "frontend",
     "backend"
+
+
+
   ]
 }
+
