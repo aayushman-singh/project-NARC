@@ -28,4 +28,6 @@ SOLUTION - <br> Identifying users behind drug trafficking on messaging platforms
 <br><br>+ FUTURE ENHANCEMENTS
 <br>● Advanced AI Models: Continuously improve AI and machine learning models for better accuracy and efficiency in detecting drug-related activities. 
 <br>● Cross-Platform Integration: Develop solutions that can integrate data across multiple platforms for a more comprehensive analysis. 
-<br><br>By combining these software solutions and methodologies, authorities and researchers can enhance their ability to identify and combat drug trafficking on messaging platforms.
+<br>By combining these software solutions and methodologies, authorities and researchers can enhance their ability to identify and combat drug trafficking on messaging platforms.
+<br><br>
+TECH STACK USED -
