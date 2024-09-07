@@ -1,4 +1,3 @@
-
-/narc/node_modules
-/narc/storage
 /node_modules
+/scraper/node_modules
+/frontend/node_modules
