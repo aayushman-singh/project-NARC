@@ -14,6 +14,7 @@ const client = new MongoClient(uri);
 
 async function fetchData() {
     try {
+        console.log('Scraper initiated...');
         // Fetch data from the API
         const response = await axios.post(endpoint, data, {
             headers: {
