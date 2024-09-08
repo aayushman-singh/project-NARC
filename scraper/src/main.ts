@@ -4,7 +4,7 @@ import { MongoClient } from 'mongodb';
 
 const endpoint = 'https://api.apify.com/v2/acts/apify~instagram-hashtag-scraper/run-sync-get-dataset-items?token=apify_api_PX0pmbuYEg3gO4cHjqIb8D8ah9MOnr2lJs5D';
 const data = {
-    hashtags: ["india", "potato"],
+    hashtags: ["korea", "china"],
     resultsLimit: 3
 };
 
