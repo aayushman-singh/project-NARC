@@ -53,10 +53,168 @@ const Services = () => {
         )}
 
         {activeSection === 'report' && (
-          <div className="report-section">
-            <h2 className="section-title">Report Section</h2>
-            <p>Coming Soon</p>
-          </div>
+         <div className="report-section">
+         <h2 className="section-title">Report Section</h2>
+         <h1>
+             Report a User
+             <table className="min-w-full bg-white border border-gray-200 mt-4">
+                 <thead>
+                     <tr>
+                         <th className="py-2 px-4 border-b bg-gray-100 text-left">Username</th>
+                         <th className="py-2 px-4 border-b bg-gray-100 text-left">Reason</th>
+                         <th className="py-2 px-4 border-b bg-gray-100 text-center">Action</th>
+                     </tr>
+                 </thead>
+                 <tbody>
+                     {/* Example Data */}
+                     <tr>
+                         <td className="py-2 px-4 border-b">user123</td>
+                         <td className="py-2 px-4 border-b">"Check out my new stash 💊 #PartyTime"</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td className="py-2 px-4 border-b">sunny_daze</td>
+                         <td className="py-2 px-4 border-b">Image URL: www.example.com/images/1234 (syringe, pills)</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td className="py-2 px-4 border-b">chill_vibes92</td>
+                         <td className="py-2 px-4 border-b">"Feeling high as always 🚬"</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td className="py-2 px-4 border-b">rocknroll99</td>
+                         <td className="py-2 px-4 border-b">Image URL: www.example.com/images/5678 (marijuana leaf)</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td className="py-2 px-4 border-b">mellow_mike</td>
+                         <td className="py-2 px-4 border-b">"Rolling up some fun stuff for tonight! 🌿"</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td className="py-2 px-4 border-b">stardust_girl</td>
+                         <td className="py-2 px-4 border-b">Image URL: www.example.com/images/8765 (drug paraphernalia)</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td className="py-2 px-4 border-b">urban_jungle88</td>
+                         <td className="py-2 px-4 border-b">"Blazing through the night! 🍁 #420"</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td className="py-2 px-4 border-b">lowkey_legit</td>
+                         <td className="py-2 px-4 border-b">"Can’t wait to try these new pills I got 💊"</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td className="py-2 px-4 border-b">dreamy_dave</td>
+                         <td className="py-2 px-4 border-b">Image URL: www.example.com/images/4321 (variety of pills)</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     {/* <tr>
+                         <td className="py-2 px-4 border-b">slick_steve</td>
+                         <td className="py-2 px-4 border-b">"Just picked up some new supplies 🚬"</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td className="py-2 px-4 border-b">wild_thing91</td>
+                         <td className="py-2 px-4 border-b">Image URL: www.example.com/images/9987 (cannabis edibles)</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr>
+                     <tr>
+                         <td className="py-2 px-4 border-b">hazy_days47</td>
+                         <td className="py-2 px-4 border-b">"Puff puff pass 🥴 #stonedlife"</td>
+                         <td className="py-2 px-4 border-b text-center">
+                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
+                                 Report
+                             </button>
+                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
+                                 More
+                             </button>
+                         </td>
+                     </tr> */}
+                 </tbody>
+             </table>
+         </h1>
+     </div>
         )}
       </div>
     </div>
