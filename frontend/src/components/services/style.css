@@ -46,8 +46,8 @@ body {
 }
 
 .nav-btn.active {
-  background-color: #1abc9c;
-  border-color: #16a085;
+  background-color: #6068af;
+  border-color: #6068af;
 }
 
 /* Main Content */
@@ -81,7 +81,7 @@ body {
 }
 
 .submit-btn {
-  background-color: #1abc9c;
+  background-color: #6068af;
   color: #fff;
   padding: 12px 20px;
   border: none;
@@ -92,7 +92,7 @@ body {
 }
 
 .submit-btn:hover {
-  background-color: #16a085;
+  background-color: #33366b;
 }
 
 /* Report Section */

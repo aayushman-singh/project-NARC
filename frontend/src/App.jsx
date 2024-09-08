@@ -30,11 +30,16 @@ function App() {
       element: <Home />,
     },
   ];
+
   let routesElement = useRoutes(routesArray);
+
   return (
     <AuthProvider>
       <Header />
-      <div className="w-full h-screen flex flex-col">{routesElement}</div>
+      {/* Full screen height minus header with flex column */}
+      <div className="w-full flex-grow flex flex-col pt-16 bg-gray-100">
+        {routesElement}
+      </div>
     </AuthProvider>
   );
 }
