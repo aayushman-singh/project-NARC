@@ -5,8 +5,8 @@ import fetch from 'node-fetch';
 
 const app = express();
 app.use(express.json());
-app.listen(3000, () => {
-    console.log('Scraper listening on port 6000');
+app.listen(5000, () => {
+    console.log('Scraper listening on port 5000');
 });
 
 // MongoDB connection setup
@@ -26,14 +26,19 @@ app.post('/scraper', async (req: any, res: any) => {
                 options: { memoryMbytes: 1024 },
             });
 
+            // Await task completion
             await client.task(task.id).call();
             return task;
         });
 
         // Run all tasks in parallel
         const tasks = await Promise.all(taskPromises);
+        console.log(`Scraping initiated for ${tasks.length} tags`);
 
-        res.status(200).send(`Scraping initiated for ${tasks.length} tags`);
+        // Fetch and store the latest dataset after tasks are completed
+        await fetchAndStoreLatestDataset();
+
+        res.status(200).send(`Scraping completed and data stored for ${tasks.length} tags`);
     } catch (error) {
         console.error('Error initiating scraping:', error);
         res.status(500).send('Failed to initiate scraping');
@@ -55,15 +60,19 @@ async function insertDataIntoMongo(dataArray: any[]) {
     try {
         const db = mongoClient.db('instagramDB');
         const collection = db.collection('scrapedData');
-        await collection.insertMany(dataArray.map(data => ({ data, timestamp: new Date() })));
-        console.log("Data inserted into MongoDB");
+        if (Array.isArray(dataArray)) {
+            await collection.insertMany(dataArray.map(data => ({ data, timestamp: new Date() })));
+            console.log("Data inserted into MongoDB");
+        } else {
+            console.error("Provided data is not an array:", dataArray);
+        }
     } catch (error) {
         console.error("Error inserting data:", error);
     }
 }
 
 // Fetch the latest task
-async function getLatestTask(tasks: any) {
+async function getLatestTask(tasks: any[]) {
     return tasks.reduce((latestTask: any, currentTask: any) => {
         return new Date(currentTask.createdAt) > new Date(latestTask.createdAt)
             ? currentTask
@@ -93,21 +102,15 @@ async function fetchAndStoreLatestDataset() {
         const datasetResponse = await fetch(datasetUrl);
         const dataset = await datasetResponse.json();
         await insertDataIntoMongo(dataset);
-        return dataset;
     } catch (error) {
         console.error("Error fetching or inserting dataset:", error);
-        return null;
     }
 }
 
 // Main program
 (async () => {
     await connectToDB();
-    const apifyData = await fetchAndStoreLatestDataset();
-    if (apifyData) {
-        await insertDataIntoMongo(apifyData);
-    }
-    await mongoClient.close();
+    app.listen(3000, () => {
+        console.log('Scraper listening on port 3000');
+    });
 })();
-
-
