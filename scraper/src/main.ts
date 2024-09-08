@@ -6,7 +6,7 @@ import fetch from 'node-fetch';
 const app = express();
 app.use(express.json());
 app.listen(3000, () => {
-    console.log('Scraper listening on port 6000');
+    console.log('Scraper listening on port 3000');
 });
 
 // MongoDB connection setup
