@@ -9,30 +9,37 @@ const Services = () => {
   const handleTagSubmit = async () => {
     const tagInputElement = document.getElementById('tagInput');
     const tagInputValue = tagInputElement.value;
-  
+
+    // Split input value by comma, trim and filter empty strings
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-  
+
+    const payload = {
+        hashtags: tagsArray,
+        resultsLimit: 2  // Set resultsLimit as needed
+    };
+
     try {
-      const response = await fetch('http://localhost:3000/scraper', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ tags: tagsArray }),
-      });
-  
-      if (!response.ok) {
-        throw new Error(`Error: ${response.statusText}`);
-      }
-  
-      alert('Tags Submitted Successfully');
-      tagInputElement.value = ''; // Clear the text field
+        const response = await fetch('http://localhost:3001/instagram', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload), // Correctly format payload as JSON
+        });
+
+        if (!response.ok) {
+            throw new Error(`Error: ${response.statusText}`);
+        }
+
+        alert('Tags Submitted Successfully');
+        tagInputElement.value = ''; // Clear the text field
     } catch (error) {
-      console.error('Error submitting tags:', error);
-      alert('Failed to submit tags. Please try again.');
+        console.error('Error submitting tags:', error);
+        alert('Failed to submit tags. Please try again.');
     }
-  };
-  
+};
+
+
   return (
     <div className="services-container">
       {/* Left Navigation Bar */}
