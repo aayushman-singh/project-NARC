@@ -1,4 +1,5 @@
 import express from 'express';
+import cors from 'cors';
 import axios from 'axios';
 import { insertInstagram } from './mongoUtils.js'; // Import the MongoDB utility function
 
@@ -6,8 +7,8 @@ const app = express();
 const PORT = 3001; // Instagram Scraper Port
 
 app.use(express.json());
-
-app.post('/scrape', async (req, res) => {
+app.use(cors());
+app.post('/instagram', async (req, res) => {
     const { hashtags } = req.body;
     const endpoint = 'https://api.apify.com/v2/acts/apify~instagram-hashtag-scraper/run-sync-get-dataset-items?token=apify_api_PX0pmbuYEg3gO4cHjqIb8D8ah9MOnr2lJs5D';
     const data = {

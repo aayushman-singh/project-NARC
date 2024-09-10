@@ -1,13 +1,14 @@
 import express from 'express';
 import axios from 'axios';
 import { insertMeta } from './mongoUtils.js'; // Import the MongoDB utility function
+import cors from 'cors';
 
 const app = express();
 const PORT = 3002; // Facebook Scraper Port
 
 app.use(express.json());
-
-app.post('/scrape', async (req, res) => {
+app.use(cors());
+app.post('/meta', async (req, res) => {
     const { pageId } = req.body;
     const endpoint = `https://api.apify.com/v2/acts/apify~facebook-page-scraper/run-sync-get-dataset-items?token=apify_api_PX0pmbuYEg3gO4cHjqIb8D8ah9MOnr2lJs5D`;
     const data = {
