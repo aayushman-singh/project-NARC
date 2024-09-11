@@ -1,227 +1,114 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
-import './style.css'; // Import your CSS file
+import { InstagramLogo, WhatsappLogo, TwitterLogo, TelegramLogo } from 'phosphor-react'; // Icons for logos
+import './style.css'; // Import your CSS file or additional styles
 
 const Services = () => {
-  const navigate = useNavigate();
-  const [activeSection, setActiveSection] = useState(''); // Tracks active section for navigation
+  const [activeSection, setActiveSection] = useState('');
 
-  const handleTagSubmit = async () => {
-    const tagInputElement = document.getElementById('tagInput');
-    const tagInputValue = tagInputElement.value;
+  const handleSectionClick = (section) => {
+    setActiveSection((prev) => (prev === section ? '' : section)); // Toggle the section on click
+  };
 
-    // Split input value by comma, trim and filter empty strings
-    const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-
-    const payload = {
-        hashtags: tagsArray,
-        resultsLimit: 2  // Set resultsLimit as needed
-    };
-
-    try {
-        const response = await fetch('http://localhost:3001/instagram', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(payload), // Correctly format payload as JSON
-        });
-
-        if (!response.ok) {
-            throw new Error(`Error: ${response.statusText}`);
-        }
-
-        alert('Tags Submitted Successfully');
-        tagInputElement.value = ''; // Clear the text field
-    } catch (error) {
-        console.error('Error submitting tags:', error);
-        alert('Failed to submit tags. Please try again.');
-    }
-};
-
+  const handleSubmit = (service) => {
+    // Submit logic for each platform (Instagram, WhatsApp, etc.)
+    alert(`${service} username submitted`);
+  };
 
   return (
-    <div className="services-container">
-      {/* Left Navigation Bar */}
-      <div className="left-nav">
-        <button className="back-btn" onClick={() => navigate('/')}>← Home</button>
-        <button className={`nav-btn ${activeSection === 'tags' ? 'active' : ''}`} onClick={() => setActiveSection('tags')}>Tags</button>
-        <button className={`nav-btn ${activeSection === 'report' ? 'active' : ''}`} onClick={() => setActiveSection('report')}>Report</button>
+    <div className="min-h-screen bg-gray-900 text-white p-8">
+      <h1 className="text-3xl font-bold mb-8 text-center">Social Media Investigation Tool</h1>
+      
+      {/* Section Headers */}
+      <div className="flex justify-center space-x-8 mb-8">
+        <button onClick={() => handleSectionClick('instagram')} className="flex items-center space-x-2">
+          <InstagramLogo size={32} color={activeSection === 'instagram' ? '#E1306C' : '#ccc'} />
+          <span className={`text-lg ${activeSection === 'instagram' ? 'text-pink-500' : 'text-gray-400'}`}>Instagram</span>
+        </button>
+        
+        <button onClick={() => handleSectionClick('whatsapp')} className="flex items-center space-x-2">
+          <WhatsappLogo size={32} color={activeSection === 'whatsapp' ? '#25D366' : '#ccc'} />
+          <span className={`text-lg ${activeSection === 'whatsapp' ? 'text-green-500' : 'text-gray-400'}`}>WhatsApp</span>
+        </button>
+        
+        <button onClick={() => handleSectionClick('twitter')} className="flex items-center space-x-2">
+          <TwitterLogo size={32} color={activeSection === 'twitter' ? '#1DA1F2' : '#ccc'} />
+          <span className={`text-lg ${activeSection === 'twitter' ? 'text-blue-500' : 'text-gray-400'}`}>Twitter</span>
+        </button>
+        
+        <button onClick={() => handleSectionClick('telegram')} className="flex items-center space-x-2">
+          <TelegramLogo size={32} color={activeSection === 'telegram' ? '#0088cc' : '#ccc'} />
+          <span className={`text-lg ${activeSection === 'telegram' ? 'text-blue-400' : 'text-gray-400'}`}>Telegram</span>
+        </button>
       </div>
 
-      {/* Main Content Area */}
-      <div className="main-content">
-        {activeSection === 'tags' && (
-          <div className="tags-section">
-            <h2 className="section-title">Submit Tags</h2>
-            <input type="text" id="tagInput" placeholder="Enter comma-separated tags..." />
-            <button onClick={handleTagSubmit} className="submit-btn">Submit</button>
+      {/* Section Content */}
+      <div className="space-y-8">
+        {/* Instagram Section */}
+        {activeSection === 'instagram' && (
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-pink-500">Instagram</h2>
+            <input 
+              type="text" 
+              placeholder="Enter Instagram username" 
+              className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" 
+            />
+            <button 
+              onClick={() => handleSubmit('Instagram')} 
+              className="mt-4 bg-pink-500 text-white px-6 py-2 rounded-md hover:bg-pink-600">
+              Submit
+            </button>
           </div>
         )}
 
-        {activeSection === 'report' && (
-         <div className="report-section">
-         <h2 className="section-title">Report Section</h2>
-         <h1>
-             Report a User
-             <table className="min-w-full bg-white border border-gray-200 mt-4">
-                 <thead>
-                     <tr>
-                         <th className="py-2 px-4 border-b bg-gray-100 text-left">Username</th>
-                         <th className="py-2 px-4 border-b bg-gray-100 text-left">Reason</th>
-                         <th className="py-2 px-4 border-b bg-gray-100 text-center">Action</th>
-                     </tr>
-                 </thead>
-                 <tbody>
-                     {/* Example Data */}
-                     <tr>
-                         <td className="py-2 px-4 border-b">user123</td>
-                         <td className="py-2 px-4 border-b">"Check out my new stash 💊 #PartyTime"</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     <tr>
-                         <td className="py-2 px-4 border-b">sunny_daze</td>
-                         <td className="py-2 px-4 border-b">Image URL: www.example.com/images/1234 (syringe, pills)</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     <tr>
-                         <td className="py-2 px-4 border-b">chill_vibes92</td>
-                         <td className="py-2 px-4 border-b">"Feeling high as always 🚬"</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     <tr>
-                         <td className="py-2 px-4 border-b">rocknroll99</td>
-                         <td className="py-2 px-4 border-b">Image URL: www.example.com/images/5678 (marijuana leaf)</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     <tr>
-                         <td className="py-2 px-4 border-b">mellow_mike</td>
-                         <td className="py-2 px-4 border-b">"Rolling up some fun stuff for tonight! 🌿"</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     <tr>
-                         <td className="py-2 px-4 border-b">stardust_girl</td>
-                         <td className="py-2 px-4 border-b">Image URL: www.example.com/images/8765 (drug paraphernalia)</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     <tr>
-                         <td className="py-2 px-4 border-b">urban_jungle88</td>
-                         <td className="py-2 px-4 border-b">"Blazing through the night! 🍁 #420"</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     <tr>
-                         <td className="py-2 px-4 border-b">lowkey_legit</td>
-                         <td className="py-2 px-4 border-b">"Can’t wait to try these new pills I got 💊"</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     <tr>
-                         <td className="py-2 px-4 border-b">dreamy_dave</td>
-                         <td className="py-2 px-4 border-b">Image URL: www.example.com/images/4321 (variety of pills)</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     {/* <tr>
-                         <td className="py-2 px-4 border-b">slick_steve</td>
-                         <td className="py-2 px-4 border-b">"Just picked up some new supplies 🚬"</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     <tr>
-                         <td className="py-2 px-4 border-b">wild_thing91</td>
-                         <td className="py-2 px-4 border-b">Image URL: www.example.com/images/9987 (cannabis edibles)</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr>
-                     <tr>
-                         <td className="py-2 px-4 border-b">hazy_days47</td>
-                         <td className="py-2 px-4 border-b">"Puff puff pass 🥴 #stonedlife"</td>
-                         <td className="py-2 px-4 border-b text-center">
-                             <button className="bg-red-500 text-white px-3 py-1 rounded hover:bg-red-600 mr-2">
-                                 Report
-                             </button>
-                             <button className="bg-blue-500 text-white px-3 py-1 rounded hover:bg-blue-600">
-                                 More
-                             </button>
-                         </td>
-                     </tr> */}
-                 </tbody>
-             </table>
-         </h1>
-     </div>
+        {/* WhatsApp Section */}
+        {activeSection === 'whatsapp' && (
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-green-500">WhatsApp</h2>
+            <input 
+              type="text" 
+              placeholder="Enter WhatsApp username" 
+              className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500" 
+            />
+            <button 
+              onClick={() => handleSubmit('WhatsApp')} 
+              className="mt-4 bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600">
+              Submit
+            </button>
+          </div>
+        )}
+
+        {/* Twitter Section */}
+        {activeSection === 'twitter' && (
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-blue-500">Twitter</h2>
+            <input 
+              type="text" 
+              placeholder="Enter Twitter username" 
+              className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
+            />
+            <button 
+              onClick={() => handleSubmit('Twitter')} 
+              className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600">
+              Submit
+            </button>
+          </div>
+        )}
+
+        {/* Telegram Section */}
+        {activeSection === 'telegram' && (
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+            <h2 className="text-2xl font-bold text-blue-400">Telegram</h2>
+            <input 
+              type="text" 
+              placeholder="Enter Telegram username" 
+              className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" 
+            />
+            <button 
+              onClick={() => handleSubmit('Telegram')} 
+              className="mt-4 bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500">
+              Submit
+            </button>
+          </div>
         )}
       </div>
     </div>

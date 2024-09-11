@@ -5,6 +5,7 @@
     "description": "This is a Crawlee project.",
     "dependencies": {
         "apify": "^3.2.5",
+        "cors": "^2.8.5",
         "crawlee": "^3.11.3",
         "playwright": "^1.41.1"
     },
@@ -16,7 +17,7 @@
         "typescript": "~5.3.0"
     },
     "scripts": {
-         "dev": "ts-node main.ts",
+        "dev": "ts-node main.ts",
         "start": "npm run start:dev",
         "start:prod": "node dist/main.js",
         "start:dev": "tsx src/main.ts",
