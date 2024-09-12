@@ -1,0 +1,40 @@
+{
+  "requestsFinished": 1,
+  "requestsFailed": 0,
+  "requestsRetries": 1,
+  "requestsFailedPerMinute": 0,
+  "requestsFinishedPerMinute": 1,
+  "requestMinDurationMillis": 36892,
+  "requestMaxDurationMillis": 36892,
+  "requestTotalFailedDurationMillis": 0,
+  "requestTotalFinishedDurationMillis": 36892,
+  "crawlerStartedAt": "2024-09-12T11:47:03.089Z",
+  "crawlerFinishedAt": "2024-09-12T11:48:42.847Z",
+  "statsPersistedAt": "2024-09-12T11:48:42.847Z",
+  "crawlerRuntimeMillis": 100023,
+  "crawlerLastStartTimestamp": 1726141622824,
+  "requestRetryHistogram": [
+    null,
+    1
+  ],
+  "statsId": 0,
+  "requestAvgFailedDurationMillis": null,
+  "requestAvgFinishedDurationMillis": 36892,
+  "requestTotalDurationMillis": 36892,
+  "requestsTotal": 1,
+  "requestsWithStatusCode": {
+    "200": 2
+  },
+  "errors": {},
+  "retryErrors": {
+    "S:\\Repo\\SIH\\project-NARC\\node_modules\\@apify\\timeout\\cjs\\index.cjs:64:68": {
+      "missing error code": {
+        "Error": {
+          "requestHandler timed out after 60 seconds.": {
+            "count": 1
+          }
+        }
+      }
+    }
+  }
+}

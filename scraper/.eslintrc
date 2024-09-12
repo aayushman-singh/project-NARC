@@ -4,7 +4,14 @@
         "browser": true,
         "es2020": true,
         "node": true
+        
     },
+    "compilerOptions": {
+    "target": "ES6",
+    "lib": ["ES6", "DOM"] // Ensures you're using ES6+ features
+  }
+      
+,      
     "extends": [
         "@apify/eslint-config-ts"
     ],
@@ -17,4 +24,5 @@
         "dist",
         "**/*.d.ts"
     ]
+    
 }
