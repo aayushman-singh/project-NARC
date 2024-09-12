@@ -37,7 +37,7 @@ function App() {
     <AuthProvider>
       <Header />
       {/* Full screen height minus header with flex column */}
-      <div className="w-full flex-grow flex flex-col pt-16 bg-gray-100">
+      <div className="w-full flex-grow flex flex-col pt-16 bg-blue-700">
         {routesElement}
       </div>
     </AuthProvider>
