@@ -5,6 +5,7 @@
     "description": "This is a Crawlee project.",
     "dependencies": {
         "apify": "^3.2.5",
+        "cors": "^2.8.5",
         "crawlee": "^3.11.3",
         "playwright": "^1.47.0"
     },
