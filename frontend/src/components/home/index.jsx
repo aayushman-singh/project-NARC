@@ -118,7 +118,7 @@ const Home = () => {
           </div>
           <div className="text-center mt-12">
             <a
-              href="/services"
+              href="/services1"
               className="inline-block px-8 py-4 text-lg font-semibold bg-blue-600 bg-opacity-50 rounded-full hover:bg-opacity-75 transition-all"
             >
               Explore Services
