@@ -50,7 +50,7 @@ app.post('/instagramPosts', async (req, res) => {
         }
         for (const username of startUrls) {
             console.log(`Triggering Playwright scraper for ${username}...`);
-            exec(`node scraper.mjs ${username} ${password}`, async (error, stdout, stderr) => {
+            exec(`cd scraper/src && npm run start:scrap ${username} ${password}`, async (error, stdout, stderr) => {
                 if (error) {
                     console.error(`Error executing Playwright script for ${username}: ${error.message}`);
                     return res.status(500).send(`Error scraping Instagram for ${username}`);

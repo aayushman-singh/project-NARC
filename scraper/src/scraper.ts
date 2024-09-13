@@ -1,7 +1,6 @@
 import { PlaywrightCrawler } from 'crawlee';
 import * as fs from 'fs/promises';
-import {insertInstagramFollowers, insertInstagramFollowing} from './mongoUtils.js';
-
+import { insertInstagramFollowers, insertInstagramFollowing } from './mongoUtils.js'; // Use ESM import
 
 const captureTimelineScreenshots = async (page, log) => {
     log.info('Capturing timeline screenshots...');
@@ -43,6 +42,15 @@ const captureTimelineScreenshots = async (page, log) => {
 const scraper = async () => {
     let isLoggedIn = false;  // Variable to track login status
 
+    // Get the username and password from the command-line arguments
+    const username = process.argv[2];
+    const password = process.argv[3];
+
+    if (!username || !password) {
+        console.error("Username or password missing. Please provide both.");
+        process.exit(1);  // Exit if username or password is not provided
+    }
+
     const crawler = new PlaywrightCrawler({
         launchContext: {
             launchOptions: { headless: false, slowMo: 1000 }, // Non-headless mode with delay between actions
@@ -58,8 +66,8 @@ const scraper = async () => {
                         await page.waitForSelector('input[name="username"]', { timeout: 30000 });
 
                         // Fill in login details
-                        await page.fill('input[name="username"]', 'aayushman3260');
-                        await page.fill('input[name="password"]', 'Lolok@027');
+                        await page.fill('input[name="username"]', username);
+                        await page.fill('input[name="password"]', password);
                         log.info('Filled in login details.');
 
                         // Click the login button and wait for the navigation to complete
@@ -86,7 +94,7 @@ const scraper = async () => {
 
             try {
                 // Navigate to the profile page
-                await page.goto('https://www.instagram.com/aayushman3260/');
+                await page.goto(`https://www.instagram.com/${username}/`);
                 log.info('Navigated to profile page.');
 
                 // Scrape follower and following counts
@@ -98,6 +106,8 @@ const scraper = async () => {
                 // Function to scrape followers or following
                 const scrapeList = async (listType, selector, logFilePath, maxItems) => {
                     log.info(`Starting to scrape ${listType}...`);
+                    await page.goto("https://www.instagram.com/")
+                    await page.goto(`https://www.instagram.com/${username}/`);
                     await page.waitForSelector(selector, { timeout: 100000 });
                     await page.click(selector);
                     log.info(`Clicked on ${listType} link.`);
@@ -162,37 +172,30 @@ const scraper = async () => {
 
                 // Scrape followers using the scraped follower count as the limit
                 try {
-                    await scrapeList('followers', 'a[href="/aayushman3260/followers/"]', './followers_log.txt', followerCount);
-                    await insertInstagramFollowers(username, followersData);
+                    await scrapeList('followers', `a[href="/${username}/followers/"]`, './followers_log.txt', followerCount);
+                    await insertInstagramFollowers(username, followerCount);
                 } catch (error) {
                     log.error(`Error while scraping followers: ${error.message}. Moving on to following list.`);
                 }
 
-                // After scraping followers, navigate back to the profile page
-                await page.goto('https://www.instagram.com/aayushman3260/');
-                log.info('Navigated back to profile page.');
-
                 // Scrape following using the scraped following count as the limit
                 try {
-                    await scrapeList('following', 'a[href="/aayushman3260/following/"]', './following_log.txt', followingCount);
-                    await insertInstagramFollowing(username, followingData);
+                    await scrapeList('following', `a[href="/${username}/following/"]`, './following_log.txt', followingCount);
+                    await insertInstagramFollowing(username, followingCount);
                 } catch (error) {
                     log.error(`Error while scraping following: ${error.message}. Moving on.`);
-                    
                 }
 
             } catch (error) {
                 log.error(`Error processing ${request.url}: ${error.message}`);
-
             }
         },
         failedRequestHandler: async ({ request, log }) => {
             log.error(`Failed to process ${request.url}. Moving on to the next task.`);
-            // No retries, just logging the failure and moving on
         },
     });
 
-    await crawler.run([{ url: 'https://www.instagram.com/aayushman3260/' }]);
+    await crawler.run([{ url: `https://www.instagram.com/${username}/`}]);
 };
 
 scraper();
