@@ -22,6 +22,7 @@
         "dev": "ts-node InstagramPosts.ts",
         "start": "npm run start:dev",
         "start:scrap": "tsx src/scraper.ts",
+        "start:X1": "tsx src/Xtimeline.ts",
         "start:prof": "tsx src/InstagramProfile.ts",
         "start:post": "tsx src/InstagramPosts.ts",
         "build": "tsc",
