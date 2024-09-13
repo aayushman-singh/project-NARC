@@ -9,6 +9,7 @@
     "rollup": "^4.21.2"
   },
   "devDependencies": {
+    "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/pg": "^8.11.8",
     "concurrently": "^8.2.2",
@@ -25,8 +26,9 @@
   ],
   "scripts": {
     "start:frontend": "cd frontend && npm run dev",
-    "start:instagram": "cd scraper/src/ && npx tsx src/Instagram.ts",
+    "start:instagramPosts": "cd scraper/src/ && npx tsx src/InstagramPosts.ts",
+    "start:instagramProfile": "cd scraper/src/ && npx tsx src/InstagramProfile.ts",
     "start:meta": "cd scraper/src/ && npx tsx src/Meta.ts",
-    "start:all": "npm-run-all --parallel start:frontend start:instagram start:meta"
+    "start:all": "npm-run-all --parallel start:frontend start:instagramProfile start:instagramPosts"
   }
 }

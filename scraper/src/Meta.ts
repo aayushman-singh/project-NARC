@@ -4,7 +4,7 @@ import { insertMeta } from './mongoUtils.js'; // Import the MongoDB utility func
 import cors from 'cors';
 
 const app = express();
-const PORT = 3002; // Facebook Scraper Port
+const PORT = 3005; // Facebook Scraper Port
 
 app.use(express.json());
 app.use(cors());
