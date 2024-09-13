@@ -3,6 +3,8 @@ import Register from "./components/auth/register";
 import Services from "./components/services";
 import Header from "./components/header";
 import Home from "./components/home";
+import Services1 from "./components/servicesMain";
+
 
 import { AuthProvider } from "./contexts/authContext";
 import { useRoutes } from "react-router-dom";
@@ -29,6 +31,10 @@ function App() {
       path: "/home",
       element: <Home />,
     },
+    {
+      path: "/services1",
+      element: <Services1 />,
+    }
   ];
 
   let routesElement = useRoutes(routesArray);
@@ -37,7 +43,7 @@ function App() {
     <AuthProvider>
       <Header />
       {/* Full screen height minus header with flex column */}
-      <div className="w-full flex-grow flex flex-col pt-16 bg-blue-700">
+      <div className="w-full flex-grow flex flex-col pt-16 bg-gray-700">
         {routesElement}
       </div>
     </AuthProvider>
