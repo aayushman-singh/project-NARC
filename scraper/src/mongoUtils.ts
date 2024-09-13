@@ -39,27 +39,30 @@ interface InstagramUserDocument extends Document {
 }
 
 
-export async function  insertInstagramTimeline (username: any, timelineData: any) {
+export async function insertInstagramTimeline(username: string, timelineData: any) {
     try {
+        // Connect to MongoDB
         await client.connect();
         const database = client.db('instagramDB');
         const collection = database.collection('instagram_users');
 
-        // Insert or update the document under the document labelled by the username
+        // Insert or update the document for the username
         await collection.updateOne(
             { username: username },
-            { $set: { timelineData: timelineData } },
-            { upsert: true }
+            { $set: { timeline: timelineData } },  // Using 'timeline' for clarity
+            { upsert: true }  // If document doesn't exist, create a new one
         );
 
         console.log(`Successfully inserted timeline data for ${username} into instagramDB.`);
     } catch (error) {
         console.error('Error inserting timeline data into MongoDB:', error);
     } finally {
+        // Ensure the client is closed after operation
         await client.close();
     }
-};
-export async function  insertInstagramFollowers (username: any, followersData: any)  {
+}
+
+export async function insertInstagramFollowers(username: any, followersData: any) {
     try {
         await client.connect();
         const database = client.db('instagramDB');
@@ -72,14 +75,14 @@ export async function  insertInstagramFollowers (username: any, followersData: a
             { upsert: true }
         );
 
-        console.log(`Successfully inserted followers and following data for ${username} into instagramDB.`);
+        console.log(`Successfully inserted following data for ${username} into instagramDB.`);
     } catch (error) {
-        console.error('Error inserting followers and following data into MongoDB:', error);
+        console.error('Error inserting following data into MongoDB:', error);
     } finally {
         await client.close();
     }
-};
-export async function  insertInstagramFollowing (username: any, followingData: any) {
+}
+export async function insertInstagramFollowing(username: any, followingData: any) {
     try {
         await client.connect();
         const database = client.db('instagramDB');
@@ -92,13 +95,13 @@ export async function  insertInstagramFollowing (username: any, followingData: a
             { upsert: true }
         );
 
-        console.log(`Successfully inserted followers and following data for ${username} into instagramDB.`);
+        console.log(`Successfully inserted following data for ${username} into instagramDB.`);
     } catch (error) {
-        console.error('Error inserting followers and following data into MongoDB:', error);
+        console.error('Error inserting following data into MongoDB:', error);
     } finally {
         await client.close();
     }
-};
+}
 
 
 export async function insertInstagramPosts(username: string, posts: InstagramPost[]) {

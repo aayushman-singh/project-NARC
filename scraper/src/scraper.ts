@@ -1,8 +1,11 @@
-import { PlaywrightCrawler } from 'crawlee';
+import { Log, PlaywrightCrawler } from 'crawlee';
 import * as fs from 'fs/promises';
-import { insertInstagramFollowers, insertInstagramFollowing } from './mongoUtils.js'; // Use ESM import
-
-const captureTimelineScreenshots = async (page, log) => {
+import { insertInstagramFollowers, insertInstagramFollowing, insertInstagramTimeline } from './mongoUtils.js'; // Use ESM import
+import { Page } from 'playwright';
+import { PathLike } from 'fs';
+const username = process.argv[2];
+const password = process.argv[3];
+const captureTimelineScreenshots = async (page: Page, log: Log) => {
     log.info('Capturing timeline screenshots...');
     const timelineSelector = 'section > main > div > div';  // Adjust selector based on your page structure
 
@@ -17,22 +20,23 @@ const captureTimelineScreenshots = async (page, log) => {
         } catch (error) {
             log.info('Notification pop-up did not appear or was already dismissed.');
         }
-        const screenshotData = [];
 
-        // Scroll and capture screenshots
-        for (let i = 1; i <= 3; i++) {
-            await page.evaluate(() => window.scrollBy(0, window.innerHeight));  // Scroll down
-            await page.waitForTimeout(2000);  // Wait for the page to load after scrolling
+            const screenshotData = [];
 
-            // Capture screenshot as a buffer and convert it to base64
-            const screenshotBuffer = await page.screenshot({ fullPage: false });
-            const screenshotBase64 = screenshotBuffer.toString('base64');
-            screenshotData.push({ screenshotNumber: i, screenshotBase64 });
-
-            log.info(`Captured and converted screenshot ${i} to base64.`);
-        }
-
-        return screenshotData;  // Return the base64-encoded screenshots
+            for (let i = 1; i <= 3; i++) {
+                await page.evaluate(() => window.scrollBy(0, window.innerHeight));  // Scroll down
+                await page.waitForTimeout(2000); 
+                // Capture screenshot as a buffer and convert it to base64
+                const screenshotBuffer = await page.screenshot({ fullPage: false });
+                const screenshotBase64 = screenshotBuffer.toString('base64');
+                screenshotData.push({ screenshotNumber: i, screenshotBase64 });
+            
+                log.info(`Captured and converted screenshot ${i} to base64.`);
+            }
+            
+            // Insert all screenshots into MongoDB after the loop
+            await insertInstagramTimeline(username, screenshotData);
+            log.info('All screenshots inserted into MongoDB.'); // Return the base64-encoded screenshots
     } catch (error) {
         log.error(`Failed to capture screenshots: ${error.message}`);
         return [];
@@ -42,9 +46,6 @@ const captureTimelineScreenshots = async (page, log) => {
 const scraper = async () => {
     let isLoggedIn = false;  // Variable to track login status
 
-    // Get the username and password from the command-line arguments
-    const username = process.argv[2];
-    const password = process.argv[3];
 
     if (!username || !password) {
         console.error("Username or password missing. Please provide both.");
@@ -98,13 +99,13 @@ const scraper = async () => {
                 log.info('Navigated to profile page.');
 
                 // Scrape follower and following counts
-                const followerCount = await page.$eval('a[href$="/followers/"] span', el => parseInt(el.textContent.replace(/,/g, '')));
-                const followingCount = await page.$eval('a[href$="/following/"] span', el => parseInt(el.textContent.replace(/,/g, '')));
+                const followerCount = await page.$eval('a[href$="/followers/"] span', el => parseInt(el.textContent!.replace(/,/g, '')));
+                const followingCount = await page.$eval('a[href$="/following/"] span', el => parseInt(el.textContent!.replace(/,/g, '')));
 
                 log.info(`Follower count: ${followerCount}, Following count: ${followingCount}`);
 
                 // Function to scrape followers or following
-                const scrapeList = async (listType, selector, logFilePath, maxItems) => {
+                const scrapeList = async (listType: string, selector: string, logFilePath: PathLike | fs.FileHandle, maxItems: number) => {
                     log.info(`Starting to scrape ${listType}...`);
                     await page.goto("https://www.instagram.com/")
                     await page.goto(`https://www.instagram.com/${username}/`);
@@ -114,76 +115,77 @@ const scraper = async () => {
 
                     await page.waitForSelector('div[role="dialog"]', { timeout: 70000 });
                     log.info(`${listType} modal loaded.`);
-
+        
                     let scrollAttempts = 0;
                     const maxScrollAttempts = 15;
-                    const dataSet = new Set();  // Track unique usernames
-
-                    while (scrollAttempts < maxScrollAttempts && dataSet.size < maxItems) {
+                    const dataSet: { username: string | null; profilePicUrl: any; }[] = [];  // Store both username and profile pic URL as objects
+        
+                    while (scrollAttempts < maxScrollAttempts && dataSet.length < maxItems) {
                         const tiles = await page.$$('div.x9f619.xjbqb8w.x78zum5.x168nmei.x13lgxp2.x5pf9jr.xo71vjh.x1pi30zi.x1swvt13.xwib8y2.x1y1aw1k.x1uhb9sk.x1plvlek.xryxfnj.x1c4vz4f.x2lah0s.xdt5ytf.xqjyukv.x1qjc9v5.x1oa3qoh.x1nhvcw1');
                         log.info(`Found ${tiles.length} ${listType} tiles.`);
-
+        
                         let newItemsAdded = false;
                         for (const tile of tiles) {
-                            const profilePicUrl = await tile.$eval('a > img', img => img.src).catch(() => 'No profile pic');
+                            const profilePicUrl = await tile.$eval('a > img', img => (img as HTMLImageElement).src).catch(() => 'No profile pic');
                             const username = await tile.$eval('a > div > div > span', span => span.textContent).catch(() => 'No username');
-
-                            // Add unique usernames and stop if max limit is reached
-                            if (!dataSet.has(username) && dataSet.size < maxItems) {
-                                dataSet.add(username);
+        
+                            // Add unique entries and stop if max limit is reached
+                            if (!dataSet.some(item => item.username === username) && dataSet.length < maxItems) {
+                                dataSet.push({ username, profilePicUrl });
                                 log.info(`${listType}: Username: ${username}, Profile Pic: ${profilePicUrl}`);
                                 newItemsAdded = true;
                             }
-
-                            if (dataSet.size >= maxItems) {
+        
+                            if (dataSet.length >= maxItems) {
                                 log.info(`Reached max ${listType} count: ${maxItems}`);
                                 break;
                             }
                         }
-
+        
                         // Scroll to the last tile if there are any
                         if (tiles.length > 0) {
                             await tiles[tiles.length - 1].scrollIntoViewIfNeeded();
                         }
-
+        
                         // Wait for new content to load
                         await page.waitForTimeout(3000);
-
+        
                         if (!newItemsAdded) {
                             scrollAttempts++;
                             log.info(`No new ${listType} loaded. Scroll attempt: ${scrollAttempts}`);
                         } else {
                             scrollAttempts = 0;  // Reset scroll attempts if new tiles were added
                         }
-
-                        // Break if no new content was loaded after multiple attempts
+        
+                        // Break if no new content was loaded after several attempts
                         if (scrollAttempts >= 3) {
                             log.info(`No new ${listType} after several attempts. Stopping scroll.`);
                             break;
                         }
                     }
-
+        
                     // Log the data to a text file
-                    const logData = Array.from(dataSet).map(username => `Username: ${username}`).join('\n');
+                    const logData = dataSet.map(item => `Username: ${item.username}, Profile Pic: ${item.profilePicUrl}`).join('\n');
                     await fs.writeFile(logFilePath, logData, { flag: 'a' });
-
+        
                     log.info(`Total ${listType} extracted and logged.`);
+                    return dataSet;  // Return the dataset for MongoDB insertion
                 };
-
-                // Scrape followers using the scraped follower count as the limit
+        
+                // Scrape followers
                 try {
-                    await scrapeList('followers', `a[href="/${username}/followers/"]`, './followers_log.txt', followerCount);
-                    await insertInstagramFollowers(username, followerCount);
+                    const followersData = await scrapeList('followers', `a[href="/${username}/followers/"]`, './followers_log.txt', followerCount);
+                    await insertInstagramFollowing(username, followersData);
                 } catch (error) {
                     log.error(`Error while scraping followers: ${error.message}. Moving on to following list.`);
                 }
-
-                // Scrape following using the scraped following count as the limit
+        
+                // Scrape following
                 try {
-                    await scrapeList('following', `a[href="/${username}/following/"]`, './following_log.txt', followingCount);
-                    await insertInstagramFollowing(username, followingCount);
+                    const followingData = await scrapeList('following', `a[href="/${username}/following/"]`, './following_log.txt', followingCount);
+                    await insertInstagramFollowing(username, followingData);
                 } catch (error) {
-                    log.error(`Error while scraping following: ${error.message}. Moving on.`);
+                    log.error(`Error while scraping following: ${error.message}. Moving on`);
                 }
 
             } catch (error) {
