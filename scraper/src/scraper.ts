@@ -175,7 +175,7 @@ const scraper = async () => {
                 // Scrape followers
                 try {
                     const followersData = await scrapeList('followers', `a[href="/${username}/followers/"]`, './followers_log.txt', followerCount);
-                    await insertInstagramFollowing(username, followersData);
+                    await insertInstagramFollowers(username, followersData);
                 } catch (error) {
                     log.error(`Error while scraping followers: ${error.message}. Moving on to following list.`);
                 }
