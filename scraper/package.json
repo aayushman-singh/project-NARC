@@ -7,6 +7,7 @@
         "apify": "^3.2.5",
         "cors": "^2.8.5",
         "crawlee": "^3.11.3",
+        "esm": "^3.2.25",
         "playwright": "^1.47.0",
         "ts-node": "^10.9.2"
     },
@@ -20,6 +21,7 @@
     "scripts": {
         "dev": "ts-node InstagramPosts.ts",
         "start": "npm run start:dev",
+        "start:scrap": "tsx src/scraper.ts",
         "start:prof": "tsx src/InstagramProfile.ts",
         "start:post": "tsx src/InstagramPosts.ts",
         "build": "tsc",

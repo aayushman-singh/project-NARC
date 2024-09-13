@@ -3685,6 +3685,11 @@ eslint-visitor-keys@^4.0.0:
     strip-ansi "^6.0.1"
     text-table "^0.2.0"
 
+esm@^3.2.25:
+  version "3.2.25"
+  resolved "https://registry.npmjs.org/esm/-/esm-3.2.25.tgz"
+  integrity sha512-U1suiZ2oDVWv4zPO56S0NcR5QriEahGtdN2OR6FiOG4WJvcjBVFB0qI4+eKoWFH483PKGuLuu6V8Z4T5g63UVA==
+
 espree@^10.0.1, espree@^10.1.0:
   version "10.1.0"
   resolved "https://registry.npmjs.org/espree/-/espree-10.1.0.tgz"
@@ -7421,7 +7426,9 @@ scheduler@^0.23.2:
     apify "^3.2.5"
     cors "^2.8.5"
     crawlee "^3.11.3"
+    esm "^3.2.25"
     playwright "^1.47.0"
+    ts-node "^10.9.2"
 
 semver@^5.5.0:
   version "5.7.2"
