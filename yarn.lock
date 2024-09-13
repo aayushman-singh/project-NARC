@@ -1528,6 +1528,11 @@
   dependencies:
     "@octokit/openapi-types" "^18.0.0"
 
+"@phosphor-icons/react@^2.1.5-alpha.3":
+  version "2.1.5-alpha.3"
+  resolved "https://registry.npmjs.org/@phosphor-icons/react/-/react-2.1.5-alpha.3.tgz"
+  integrity sha512-PWx6BND/b7gePEVSmIYv9TdVKfbH79zn4r3mP57JpK+b8o2W76nELa/F+c2kJSnudguvEyQr5WXpgx8v3PvCig==
+
 "@pkgjs/parseargs@^0.11.0":
   version "0.11.0"
   resolved "https://registry.npmjs.org/@pkgjs/parseargs/-/parseargs-0.11.0.tgz"
@@ -1784,6 +1789,13 @@
   version "1.1.8"
   resolved "https://registry.npmjs.org/@types/content-type/-/content-type-1.1.8.tgz"
   integrity sha512-1tBhmVUeso3+ahfyaKluXe38p+94lovUZdoVfQ3OnJo9uJC42JT7CBoN3k9HYhAae+GwiBYmHu+N9FZhOG+2Pg==
+
+"@types/cors@^2.8.17":
+  version "2.8.17"
+  resolved "https://registry.npmjs.org/@types/cors/-/cors-2.8.17.tgz"
+  integrity sha512-8CGDvrBj1zgo2qE+oS3pOCyYNqCPryMWY2bGfwA0dcfopWGgxs+78df0Rs3rc9THP4JkOhLsAa+15VdpAqkcUA==
+  dependencies:
+    "@types/node" "*"
 
 "@types/estree@1.0.5":
   version "1.0.5"
@@ -4048,14 +4060,16 @@ front-matter@^4.0.2:
   dependencies:
     js-yaml "^3.13.1"
 
-"frontend@file:C:\\Users\\asus\\project-NARC\\frontend":
+"frontend@file:S:\\Repo\\SIH\\project-NARC\\frontend":
   version "0.0.0"
   resolved "file:frontend"
   dependencies:
     "@fortawesome/fontawesome-svg-core" "^6.6.0"
     "@fortawesome/free-solid-svg-icons" "^6.6.0"
     "@fortawesome/react-fontawesome" "^0.2.2"
+    "@phosphor-icons/react" "^2.1.5-alpha.3"
     firebase "^10.13.1"
+    phosphor-react "^1.4.1"
     react "^18.3.1"
     react-dom "^18.3.1"
     react-router-dom "^6.26.1"
@@ -7015,7 +7029,7 @@ raw-body@2.5.2:
     iconv-lite "0.4.24"
     unpipe "1.0.0"
 
-"react-dom@^15.5.4 || ^16.0.0 || ^17.0.0 || ^18.0.0", react-dom@^18.3.1, react-dom@>=16.8:
+"react-dom@^15.5.4 || ^16.0.0 || ^17.0.0 || ^18.0.0", react-dom@^18.3.1, "react-dom@>= 16.8", react-dom@>=16.8:
   version "18.3.1"
   resolved "https://registry.npmjs.org/react-dom/-/react-dom-18.3.1.tgz"
   integrity sha512-5m4nQKp+rZRb09LNH59GM4BxTh9251/ylbKIbpe7TpGxfJ+9kv6BLkLBXIjjspbgbnIBNqlI23tRnTWT0snUIw==
@@ -7061,7 +7075,7 @@ react-scroll@^1.9.0:
     lodash.throttle "^4.1.1"
     prop-types "^15.7.2"
 
-"react@^15.5.4 || ^16.0.0 || ^17.0.0 || ^18.0.0", react@^18.3.1, react@>=16, react@>=16.3, react@>=16.8:
+"react@^15.5.4 || ^16.0.0 || ^17.0.0 || ^18.0.0", react@^18.3.1, "react@>= 16.8", react@>=16, react@>=16.3, react@>=16.8:
   version "18.3.1"
   resolved "https://registry.npmjs.org/react/-/react-18.3.1.tgz"
   integrity sha512-wS+hAgJShR0KhEvPJArfuPVN1+Hz1t0Y6n5jLrGQbkb4urgPE/0Rve+1kMB1v/oWgHgm4WIcV+i7F2pTVj+2iQ==
@@ -7400,14 +7414,14 @@ scheduler@^0.23.2:
   dependencies:
     loose-envify "^1.1.0"
 
-"scraper@file:C:\\Users\\asus\\project-NARC\\scraper":
+"scraper@file:S:\\Repo\\SIH\\project-NARC\\scraper":
   version "0.0.1"
   resolved "file:scraper"
   dependencies:
     apify "^3.2.5"
     cors "^2.8.5"
     crawlee "^3.11.3"
-    playwright "^1.41.1"
+    playwright "^1.47.0"
 
 semver@^5.5.0:
   version "5.7.2"

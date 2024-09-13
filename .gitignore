@@ -2,3 +2,5 @@
 /scraper/node_modules
 /frontend/node_modules
 scraper/storage/
+/scraper/src/storage
+scraper/src/storage/key_value_stores/default/SDK_SESSION_POOL_STATE.json

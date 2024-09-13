@@ -9,10 +9,58 @@ const Services = () => {
     setActiveSection((prev) => (prev === section ? '' : section)); // Toggle the section on click
   };
 
-  const handleSubmit = (service) => {
-    // Submit logic for each platform (Instagram, WhatsApp, etc.)
-    alert(`${service} username submitted`);
-  };
+  const handleSubmit = async () => {
+    const tagInputElement = document.getElementById('tagInput');
+
+    if (!tagInputElement) {
+        console.error('tagInput element not found');
+        alert('Please enter tags');
+        return;
+    }
+
+    const tagInputValue = tagInputElement.value;
+    const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+
+    const payload = {
+        startUrls: tagsArray,
+    };
+
+    try {
+        console.log('Payload being sent:', payload);
+        const response1 = await fetch('http://localhost:3001/instagramProfile', {
+          method: 'POST',
+          headers: {
+              'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(payload),
+      });
+
+      if (!response1.ok) {
+          throw new Error(`Second request failed: ${response1.statusText}`);
+      }
+
+
+        const response2 = await fetch('http://localhost:3002/instagramPosts', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(payload),
+        });
+
+        if (!response2.ok) {
+            throw new Error(`Second request failed: ${response2.statusText}`);
+        }
+
+        alert('User Submitted Successfully');
+        tagInputElement.value = ''; // Clear the text field
+
+    } catch (error) {
+        console.error('Error submitting tags:', error);
+        alert('Failed to submit tags. Please try again.');
+    }
+};
+
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8">
@@ -48,7 +96,7 @@ const Services = () => {
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
             <h2 className="text-2xl font-bold text-pink-500">Instagram</h2>
             <input 
-              type="text" 
+              type="text" id= "tagInput" 
               placeholder="Enter Instagram username" 
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" 
             />
