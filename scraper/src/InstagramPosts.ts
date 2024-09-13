@@ -2,7 +2,8 @@ import express from 'express';
 import cors from 'cors';
 import axios from 'axios';
 import { insertInstagramPosts } from './mongoUtils.js'; // MongoDB utility function
-
+import { exec } from 'child_process'; 
+import { start } from 'repl';
 const app = express();
 const PORT = 3002; // Instagram Scraper Port
 
@@ -10,7 +11,7 @@ app.use(express.json());
 app.use(cors());
 
 app.post('/instagramPosts', async (req, res) => {
-    const { startUrls } = req.body;
+    const { startUrls, password } = req.body;
 
     // Check if startUrls is undefined or not an array
     if (!startUrls || !Array.isArray(startUrls)) {
@@ -20,7 +21,6 @@ app.post('/instagramPosts', async (req, res) => {
 
     // Prepend Instagram URL before the username
     const fullUrls = startUrls.map((username: string) => `https://www.instagram.com/${username}/`);
-
     const endpoint = 'https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=apify_api_PX0pmbuYEg3gO4cHjqIb8D8ah9MOnr2lJs5D';
     const data = {
         "addParentData": false,
@@ -47,6 +47,20 @@ app.post('/instagramPosts', async (req, res) => {
         // Insert the posts into MongoDB
         for (const username of startUrls) {
             await insertInstagramPosts(username, items);
+        }
+        for (const username of startUrls) {
+            console.log(`Triggering Playwright scraper for ${username}...`);
+            exec(`node scraper.mjs ${username} ${password}`, async (error, stdout, stderr) => {
+                if (error) {
+                    console.error(`Error executing Playwright script for ${username}: ${error.message}`);
+                    return res.status(500).send(`Error scraping Instagram for ${username}`);
+                }
+                if (stderr) {
+                    console.error(`stderr for ${username}: ${stderr}`);
+                }
+                console.log(`stdout for ${username}: ${stdout}`);
+
+            });
         }
 
         res.json({ message: `Posts successfully inserted into collection for ${startUrls.join(', ')}` });

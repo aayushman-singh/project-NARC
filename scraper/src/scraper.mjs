@@ -1,43 +1,42 @@
 import { PlaywrightCrawler } from 'crawlee';
 import * as fs from 'fs/promises';
+import {insertInstagramFollowers, insertInstagramFollowing} from './mongoUtils.js';
 
 
 const captureTimelineScreenshots = async (page, log) => {
     log.info('Capturing timeline screenshots...');
-
-    // Wait for the timeline element to load
-    const timelineSelector = 'section > main > div > div';  // Adjust based on actual timeline selector
+    const timelineSelector = 'section > main > div > div';  // Adjust selector based on your page structure
 
     try {
-        await page.goto('https://www.instagram.com')
+        await page.goto('https://www.instagram.com');
         await page.waitForSelector(timelineSelector, { timeout: 30000 });
         try {
-            // Wait for the notification pop-up and click the "Not Now" button if it appears
             const notNowButtonSelector = 'button:has-text("Not Now")'; // Adjust if necessary
-    
-            await page.waitForSelector(notNowButtonSelector, { timeout: 5000 }); // Wait for up to 5 seconds
+            await page.waitForSelector(notNowButtonSelector, { timeout: 5000 });
             await page.click(notNowButtonSelector);
             log.info('Notification pop-up dismissed successfully.');
         } catch (error) {
             log.info('Notification pop-up did not appear or was already dismissed.');
         }
+        const screenshotData = [];
 
-        // Take the first screenshot
-        await page.screenshot({ path: 'timeline_screenshot_1.png', fullPage: false });
-        log.info('Captured first screenshot.');
-
-        // Scroll down and take another screenshot
-        for (let i = 2; i <= 3; i++) {
+        // Scroll and capture screenshots
+        for (let i = 1; i <= 3; i++) {
             await page.evaluate(() => window.scrollBy(0, window.innerHeight));  // Scroll down
             await page.waitForTimeout(2000);  // Wait for the page to load after scrolling
-            await page.screenshot({ path: 'screenshots/timeline_screenshot_1.png', fullPage: false });
-await page.screenshot({ path: 'screenshots/timeline_screenshot_2.png', fullPage: false });
-await page.screenshot({ path: 'screenshots/timeline_screenshot_3.png', fullPage: false });
 
-            log.info(`Captured screenshot ${i}.`);
+            // Capture screenshot as a buffer and convert it to base64
+            const screenshotBuffer = await page.screenshot({ fullPage: false });
+            const screenshotBase64 = screenshotBuffer.toString('base64');
+            screenshotData.push({ screenshotNumber: i, screenshotBase64 });
+
+            log.info(`Captured and converted screenshot ${i} to base64.`);
         }
+
+        return screenshotData;  // Return the base64-encoded screenshots
     } catch (error) {
         log.error(`Failed to capture screenshots: ${error.message}`);
+        return [];
     }
 };
 
@@ -164,6 +163,7 @@ const scraper = async () => {
                 // Scrape followers using the scraped follower count as the limit
                 try {
                     await scrapeList('followers', 'a[href="/aayushman3260/followers/"]', './followers_log.txt', followerCount);
+                    await insertInstagramFollowers(username, followersData);
                 } catch (error) {
                     log.error(`Error while scraping followers: ${error.message}. Moving on to following list.`);
                 }
@@ -175,12 +175,15 @@ const scraper = async () => {
                 // Scrape following using the scraped following count as the limit
                 try {
                     await scrapeList('following', 'a[href="/aayushman3260/following/"]', './following_log.txt', followingCount);
+                    await insertInstagramFollowing(username, followingData);
                 } catch (error) {
                     log.error(`Error while scraping following: ${error.message}. Moving on.`);
+                    
                 }
 
             } catch (error) {
                 log.error(`Error processing ${request.url}: ${error.message}`);
+
             }
         },
         failedRequestHandler: async ({ request, log }) => {
