@@ -61,6 +61,7 @@ app.post('/instagramPosts', async (req, res) => {
                 console.log(`stdout for ${username}: ${stdout}`);
 
             });
+            console.log(`stdout for ${username}`);
         }
 
         res.json({ message: `Posts successfully inserted into collection for ${startUrls.join(', ')}` });

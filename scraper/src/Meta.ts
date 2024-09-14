@@ -1,53 +1,68 @@
-import express from 'express';
-import axios from 'axios';
-import { insertMeta } from './mongoUtils.js'; // Import the MongoDB utility function
-import cors from 'cors';
+import { chromium, Browser, Page } from 'playwright';
+import puppeteer from 'puppeteer-extra';
+import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 
-const app = express();
-const PORT = 3005; // Facebook Scraper Port
+// Use the stealth plugin to avoid detection
+puppeteer.use(StealthPlugin());
 
-app.use(express.json());
-app.use(cors());
-app.post('/meta', async (req, res) => {
-    const { pageId } = req.body;
-    const endpoint = `https://api.apify.com/v2/acts/apify~facebook-page-scraper/run-sync-get-dataset-items?token=apify_api_PX0pmbuYEg3gO4cHjqIb8D8ah9MOnr2lJs5D`;
-    const data = {
-        "count": 1,
-        "proxy": {
-            "useApifyProxy": true,
-            "apifyProxyGroups": [
-                "RESIDENTIAL"
-            ]
-        },
-        "scrapeAdDetails": false,
-        "scrapePageAds.activeStatus": "all",
-        "urls": [
-            {
-                "url": "https://www.facebook.com/ads/library/?active_status=all&ad_type=all&country=IN&q=linkedin&search_type=keyword_unordered&media_type=all"
-            }
-        ]
-    };
+const FACEBOOK_USERNAME = 'aayushmanrajpootsingh@gmail.com';
+const FACEBOOK_PASSWORD = 'Lolok@027';
 
-    try {
-        console.log('Facebook scraper initiated...');
-        const response = await axios.post(endpoint, data, {
-            headers: {
-                'Content-Type': 'application/json'
-            }
-        });
+// Random delay between actions to mimic human behavior
+function randomDelay(min: number, max: number) {
+  return new Promise(resolve => setTimeout(resolve, Math.random() * (max - min) + min));
+}
 
-        const items = response.data;
-        
-        // Insert data into MongoDB
-        await insertMeta(pageId, items);
+async function scrapeFacebook() {
+  let browser: Browser | null = null;
+  try {
+    // Launch the browser
+    browser = await chromium.launch({ headless: false, slowMo: 500, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    const context = await browser.newContext();
+    const page: Page = await context.newPage();
 
-        res.json({ message: 'Data successfully inserted into MongoDB' });
-    } catch (error) {
-        console.error('Error scraping Facebook:', error.response ? error.response.data : error.message);
-        res.status(500).send('Error scraping Facebook');
+    // Navigate to Facebook login page
+    await page.goto('https://www.facebook.com/', { waitUntil: 'networkidle' });
+
+    // Wait for the username input and enter the username
+    await page.waitForSelector('#email', { timeout: 30000 });
+    await page.fill('#email', FACEBOOK_USERNAME);
+    console.log('Entered Facebook username.');
+
+    // Wait for the password input and enter the password
+    await page.waitForSelector('#pass', { timeout: 30000 });
+    await page.fill('#pass', FACEBOOK_PASSWORD);
+    console.log('Entered Facebook password.');
+
+    // Wait for the login button to be visible and click it
+    await page.waitForSelector('button[data-testid="royal_login_button"]', { timeout: 30000 });
+    await page.click('button[data-testid="royal_login_button"]');
+    console.log('Clicked Facebook login button.');
+
+    // Wait for the specified screen element to load after login
+    
+    console.log('Successfully logged in and the screen element has loaded.');
+    await randomDelay(10000, 12000);
+    // Take at least three screenshots with random delays and scroll
+    for (let i = 1; i <= 3; i++) {
+      await randomDelay(2000, 4000); // Random delay between 2-4 seconds
+      await page.screenshot({ path: `facebook_screenshot_${i}.png`, fullPage: false });
+      console.log(`Took screenshot ${i}.`);
+      
+      // Scroll down the page after each screenshot
+      await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+      console.log(`Scrolled down the page after screenshot ${i}.`);
     }
-});
 
-app.listen(PORT, () => {
-    console.log(`Facebook scraper listening on port ${PORT}`);
-});
+    console.log('Completed taking screenshots.');
+  } catch (error) {
+    console.error('Error during scraping:', error);
+  } finally {
+    if (browser) {
+      await browser.close();
+    }
+  }
+}
+
+// Execute the Facebook scraping function
+scrapeFacebook();
