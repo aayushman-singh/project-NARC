@@ -1,4 +1,6 @@
-import { MongoClient } from 'mongodb';
+import { MongoClient, GridFSBucket, ObjectId } from 'mongodb';
+import fs from 'fs';
+import path from 'path';
 
 const uri = "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const client = new MongoClient(uri);
@@ -39,7 +41,30 @@ interface InstagramUserDocument extends Document {
 }
 
 
-export async function insertInstagramTimeline(username: string, timelineData: any) {
+export async function uploadScreenshotToMongo(username: string, screenshotPath: string, fieldName: string) {
+    
+    await client.connect();
+        const database = client.db('instagramDB');
+        const collection = database.collection('instagram_users');
+    const bucket = new GridFSBucket(database, { bucketName: 'instagram_users' });
+
+    // Create a new ObjectId for each screenshot
+    const fileId = new ObjectId();
+
+    const fileStream = fs.createReadStream(screenshotPath);
+    const uploadStream = bucket.openUploadStreamWithId(fileId, `${fieldName}_${Date.now()}`);
+
+    return new Promise((resolve, reject) => {
+        fileStream.pipe(uploadStream)
+            .on('error', reject)
+            .on('finish', () => {
+                // Store a reference to the fileId under the username with the given field name
+                resolve({ message: `${fieldName} screenshot uploaded successfully to MongoDB`, fileId });
+            });
+    });
+}
+
+export async function insertInstagramScreenshotReference(username: string, fieldName: string, fileId: ObjectId) {
     try {
         // Connect to MongoDB
         await client.connect();
@@ -49,15 +74,15 @@ export async function insertInstagramTimeline(username: string, timelineData: an
         // Insert or update the document for the username
         await collection.updateOne(
             { username: username },
-            { $set: { timeline: timelineData } },  // Using 'timeline' for clarity
-            { upsert: true }  // If document doesn't exist, create a new one
+            { $set: { [fieldName]: fileId } },  // Store the ObjectId under the specified field name
+            { upsert: true }  // If the document doesn't exist, create a new one
         );
 
-        console.log(`Successfully inserted timeline data for ${username} into instagramDB.`);
+        console.log(`Successfully inserted ${fieldName} screenshot reference for ${username} into MongoDB.`);
     } catch (error) {
-        console.error('Error inserting timeline data into MongoDB:', error);
+        console.error(`Error inserting ${fieldName} reference into MongoDB:`, error);
     } finally {
-        // Ensure the client is closed after operation
+        // Ensure the client is closed after the operation
         await client.close();
     }
 }
@@ -130,6 +155,7 @@ export async function insertInstagramProfile(username: string, profile: Instagra
         { upsert: true } // Insert the document if it doesn't exist
     );
 }
+
 
 export async function insertMeta(collectionName: string, data: any[]) {
     try {

@@ -9,6 +9,8 @@
         "crawlee": "^3.11.3",
         "esm": "^3.2.25",
         "playwright": "^1.47.0",
+        "puppeteer-extra": "^3.3.6",
+        "puppeteer-extra-plugin-stealth": "^2.11.2",
         "ts-node": "^10.9.2"
     },
     "devDependencies": {
@@ -22,6 +24,7 @@
         "dev": "ts-node InstagramPosts.ts",
         "start": "npm run start:dev",
         "start:scrap": "tsx src/scraper.ts",
+        "start:Meta": "tsx src/Meta.ts",
         "start:X1": "tsx src/Xtimeline.ts",
         "start:prof": "tsx src/InstagramProfile.ts",
         "start:post": "tsx src/InstagramPosts.ts",
