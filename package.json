@@ -26,9 +26,9 @@
   ],
   "scripts": {
     "start:frontend": "cd frontend && npm run dev",
-    "start:instagramPosts": "cd scraper/src/ && npx tsx src/InstagramPosts.ts",
-    "start:instagramProfile": "cd scraper/src/ && npx tsx src/InstagramProfile.ts",
-    "start:meta": "cd scraper/src/ && npx tsx src/Meta.ts",
-    "start:all": "npm-run-all --parallel start:frontend start:instagramProfile start:instagramPosts"
+    "start:instagram": "cd scraper/src/ && npx tsx src/Instagram.ts",
+    "start:x": "cd scraper/src/ && npx tsx src/X.ts",
+    "start:facebook": "cd scraper/src/ && npx tsx src/Facebook.ts",
+    "start:all": "npm-run-all --parallel start:frontend start:instagram start:x start:facebook"
   }
 }

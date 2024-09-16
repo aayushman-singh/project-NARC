@@ -146,7 +146,7 @@ const Services = () => {
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" 
             />
             <input 
-              type="instagramPassword" 
+              type="password" id = "instagramPassword"  
               placeholder="Enter Instagram password" 
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" 
             />
@@ -191,7 +191,7 @@ const Services = () => {
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
             />
             <input 
-              type="xPassword" 
+              type="password" id = "xPassword" 
               placeholder="Enter X password" 
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
             />
@@ -216,7 +216,7 @@ const Services = () => {
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" 
             />
             <input 
-              type="telegramPassword" 
+              type="password" id = "telegramPassword" 
               placeholder="Enter Telegram password" 
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" 
             />
@@ -241,7 +241,7 @@ const Services = () => {
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" 
             />
             <input 
-              type="facebookPassword" 
+              type="password" id = "facebookPassword" 
               placeholder="Enter Facebook password" 
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" 
             />
