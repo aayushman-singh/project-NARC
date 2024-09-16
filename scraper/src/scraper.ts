@@ -1,55 +1,128 @@
 import { Log, PlaywrightCrawler } from 'crawlee';
-import * as fs from 'fs/promises';
 import { insertInstagramFollowers, insertInstagramFollowing, uploadScreenshotToMongo, insertInstagramScreenshotReference  } from './mongoUtils.js'; // Use ESM import
 import { Page } from 'playwright';
-import { PathLike } from 'fs';
+import { promises as fs, PathLike } from 'fs';
 const username = process.argv[2];
 const password = process.argv[3];
-
-const openFirstInstagramMessageAndScreenshot = async (page: Page, log: Log, username: string | undefined) => {
+import path from 'path'; // To handle file paths
+const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: string | undefined) => {
     try {
         // Navigate to Instagram Direct Inbox
         log.info('Navigating to Instagram Direct Inbox.');
-        await page.goto('https://www.instagram.com/direct/inbox/');
-        
-         // Correct selector for the first user tile
-         const userTileSelector = '#mount_0_0_qW > div > div > div.x9f619.x1n2onr6.x1ja2u2z > div > div > div.x78zum5.xdt5ytf.x1t2pt76.x1n2onr6.x1ja2u2z.x10cihs4 > div.x9f619.xvbhtw8.x78zum5.x168nmei.x13lgxp2.x5pf9jr.xo71vjh.x1uhb9sk.x1plvlek.xryxfnj.x1c4vz4f.x2lah0s.x1q0g3np.xqjyukv.x1qjc9v5.x1oa3qoh.x1qughib > div.x1gryazu.xh8yej3.x10o80wk.x14k21rp.x1v4esvl.x8vgawa > section > main > section > div > div > div > div.xjp7ctv > div > div.x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.x2lah0s.x193iq5w.xeuugli.xvbhtw8 > div > div.x78zum5.xdt5ytf.x1iyjqo2.x6ikm8r.x10wlt62.x1n2onr6 > div > div > div > div > div:nth-child(2) > div > div:nth-child(1) > div';
+        await page.goto('https://www.instagram.com/direct/inbox/', { waitUntil: 'networkidle' });
 
-         // Wait for the first user tile and click it
-        let attempts = 0;
-        const maxAttempts = 3;
-        let isVisible = false;
+        // Correct selector for user tiles using the role="listitem"
+        const userTileSelector = 'div[role="listitem"].x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.x1iyjqo2';
 
-        while (attempts < maxAttempts && !isVisible) {
-            try {
-                await page.waitForSelector(userTileSelector, { timeout: 60000 });  // Increased timeout
-                await page.click(userTileSelector);
-                isVisible = true;  // Break the loop if successful
-                log.info('Opened first conversation in Instagram Direct.');
-            } catch (error) {
-                attempts++;
-                log.warn(`Attempt ${attempts} to open first conversation failed.`);
-                if (attempts >= maxAttempts) {
-                    throw new Error('Failed to open the first conversation after multiple attempts.');
+        // Wait for user tiles to appear
+        await page.waitForSelector(userTileSelector, { timeout: 60000 });
+
+        // Extract all usernames from the chat list
+        const chatUsernames = await page.evaluate(() => {
+            const chatItems = document.querySelectorAll('div[role="listitem"]');
+            return Array.from(chatItems).map(item => {
+                const usernameElement = item.querySelector('span.x1lliihq.x193iq5w.x6ikm8r.x10wlt62.xlyipyv.xuxw1ft');
+                return usernameElement ? usernameElement.textContent.trim() : 'null';
+            }).filter(Boolean); // Remove any null or undefined usernames
+        });
+
+        log.info(`Found ${chatUsernames.length} chats: ${chatUsernames.join(', ')}`);
+
+        // Process the first 5 chats or fewer if fewer than 5 chats exist
+        const chatsToProcess = chatUsernames.slice(0, 5);
+
+        for (const chatUsername of chatsToProcess) {
+            log.info(`Opening chat with: ${chatUsername}`);
+
+            // Click on the user's chat to open the conversation by searching for the username
+            const chatClicked = await page.evaluate((usernameToClick) => {
+                const chatItems = document.querySelectorAll('div[role="listitem"]');
+                for (const item of chatItems) {
+                    const usernameElement = item.querySelector('span.x1lliihq.x193iq5w.x6ikm8r.x10wlt62.xlyipyv.xuxw1ft');
+                    if (usernameElement && usernameElement.textContent.trim() === usernameToClick) {
+                        (item as HTMLElement).click();
+                        return true;
+                    }
                 }
+                return false;
+            }, chatUsername);
+
+            if (!chatClicked) {
+                log.warn(`Could not find or click chat with ${chatUsername}. Skipping.`);
+                continue;
             }
+
+            await page.waitForSelector('div[role="row"]', { timeout: 30000 });
+            log.info(`Chat with ${chatUsername} is now open`);
+
+            // Scroll through the chat to load all messages
+            let previousHeight = 0;
+            let newHeight = await page.evaluate(() => document.querySelector('div[role="grid"]')?.scrollHeight || 0);
+            while (newHeight > previousHeight) {
+                previousHeight = newHeight;
+                await page.evaluate(async () => {
+                    const chatBox = document.querySelector('div[role="grid"]');
+                    chatBox?.scrollTo(0, chatBox.scrollHeight);
+                });
+                await page.waitForTimeout(500);
+                newHeight = await page.evaluate(() => document.querySelector('div[role="grid"]')?.scrollHeight || 0);
+            }
+
+            // Extract chat messages
+            const messages = await page.evaluate(() => {
+                const messageRows = document.querySelectorAll('div[role="row"]');
+                return Array.from(messageRows).map(row => {
+                    const senderElement = row.querySelector('h5 span.xzpqnlu, h4 span.xzpqnlu');
+                    const textContentElement = row.querySelector('div[dir="auto"]');
+                    const mediaContentElement = row.querySelector('video, img');
+
+                    let sender = 'Unknown';
+                    let content = '';
+
+                    if (textContentElement) {
+                        content = `Text: ${textContentElement.textContent?.trim()}`;
+                    }
+
+                    if (mediaContentElement) {
+                        if (mediaContentElement.tagName.toLowerCase() === 'video') {
+                            content = 'Reel: [Video Content]';
+                        } else if (mediaContentElement.tagName.toLowerCase() === 'img') {
+                            content = 'Image: [Image Content]';
+                        }
+                    }
+
+                    if (senderElement) {
+                        sender = senderElement.textContent?.trim() || 'Unknown';
+                    }
+
+                    return { sender, content };
+                }).filter(message => message.content !== '');
+            });
+
+            log.info(`Number of messages found in ${chatUsername}'s chat: ${messages.length}`);
+
+            // Log messages to a file
+            const logFilePath = `./${chatUsername}_instagram_messages.txt`;
+            const messageLog = messages.map((msg, index) => `${index + 1}. ${msg.sender}: ${msg.content}`).join('\n');
+            fs.writeFile(logFilePath, messageLog, 'utf8');
+            log.info(`Messages for ${chatUsername} have been logged to ${logFilePath}`);
+
+            // Take a screenshot of the chat
+            const screenshotPath = path.resolve(`./${chatUsername}_instagram_screenshot.png`);
+            await page.screenshot({ path: screenshotPath, fullPage: false });
+            log.info(`Screenshot of ${chatUsername}'s chat saved to ${screenshotPath}`);
+
+            // Upload the screenshot to MongoDB
+            const uploadResult = await uploadScreenshotToMongo(username as string, screenshotPath, 'message');
+            await insertInstagramScreenshotReference(username, `timeline_${i}`, result.fileId);
+            log.info(uploadResult.message);
+
+            // Add a short delay to avoid spamming
+            await page.waitForTimeout(1000);
         }
 
-        // Wait before taking the screenshot
-        await page.waitForTimeout(3000);
-
-        // Path to save the screenshot temporarily
-        const screenshotPath = `instagram_direct_first_message_${username}.png`;
-
-        // Take a screenshot of the first conversation
-        await page.screenshot({ path: screenshotPath, fullPage: false });
-        log.info('Screenshot of first conversation taken.');
-
-        // Upload screenshot to MongoDB (as per the earlier logic)
-        const result = await uploadScreenshotToMongo(username, screenshotPath, 'message');
-        log.info(result.message);
     } catch (error) {
-        log.error(`Error while trying to open Instagram Direct and upload screenshot: ${error.message}`);
+        log.error(`Error while processing Instagram messages: ${error.message}`);
     }
 };
 
@@ -240,7 +313,7 @@ const scraper = async () => {
                 } catch (error) {
                     log.error(`Error while scraping following: ${error.message}. Moving on`);
                 }
-                await openFirstInstagramMessageAndScreenshot(page, log);
+                await openAllInstagramMessagesAndLog(page, log, username);
             } catch (error) {
                 log.error(`Error processing ${request.url}: ${error.message}`);
             }
