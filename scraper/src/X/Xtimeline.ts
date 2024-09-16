@@ -5,15 +5,13 @@ import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 // Use the stealth plugin to avoid detection
 puppeteer.use(StealthPlugin());
 
-const USERNAME = 'aayushman2703';
-const PASSWORD = 'Lolok@027';
 
 // Random delay between actions to mimic human behavior
 function randomDelay(min: number, max: number) {
   return new Promise(resolve => setTimeout(resolve, Math.random() * (max - min) + min));
 }
 
-async function scrapeX() {
+export async function scrapeX(USERNAME:string, PASSWORD:string) {
   let browser: Browser | null = null;
   try {
     // Launch the browser
@@ -132,5 +130,5 @@ async function scrapeX() {
   }
 }
 
-// Execute the scraping function
-scrapeX();
+
+

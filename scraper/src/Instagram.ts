@@ -7,7 +7,7 @@ import { InstaScraper } from './Instagram/InstaScraper.js';
 import { start } from 'repl';
 
 const app = express();
-const PORT = 3002; 
+const PORT = 3001; // Instagram Scraper Port
 
 app.use(express.json());
 app.use(cors());

@@ -13,5 +13,5 @@
     },
     "include": [
         "./src/**/*"
-    ]
+, "src/Meta/MetaTimeline.ts"    ]
 }

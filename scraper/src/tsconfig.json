@@ -10,5 +10,5 @@
     "noEmit": true,
     "allowImportingTsExtensions": true,
   },
-  "include": ["**/*.ts"]  // Look for all .ts files in the current folder and subfolders
+  "include": ["**/*.ts", "Meta/MetaTimeline.ts"]  // Look for all .ts files in the current folder and subfolders
 }
