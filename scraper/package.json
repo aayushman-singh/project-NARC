@@ -9,6 +9,7 @@
         "crawlee": "^3.11.3",
         "esm": "^3.2.25",
         "playwright": "^1.47.0",
+        "puppeteer": "^23.3.0",
         "puppeteer-extra": "^3.3.6",
         "puppeteer-extra-plugin-stealth": "^2.11.2",
         "ts-node": "^10.9.2"
