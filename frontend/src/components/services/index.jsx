@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import  { useState } from 'react';
 import { InstagramLogo, WhatsappLogo, FacebookLogo, TelegramLogo, TwitterLogo } from 'phosphor-react';
 import './style.css';
 
@@ -12,6 +12,7 @@ const Services = () => {
 
   const handleSubmit = async (platform) => {
     const tagInputElement = document.getElementById(`${platform}Input`);
+    const passwordInputElement = document.getElementById(`${platform}Password`); // New password input element
 
     if (!tagInputElement) {
       console.error(`${platform}Input element not found`);
@@ -19,18 +20,44 @@ const Services = () => {
       return;
     }
 
+    if (!passwordInputElement) {
+      console.error(`${platform}Password element not found`);
+      alert('Please enter the password');
+      return;
+    }
+
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    const password = passwordInputElement.value; // Get the password
+
+    if (!password || password.trim() === "") {
+      alert('Please enter the password');
+      return;
+    }
 
     const payload = {
       startUrls: tagsArray,
+      password: password.trim(), // Add password to the payload
     };
+
+    let port;
+    if (platform === 'instagram') {
+      port = 3001;
+    } else if (platform === 'facebook') {
+      port = 3002;
+    } else if (platform === 'x') {
+      port = 3003;
+    } else {
+      console.error('Unsupported platform:', platform);
+      alert('Unsupported platform. Please choose Instagram, Facebook, or X.');
+      return;
+    }
 
     setIsLoading(true);
 
     try {
-      console.log('Payload being sent:', payload);
-      const response1 = await fetch('http://localhost:3001/instagramProfile', {
+      console.log(`Payload being sent to platform ${platform}:`, payload);
+      const response1 = await fetch(`http://localhost:${port}/${platform}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -39,10 +66,10 @@ const Services = () => {
       });
 
       if (!response1.ok) {
-        throw new Error(`First request failed: ${response1.statusText}`);
+        throw new Error(`First request failed for ${platform}: ${response1.statusText}`);
       }
 
-      const response2 = await fetch('http://localhost:3002/instagramPosts', {
+      const response2 = await fetch(`http://localhost:${port}/${platform}Posts`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -51,18 +78,20 @@ const Services = () => {
       });
 
       if (!response2.ok) {
-        throw new Error(`Second request failed: ${response2.statusText}`);
+        throw new Error(`Second request failed for ${platform}: ${response2.statusText}`);
       }
 
       alert('User Submitted Successfully');
       tagInputElement.value = '';
+      passwordInputElement.value = ''; // Clear the password input after submission
     } catch (error) {
-      console.error('Error submitting tags:', error);
+      console.error(`Error submitting tags for ${platform}:`, error);
       alert('Failed to submit tags. Please try again.');
     } finally {
       setIsLoading(false);
     }
   };
+
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 relative">
@@ -117,7 +146,7 @@ const Services = () => {
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" 
             />
             <input 
-              type="password" 
+              type="instagramPassword" 
               placeholder="Enter Instagram password" 
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" 
             />
@@ -162,7 +191,7 @@ const Services = () => {
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
             />
             <input 
-              type="password" 
+              type="xPassword" 
               placeholder="Enter X password" 
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500" 
             />
@@ -187,7 +216,7 @@ const Services = () => {
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" 
             />
             <input 
-              type="password" 
+              type="telegramPassword" 
               placeholder="Enter Telegram password" 
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400" 
             />
@@ -212,7 +241,7 @@ const Services = () => {
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" 
             />
             <input 
-              type="password" 
+              type="facebookPassword" 
               placeholder="Enter Facebook password" 
               className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600" 
             />

@@ -1,11 +1,10 @@
 import { Log, PlaywrightCrawler } from 'crawlee';
-import { insertInstagramFollowers, insertInstagramFollowing, uploadScreenshotToMongo, insertInstagramScreenshotReference  } from './mongoUtils.js'; // Use ESM import
+import { insertInstagramFollowers, insertInstagramFollowing, uploadScreenshotToMongo, insertInstagramScreenshotReference  } from '../mongoUtils.js'; // Use ESM import
 import { Page } from 'playwright';
 import { promises as fs, PathLike } from 'fs';
-const username = process.argv[2];
-const password = process.argv[3];
+
 import path from 'path'; // To handle file paths
-const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: string | undefined) => {
+const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: string) => {
     try {
         // Navigate to Instagram Direct Inbox
         log.info('Navigating to Instagram Direct Inbox.');
@@ -22,7 +21,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
             const chatItems = document.querySelectorAll('div[role="listitem"]');
             return Array.from(chatItems).map(item => {
                 const usernameElement = item.querySelector('span.x1lliihq.x193iq5w.x6ikm8r.x10wlt62.xlyipyv.xuxw1ft');
-                return usernameElement ? usernameElement.textContent.trim() : 'null';
+                return usernameElement ? usernameElement.textContent!.trim() : 'null';
             }).filter(Boolean); // Remove any null or undefined usernames
         });
 
@@ -39,7 +38,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
                 const chatItems = document.querySelectorAll('div[role="listitem"]');
                 for (const item of chatItems) {
                     const usernameElement = item.querySelector('span.x1lliihq.x193iq5w.x6ikm8r.x10wlt62.xlyipyv.xuxw1ft');
-                    if (usernameElement && usernameElement.textContent.trim() === usernameToClick) {
+                    if (usernameElement && usernameElement.textContent!.trim() === usernameToClick) {
                         (item as HTMLElement).click();
                         return true;
                     }
@@ -48,7 +47,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
             }, chatUsername);
 
             if (!chatClicked) {
-                log.warn(`Could not find or click chat with ${chatUsername}. Skipping.`);
+                console.log(`Could not find or click chat with ${chatUsername}. Skipping.`);
                 continue;
             }
 
@@ -114,7 +113,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
 
             // Upload the screenshot to MongoDB
             const uploadResult = await uploadScreenshotToMongo(username as string, screenshotPath, 'message');
-            await insertInstagramScreenshotReference(username, `timeline_${i}`, result.fileId);
+            await insertInstagramScreenshotReference(username, `message`, result.fileId);
             log.info(uploadResult.message);
 
             // Add a short delay to avoid spamming
@@ -169,7 +168,7 @@ const captureTimelineScreenshots = async (page: Page, log: Log, username: string
     }
 };
 
-const scraper = async () => {
+export const InstaScraper = async (username:string,password:string) => {
     let isLoggedIn = false;  // Variable to track login status
 
 
@@ -325,5 +324,3 @@ const scraper = async () => {
 
     await crawler.run([{ url: `https://www.instagram.com/${username}/`}]);
 };
-
-scraper();

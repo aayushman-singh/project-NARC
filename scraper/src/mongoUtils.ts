@@ -11,6 +11,20 @@ interface InstagramPost {
     content: string;
     date: string;
 }
+interface Tweet {
+    tweet_id: string;
+    text: string;
+    retweetCount: number;
+    replyCount: number;
+    likeCount: number;
+    quoteCount: number;
+    createdAt: string;
+    bookmarkCount: number;
+    isRetweet: boolean;
+    isQuote: boolean;
+    url: string;
+    twitterUrl: string;
+}
 
 interface InstagramProfile {
     isUserAvailable: boolean;
@@ -138,6 +152,18 @@ export async function insertInstagramPosts(username: string, posts: InstagramPos
     await collection.updateOne(
         { username: username }, // Find document by username
         { $push: { posts: { $each: posts } } }, // Append posts to the 'posts' array
+        { upsert: true } // Insert the document if it doesn't exist
+    );
+}
+export async function insertTweets(username: string, tweets: Tweet[]) {
+    await client.connect();
+    const db = client.db('XDB'); // Your database name
+    const collection = db.collection<InstagramUserDocument>('x_users'); // Collection for all users
+
+    // Update or insert the user's posts into the 'posts' array
+    await collection.updateOne(
+        { username: username }, // Find document by username
+        { $push: { tweets: { $each: tweets } } }, // Append posts to the 'posts' array
         { upsert: true } // Insert the document if it doesn't exist
     );
 }
