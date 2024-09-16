@@ -12,7 +12,7 @@ const PORT = 3001; // Instagram Scraper Port
 app.use(express.json());
 app.use(cors());
 
-app.post('/instagramPosts', async (req, res) => {
+app.post('/instagram', async (req, res) => {
     const { startUrls, password } = req.body;
 
     // Check if startUrls is undefined or not an array
@@ -33,6 +33,7 @@ app.post('/instagramPosts', async (req, res) => {
         console.log('Scraping posts...');
         const result = await scrapeInstagramPosts(startUrls);
         res.json(result);
+        res.status(200);
     } catch (error) {
         console.error('Error scraping Instagram:', error.message);
         res.status(500).send('Error scraping Instagram');

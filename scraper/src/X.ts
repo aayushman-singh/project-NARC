@@ -11,7 +11,7 @@ app.use(express.json());
 const port = 3003;
 
 // Define a route to trigger the scraping
-app.get('/X', async (req, res) => {
+app.get('/x', async (req, res) => {
     const { startUrls, password } = req.body;
 
     // Check if startUrls is undefined or not an array
@@ -29,7 +29,7 @@ app.get('/X', async (req, res) => {
         console.log('Starting tweets scraping..')
         await XTweets(startUrls)
         res.send('Tweets scraped successfully.');
-        
+        res.status(200);
     } catch (error) {
         console.error('Error during scraping:', error);
         res.status(500).send('Scraping failed.');
@@ -38,5 +38,5 @@ app.get('/X', async (req, res) => {
 
 // Start the Express server
 app.listen(port, () => {
-    console.log(`Server is running on http://localhost:${port}`);
+    console.log(`x is running on http://localhost:${port}`);
 });
