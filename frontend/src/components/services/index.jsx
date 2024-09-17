@@ -69,17 +69,7 @@ const Services = () => {
         throw new Error(`First request failed for ${platform}: ${response1.statusText}`);
       }
 
-      const response2 = await fetch(`http://localhost:${port}/${platform}Posts`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(payload),
-      });
-
-      if (!response2.ok) {
-        throw new Error(`Second request failed for ${platform}: ${response2.statusText}`);
-      }
+      
 
       alert('User Submitted Successfully');
       tagInputElement.value = '';
