@@ -74,7 +74,7 @@ const Header = () => {
              
                {/* Redirect to OSINT Tools Page */}
                <Link
-                 to="/services/osint-tools"
+                 to="/osint"
                  className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
                  onClick={() => setDropdownOpen(false)} // Close dropdown on click
                >
@@ -83,7 +83,7 @@ const Header = () => {
              
                {/* Redirect to Past Data Page */}
                <Link
-                 to="/services/past-data"
+                 to="/pastData"
                  className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
                  onClick={() => setDropdownOpen(false)} // Close dropdown on click
                >
