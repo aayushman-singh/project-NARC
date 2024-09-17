@@ -1,10 +1,15 @@
-import  { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { InstagramLogo, WhatsappLogo, FacebookLogo, TelegramLogo, TwitterLogo } from 'phosphor-react';
 import './style.css';
+
+// Import the JSON data
+import instagramData from '../data/Instagram.json';
 
 const Services = () => {
   const [activeSection, setActiveSection] = useState('');
   const [isLoading, setIsLoading] = useState(false);
+  const [showDetails, setShowDetails] = useState(false);
+  const [userData, setUserData] = useState(null);
 
   const handleSectionClick = (section) => {
     setActiveSection((prev) => (prev === section ? '' : section));
@@ -82,10 +87,27 @@ const Services = () => {
     }
   };
 
+  const handleShowDetails = () => {
+    const username = document.getElementById('instagramInput').value;
+    const user = instagramData.Instagram.instagram.find(u => u.username === username);
+    if (user) {
+      setUserData(user);
+      setShowDetails(true);
+    } else {
+      alert('User not found');
+    }
+  };
+
+  const DetailSection = ({ title, content }) => (
+    <div className="bg-gray-700 p-4 rounded-md mt-4">
+      <h3 className="text-xl font-bold mb-2">{title}</h3>
+      {content}
+    </div>
+  );
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 relative">
-      {isLoading && (
+        {isLoading && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
@@ -102,10 +124,11 @@ const Services = () => {
           <span className={`text-lg ${activeSection === 'instagram' ? 'text-pink-500' : 'text-gray-400'}`}>Instagram</span>
         </button>
         
-        <button onClick={() => handleSectionClick('whatsapp')} className="flex items-center space-x-2">
-          <WhatsappLogo size={32} color={activeSection === 'whatsapp' ? '#25D366' : '#ccc'} />
-          <span className={`text-lg ${activeSection === 'whatsapp' ? 'text-green-500' : 'text-gray-400'}`}>WhatsApp</span>
+        <button onClick={() => handleSectionClick('facebook')} className="flex items-center space-x-2">
+          <FacebookLogo size={32} color={activeSection === 'facebook' ? '#3b5998' : '#ccc'} />
+          <span className={`text-lg ${activeSection === 'facebook' ? 'text-blue-600' : 'text-gray-400'}`}>Facebook</span>
         </button>
+       
         
         <button onClick={() => handleSectionClick('x')} className="flex items-center space-x-2">
           <TwitterLogo size={32} color={activeSection === 'x' ? '#1DA1F2' : '#ccc'} />
@@ -116,42 +139,118 @@ const Services = () => {
           <TelegramLogo size={32} color={activeSection === 'telegram' ? '#0088cc' : '#ccc'} />
           <span className={`text-lg ${activeSection === 'telegram' ? 'text-blue-400' : 'text-gray-400'}`}>Telegram</span>
         </button>
-
-        <button onClick={() => handleSectionClick('facebook')} className="flex items-center space-x-2">
-          <FacebookLogo size={32} color={activeSection === 'facebook' ? '#3b5998' : '#ccc'} />
-          <span className={`text-lg ${activeSection === 'facebook' ? 'text-blue-600' : 'text-gray-400'}`}>Facebook</span>
+        <button onClick={() => handleSectionClick('whatsapp')} className="flex items-center space-x-2">
+          <WhatsappLogo size={32} color={activeSection === 'whatsapp' ? '#25D366' : '#ccc'} />
+          <span className={`text-lg ${activeSection === 'whatsapp' ? 'text-green-500' : 'text-gray-400'}`}>WhatsApp</span>
         </button>
+        
       </div>
 
-      {/* Section Content */}
-      <div className="space-y-8">
-        {/* Instagram Section */}
-        {activeSection === 'instagram' && (
-          <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-            <h2 className="text-2xl font-bold text-pink-500">Instagram</h2>
-            <input 
-              type="text"
-              id="instagramInput"
-              placeholder="Enter Instagram username" 
-              className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" 
-            />
-            <input 
-              type="password" id = "instagramPassword"  
-              placeholder="Enter Instagram password" 
-              className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" 
-            />
+      {/* Instagram Section */}
+      {activeSection === 'instagram' && (
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-pink-500">Instagram</h2>
+          <input 
+            type="text"
+            id="instagramInput"
+            placeholder="Enter Instagram username" 
+            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" 
+          />
+          <input 
+            type="password" 
+            id="instagramPassword"  
+            placeholder="Enter Instagram password" 
+            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500" 
+          />
+          <div className="flex space-x-4 mt-4">
             <button 
               onClick={() => handleSubmit('instagram')} 
-              className="mt-4 bg-pink-500 text-white px-6 py-2 rounded-md hover:bg-pink-600 disabled:opacity-50"
+              className="bg-pink-500 text-white px-6 py-2 rounded-md hover:bg-pink-600 disabled:opacity-50"
               disabled={isLoading}
             >
               Submit
             </button>
+            <button 
+              onClick={handleShowDetails} 
+              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+            >
+              Show Details
+            </button>
           </div>
-        )}
 
-        {/* WhatsApp Section */}
-        {activeSection === 'whatsapp' && (
+          {showDetails && userData && (
+            <div className="mt-8">
+              <DetailSection 
+                title="Profile" 
+                content={
+                  <div>
+                    <p>Username: {userData.username}</p>
+                    <p>Full Name: {userData.full_name}</p>
+                    <p>Followers: {userData.followers}</p>
+                    <p>Following: {userData.following}</p>
+                    <p>Bio: {userData.biography}</p>
+                  </div>
+                }
+              />
+              <DetailSection 
+                title="Posts" 
+                content={
+                  <div>
+                    {userData.posts.map((post, index) => (
+                      <div key={index} className="mb-4">
+                        <p>Post ID: {post.post_id}</p>
+                        <img src={post.post_image} alt={`Post ${index + 1}`} className="w-full max-w-md my-2" />
+                        <p>Caption: {post.caption}</p>
+                      </div>
+                    ))}
+                  </div>
+                }
+              />
+              <DetailSection 
+                title="Timeline" 
+                content={
+                  <div>
+                    {userData.timeline_screenshots.map((screenshot, index) => (
+                      <div key={index}>
+                        <p>Timeline ID: {screenshot.timeline_id}</p>
+                        {screenshot.screenshot_file ? (
+                          <img src="scraper\timeline_aayushman3260_1.png" alt={`Timeline ${index + 1}`} className="w-full max-w-md my-2" />
+                        ) : (
+                          <p>Screenshot not available</p>
+                        )}
+                      </div>
+                    ))}
+                  </div>
+                }
+              />
+              <DetailSection 
+                title="Messages" 
+                content={
+                  <p>Message screenshots are not available in the provided data.</p>
+                }
+              />
+               {/* Export Buttons - Show only when details are visible */}
+            <div className="flex justify-between mt-12 space-x-4">
+              <button className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600">
+                Export to CSV
+              </button>
+              <button className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600">
+                Export to PDF
+              </button>
+              <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600">
+                Export to Drive
+              </button>
+              <button className="bg-yellow-500 text-white px-6 py-2 rounded-md hover:bg-yellow-600">
+                Export to Blockchain
+              </button>
+            </div>
+            </div>
+          )}
+        </div>
+      )}
+
+       {/* WhatsApp Section */}
+       {activeSection === 'whatsapp' && (
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
             <h2 className="text-2xl font-bold text-green-500">WhatsApp</h2>
             <input 
@@ -243,9 +342,11 @@ const Services = () => {
               Submit
             </button>
           </div>
+          
         )}
+        
       </div>
-    </div>
+  
   );
 };
 

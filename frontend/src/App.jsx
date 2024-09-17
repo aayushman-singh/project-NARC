@@ -4,7 +4,8 @@ import Services from "./components/services";
 import Header from "./components/header";
 import Home from "./components/home";
 import Services1 from "./components/servicesMain";
-
+import SearchPage from "./components/servicesOsint";
+import InstagramDataDisplay from "./components/pastData";
 
 import { AuthProvider } from "./contexts/authContext";
 import { useRoutes } from "react-router-dom";
@@ -34,6 +35,14 @@ function App() {
     {
       path: "/services1",
       element: <Services1 />,
+    },
+    {
+      path: "/osint",
+      element: <SearchPage />,
+    },
+    {
+      path: "/pastData",
+      element: <InstagramDataDisplay />,
     }
   ];
 

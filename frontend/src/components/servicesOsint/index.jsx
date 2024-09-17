@@ -28,27 +28,43 @@ const SearchPage = () => {
   };
 
   return (
-    <div>
-      <h1>Maigret Search</h1>
-      <form onSubmit={handleSearch}>
+    <div className="min-h-screen bg-gray-900 text-white p-8 flex flex-col items-center justify-center">
+      <h1 className="text-3xl font-bold mb-8 text-center">Maigret Search</h1>
+
+      <form 
+        onSubmit={handleSearch} 
+        className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md"
+      >
         <input
           type="text"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
           placeholder="Enter a username"
           required
+          className="w-full p-3 mb-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-300"
         />
-        <button type="submit">Search</button>
+        <button
+          type="submit"
+          className="w-full bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+          disabled={loading}
+        >
+          Search
+        </button>
       </form>
 
-      {loading && <p>Loading...</p>}
-      {error && <p>Error: {error}</p>}
-      {results && (
-        <div>
-          <h3>Results for {username}:</h3>
-          <pre>{JSON.stringify(results, null, 2)}</pre>
-        </div>
-      )}
+      {/* Loading, error, and results */}
+      <div className="mt-6 w-full max-w-md">
+        {loading && <p className="text-center text-gray-400">Loading...</p>}
+        {error && <p className="text-center text-red-500">Error: {error}</p>}
+        {results && (
+          <div className="bg-gray-800 p-6 rounded-lg shadow-lg mt-4">
+            <h3 className="text-xl font-bold mb-4 text-blue-500">Results for {username}:</h3>
+            <pre className="text-gray-300 bg-gray-700 p-4 rounded-md overflow-x-auto">
+              {JSON.stringify(results, null, 2)}
+            </pre>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
