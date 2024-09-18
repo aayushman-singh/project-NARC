@@ -40,11 +40,22 @@ const GlassCard = ({ title, children }) => (
   </div>
 );
 
-const TeamMember = ({ name, role, description }) => (
-  <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-6 border border-white border-opacity-20 text-center">
-    <h3 className="text-2xl font-semibold text-white mb-2">{name}</h3>
-    <p className="text-lg text-blue-400 mb-2">{role}</p>
-    <p className="text-gray-300">{description}</p>
+const TeamMember = ({ name, role, description, image }) => (
+  <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-4 border border-white border-opacity-20 text-center w-64"> {/* Fixed width for the card */}
+    {/* Image Container */}
+    <div className="relative w-[102.04px] h-[160px] mx-auto mb-4"> {/* Fixed dimensions for the image container */}
+      <img
+        src={image}
+        alt={`${name}'s profile`}
+        className="absolute top-0 left-0 w-full h-full object-cover rounded-sm"
+      />
+    </div>
+    
+    <h3 className="text-lg font-semibold text-white mb-1">{name}</h3> {/* Adjusted text size */}
+    <p className="text-sm text-blue-400 mb-2">{role}</p> {/* Adjusted text size */}
+    
+    {/* Optional description */}
+    <p className="text-xs text-white">{description}</p> {/* Adjusted text size */}
   </div>
 );
 
@@ -145,8 +156,36 @@ const Home = () => {
           <p className="text-lg text-gray-300 max-w-4xl text-center mx-auto mb-12">
             Our team consists of cybersecurity experts, data scientists, and investigators with years of experience in digital forensics. They are committed to ensuring that Tattletale remains the top choice for online crime investigations.
           </p>
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-           
+          <div className="flex gap-8">
+          <TeamMember
+              name="Aayushman Singh"
+              role="Developer (Backend)"
+              image="/images/teamMembers/aayushman.jpeg"
+            />
+            <TeamMember
+              name="Arpit Kukreti"
+              role="Developer (Frontend)"
+              image="/images/teamMembers/arpit.jpeg"
+            />
+            <TeamMember
+              name="Kartik Kandpal"
+             role="Developer (Frontend)"
+              image="/images/teamMembers/kartik.jpeg"
+            /><TeamMember
+            name="Abdul Ahad"
+            role="Developer (Machine Learning)"
+           image="/images/teamMembers/abdul.jpeg"
+          />
+          <TeamMember
+            name="Arpita"
+            role="Designer and Content Manager"
+            image="/images/teamMembers/arpita.jpeg"
+          />
+          <TeamMember
+            name="Rishabh Bajpai"
+            role="Designer and Video Editor"
+           image="/images/teamMembers/rishab.jpeg"
+          />
           </div>
         </div>
       </section>

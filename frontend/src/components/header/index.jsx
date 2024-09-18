@@ -21,12 +21,25 @@ const Header = () => {
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 h-16 bg-black/30 backdrop-blur-lg shadow-lg flex justify-between items-center px-8 transition-all duration-300">
-      {/* Logo Section */}
+    {/* Logo Section */}
+    <div className="flex items-center space-x-1"> {/* Flex container for alignment */}
+      {/* Image Logo */}
+      <Link to="/home">
+        <img
+          src="/images/logo/logo.png" // Replace with the actual path to your logo image
+          alt="Logo"
+          className="h-10" // Adjust the height as needed
+        />
+      </Link>
+      
+      {/* Text Logo */}
       <div className="text-2xl font-bold text-white font-montserrat cursor-pointer">
         <Link to="/home" smooth={true} duration={500} className="hover:text-blue-400 transition-colors">
           tattletale
         </Link>
       </div>
+    </div>
+  
 
       {/* Navigation Links */}
       <div className="flex items-center space-x-6 relative">
