@@ -74,7 +74,7 @@ const InstagramDataDisplay = () => {
         <div className="text-center mt-12">
           <a
             href="#"
-            className="inline-block px-8 py-4 text-lg font-semibold bg-blue-600 bg-opacity-50 rounded-full hover:bg-opacity-75 transition-all"
+            className="inline-block text-white px-7 py-3 text-lg font-semibold bg-blue-600 bg-opacity-50 rounded-full hover:bg-opacity-75 transition-all"
           >
             Explore More Data
           </a>

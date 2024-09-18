@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
-import { InstagramLogo, WhatsappLogo, FacebookLogo, TelegramLogo, TwitterLogo } from 'phosphor-react';
+import { InstagramLogo, WhatsappLogo, FacebookLogo, TelegramLogo, TwitterLogo, FileCsv, FilePdf,CloudArrowUp, Coins } from 'phosphor-react';
+
 import './style.css';
 
 // Import the JSON data
@@ -210,40 +211,61 @@ const Services = () => {
                 title="Timeline" 
                 content={
                   <div>
-                    {userData.timeline_screenshots.map((screenshot, index) => (
-                      <div key={index}>
-                        <p>Timeline ID: {screenshot.timeline_id}</p>
-                        {screenshot.screenshot_file ? (
-                          <img src="scraper\timeline_aayushman3260_1.png" alt={`Timeline ${index + 1}`} className="w-full max-w-md my-2" />
-                        ) : (
-                          <p>Screenshot not available</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
+  {userData.timeline_screenshots.map((screenshot, index) => (
+    <div key={index}>
+      <p>Timeline ID: {screenshot.timeline_id}</p>
+      
+        <img
+          src={`/images/timeline/timeline_aayushman3260_${index + 1}.png`} // Dynamically generate the file name based on the index
+          alt={`Timeline ${index + 1}`}
+          className="w-full max-w-2xl my-2"
+        />
+     
+    </div>
+  ))}
+</div>
+
+
                 }
               />
               <DetailSection 
-                title="Messages" 
+                title="messages" 
                 content={
-                  <p>Message screenshots are not available in the provided data.</p>
+                  <DetailSection 
+                title="messages" 
+                content={
+                  <img
+                  src={`/images/screenshot/instagram_direct_first_message.png`} // Access the image from public/images/screenshot
+                  
+                  className="w-full max-w-2xl h-auto my-2" // Adjust size as needed
+                />
                 }
               />
+                }
+              />
+             
                {/* Export Buttons - Show only when details are visible */}
-            <div className="flex justify-between mt-12 space-x-4">
-              <button className="bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600">
-                Export to CSV
-              </button>
-              <button className="bg-red-500 text-white px-6 py-2 rounded-md hover:bg-red-600">
-                Export to PDF
-              </button>
-              <button className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600">
-                Export to Drive
-              </button>
-              <button className="bg-yellow-500 text-white px-6 py-2 rounded-md hover:bg-yellow-600">
-                Export to Blockchain
-              </button>
-            </div>
+               <div className="flex mt-12 space-x-2">
+      <button className="flex items-center space-x-2 bg-green-200 text-green-700 px-4 py-2 rounded-md hover:bg-green-300 transition-colors">
+        <FileCsv size={24} weight="bold" />
+        <span className="text-md font-semibold">Export to CSV</span>
+      </button>
+
+      <button className="flex items-center space-x-2 bg-red-200 text-red-700 px-4 py-2 rounded-md hover:bg-red-300 transition-colors">
+        <FilePdf size={24} weight="bold" />
+        <span className="text-md font-semibold">Export to PDF</span>
+      </button>
+
+      <button className="flex items-center space-x-2 bg-blue-200 text-blue-700 px-4 py-2 rounded-md hover:bg-blue-300 transition-colors">
+        <CloudArrowUp size={24} weight="bold" />
+        <span className="text-md font-semibold">Export to Drive</span>
+      </button>
+
+      <button className="flex items-center space-x-2 bg-yellow-200 text-yellow-700 px-4 py-2 rounded-md hover:bg-yellow-300 transition-colors">
+        <Coins size={24} weight="bold" />
+        <span className="text-md font-semibold">Export to Blockchain</span>
+      </button>
+    </div>
             </div>
           )}
         </div>

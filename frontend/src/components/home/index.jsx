@@ -70,6 +70,14 @@ const Home = () => {
           <GlassButton to="about">
             Learn More
           </GlassButton>
+          <div className="text-center mt-8">
+            <a
+              href="/services1"
+              className="inline-block px-7 py-3 text-lg font-semibold bg-blue-600 bg-opacity-50 rounded-full hover:bg-opacity-75 transition-all"
+            >
+              Explore Services
+            </a>
+          </div>
         </div>
       </section>
 
