@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { insertInstagramProfile } from '../mongoUtils';  // Assuming this is your MongoDB utility function
+import { insertInstagramProfile } from '../../mongoUtils';  // Assuming this is your MongoDB utility function
 
 // Exported async function
 export async function scrapeInstagramProfiles(startUrls: string[]) {

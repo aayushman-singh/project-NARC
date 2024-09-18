@@ -1,18 +1,18 @@
 // Express server file (e.g., server.ts or app.ts)
 import express from 'express';
 import cors from 'cors';
-import { scrapeFacebookProfile } from './Facebook/FacebookProfile';
-import { scrapeFacebookPosts } from './Facebook/FacebookPosts';  // Import the new function
+import { scrapeInstagramProfiles } from './helpers/InstagramProfile.js';
+import { scrapeInstagramPosts } from './helpers/InstagramPosts.js';  // Import the new function
+import { InstaScraper } from './helpers/InstaScraper.js';
 import { start } from 'repl';
-import { scrapeFacebook } from './Facebook/FacebookTimeline.js';
 
 const app = express();
-const PORT = 3002; 
+const PORT = 3001; // Instagram Scraper Port
 
 app.use(express.json());
 app.use(cors());
 
-app.post('/facebook', async (req, res) => {
+app.post('/instagram', async (req, res) => {
     const { startUrls, password } = req.body;
 
     // Check if startUrls is undefined or not an array
@@ -23,23 +23,23 @@ app.post('/facebook', async (req, res) => {
 
     try {
         console.log('Scraping profiles...');
-        await scrapeFacebookProfile(startUrls);  
+        await scrapeInstagramProfiles(startUrls);  
 
         console.log('Scraping followers and following...');
 
         for (const username of startUrls) {
-            await scrapeFacebook(username, password);
+            await InstaScraper(username, password);
         }
         console.log('Scraping posts...');
-        const result = await scrapeFacebookPosts(startUrls);
+        const result = await scrapeInstagramPosts(startUrls);
         res.json(result);
         res.status(200);
     } catch (error) {
-        console.error('Error scraping Facebook:', error.message);
-        res.status(500).send('Error scraping Facebook');
+        console.error('Error scraping Instagram:', error.message);
+        res.status(500).send('Error scraping Instagram');
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`Facebook scraper listening on port ${PORT}`);
+    console.log(`Instagram scraper listening on port ${PORT}`);
 });
