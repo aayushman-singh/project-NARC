@@ -4269,7 +4269,7 @@ front-matter@^4.0.2:
   dependencies:
     js-yaml "^3.13.1"
 
-"frontend@file:C:\\Users\\asus\\project-NARC\\frontend":
+"frontend@file:S:\\Repo\\SIH\\project-NARC\\frontend":
   version "0.0.0"
   resolved "file:frontend"
   dependencies:
@@ -4278,6 +4278,7 @@ front-matter@^4.0.2:
     "@fortawesome/react-fontawesome" "^0.2.2"
     "@phosphor-icons/react" "^2.1.5-alpha.3"
     firebase "^10.13.1"
+    lucide-react "^0.441.0"
     phosphor-react "^1.4.1"
     react "^18.3.1"
     react-dom "^18.3.1"
@@ -7889,7 +7890,7 @@ scheduler@^0.23.2:
   dependencies:
     loose-envify "^1.1.0"
 
-"scraper@file:C:\\Users\\asus\\project-NARC\\scraper":
+"scraper@file:S:\\Repo\\SIH\\project-NARC\\scraper":
   version "0.0.1"
   resolved "file:scraper"
   dependencies:
