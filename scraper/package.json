@@ -26,7 +26,7 @@
         "start": "npm run start:dev",
         "start:scrap": "tsx src/scraper.ts",
         "start:Meta": "tsx src/Meta.ts",
-        "start:X1": "tsx src/Xtimeline.ts",
+        "start:X": "tsx src/X.ts",
         "start:prof": "tsx src/InstagramProfile.ts",
         "start:post": "tsx src/InstagramPosts.ts",
         "build": "tsc",
