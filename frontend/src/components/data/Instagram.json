@@ -157,18 +157,6 @@
                     {
                         "timeline_id": "screenshotNumber",
                         "screenshot": "Cannot decode integer type. No valid image found."
-                    },
-                    {
-                        "timeline_id": "screenshotBase64",
-                        "screenshot_file": "screenshot_decoded_screenshotBase64.png"
-                    },
-                    {
-                        "timeline_id": "screenshotNumber",
-                        "screenshot": "Cannot decode integer type. No valid image found."
-                    },
-                    {
-                        "timeline_id": "screenshotBase64",
-                        "screenshot_file": "screenshot_decoded_screenshotBase64.png"
                     }
                 ]
             }

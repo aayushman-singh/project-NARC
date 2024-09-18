@@ -23,9 +23,9 @@ const Header = () => {
     <nav className="fixed top-0 left-0 w-full z-50 h-16 bg-black/30 backdrop-blur-lg shadow-lg flex justify-between items-center px-8 transition-all duration-300">
       {/* Logo Section */}
       <div className="text-2xl font-bold text-white font-montserrat cursor-pointer">
-        <ScrollLink to="home" smooth={true} duration={500} className="hover:text-blue-400 transition-colors">
+        <Link to="/home" smooth={true} duration={500} className="hover:text-blue-400 transition-colors">
           tattletale
-        </ScrollLink>
+        </Link>
       </div>
 
       {/* Navigation Links */}
