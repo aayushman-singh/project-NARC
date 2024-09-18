@@ -1,0 +1,30 @@
+{
+  "builds": [
+    {
+      "src": "src/Instagram.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "src/X.ts",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "src/Facebook.ts",
+      "use": "@vercel/node"
+    }
+  ],
+  "routes": [
+    {
+      "src": "/api/instagram/(.*)",
+      "dest": "/src/Instagram.ts"
+    },
+    {
+      "src": "/api/x/(.*)",
+      "dest": "/src/X.ts"
+    },
+    {
+      "src": "/api/facebook/(.*)",
+      "dest": "/src/Facebook.ts"
+    }
+  ]
+}

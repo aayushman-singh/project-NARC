@@ -22,13 +22,11 @@
         "typescript": "~5.3.0"
     },
     "scripts": {
-        "dev": "ts-node InstagramPosts.ts",
+        "dev": "tsx src/Instagram.ts",
         "start": "npm run start:dev",
-        "start:scrap": "tsx src/scraper.ts",
-        "start:Meta": "tsx src/Meta.ts",
+        "start:Instagram": "tsx src/Instagram.ts",
+        "start:Facebook": "tsx src/Facebook.ts",
         "start:X": "tsx src/X.ts",
-        "start:prof": "tsx src/InstagramProfile.ts",
-        "start:post": "tsx src/InstagramPosts.ts",
         "build": "tsc",
         "test": "echo \"Error: oops, the actor has no tests yet, sad!\" && exit 1"
     },
