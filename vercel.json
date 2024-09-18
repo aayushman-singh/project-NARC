@@ -1,0 +1,42 @@
+{
+    "builds": [
+      {
+        "src": "frontend/package.json",
+        "use": "@vercel/static-build",
+        "config": {
+          "distDir": "frontend/dist"
+        }
+      },
+      {
+        "src": "scraper/src/X/index.ts",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "scraper/src/Instagram/index.ts",
+        "use": "@vercel/node"
+      },
+      {
+        "src": "scraper/src/Facebook/index.ts",
+        "use": "@vercel/node"
+      }
+    ],
+    "routes": [
+      {
+        "src": "/api/x/(.*)",
+        "dest": "/scraper/src/X/index.ts"
+      },
+      {
+        "src": "/api/instagram/(.*)",
+        "dest": "/scraper/src/Instagram/index.ts"
+      },
+      {
+        "src": "/api/facebook/(.*)",
+        "dest": "/scraper/src/Facebook/index.ts"
+      },
+      {
+        "src": "/(.*)",
+        "dest": "/frontend/dist/index.html"
+      }
+    ]
+  }
+  
