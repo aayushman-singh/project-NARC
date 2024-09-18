@@ -193,20 +193,26 @@ const Services = () => {
                   </div>
                 }
               />
-              <DetailSection 
-                title="Posts" 
-                content={
-                  <div>
-                    {userData.posts.map((post, index) => (
-                      <div key={index} className="mb-4">
-                        <p>Post ID: {post.post_id}</p>
-                        <img src={post.post_image} alt={`Post ${index + 1}`} className="w-full max-w-md my-2" />
-                        <p>Caption: {post.caption}</p>
-                      </div>
-                    ))}
-                  </div>
-                }
-              />
+             <DetailSection 
+  title="Posts" 
+  content={
+    <div>
+      {userData.posts.map((post, index) => (
+        <div key={index} className="mb-4 border border-gray-300 p-4 rounded-lg">
+          <p>Post ID: {post.post_id}</p>
+          <img
+            src={`/images/post/post${index + 1}.jpg`} // Dynamically generate the file name based on the index
+            alt={`Post ${index + 1}`}
+            className="w-full max-w-2xl my-2"
+          />
+        </div>
+      ))}
+    </div>
+  }
+/>
+
+
+             
               <DetailSection 
                 title="Timeline" 
                 content={
