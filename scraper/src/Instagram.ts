@@ -1,18 +1,16 @@
-// Express server file (e.g., server.ts or app.ts)
 import express from 'express';
 import cors from 'cors';
 import { scrapeInstagramProfiles } from './Instagram/InstagramProfile.js';
 import { scrapeInstagramPosts } from './Instagram/InstagramPosts.js';  // Import the new function
 import { InstaScraper } from './Instagram/InstaScraper.js';
-import { start } from 'repl';
 
 const app = express();
-const PORT = 3001; // Instagram Scraper Port
+const PORT = process.env.PORT || 3001; // Instagram Scraper Port
 
 app.use(express.json());
 app.use(cors());
 
-app.post('/instagram', async (req, res) => {
+app.post('/', async (req, res) => {
     const { startUrls, password } = req.body;
 
     // Check if startUrls is undefined or not an array
@@ -26,17 +24,17 @@ app.post('/instagram', async (req, res) => {
         await scrapeInstagramProfiles(startUrls);  
 
         console.log('Scraping followers and following...');
-
         for (const username of startUrls) {
             await InstaScraper(username, password);
         }
+
         console.log('Scraping posts...');
         const result = await scrapeInstagramPosts(startUrls);
-        res.json(result);
-        res.status(200);
+
+        return res.status(200).json(result); // Return final response with status 200
     } catch (error) {
         console.error('Error scraping Instagram:', error.message);
-        res.status(500).send('Error scraping Instagram');
+        return res.status(500).send('Error scraping Instagram');
     }
 });
 
