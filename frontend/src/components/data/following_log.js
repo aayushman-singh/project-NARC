@@ -1,0 +1,32 @@
+const followingData = [
+  "jenniferwinget1",
+  "shivammalik09",
+  "nehakakkar",
+  "saraalikhan95",
+  "diljitdosanjh",
+  "kapilsharma",
+  "beingsalmankhan",
+  "munawar.faruqui",
+  "indiancricketteam",
+  "jannatzubair29",
+  "zeekannada",
+  "mr_faisu_07",
+  "dharmendra_bilotia_",
+  "jj_mobile_world",
+  "beingsalmankhan",
+  "jenniferwinget1",
+  "zeekannada",
+  "saraalikhan95",
+  "mr_faisu_07",
+  "indiancricketteam",
+  "munawar.faruqui",
+  "dharmendra_bilotia_",
+  "jj_mobile_world",
+  "nehakakkar",
+  "shivammalik09",
+  "diljitdosanjh",
+  "jannatzubair29",
+  "kapilsharma"
+];
+
+export default followingData;
