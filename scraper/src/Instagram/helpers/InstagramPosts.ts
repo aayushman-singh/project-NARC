@@ -1,6 +1,6 @@
 // InstagramPosts.ts
 import axios from 'axios';
-import { insertInstagramPosts } from '../mongoUtils.js';  // MongoDB utility function
+import { insertInstagramPosts } from '../../mongoUtils.js';  // MongoDB utility function
 
 // Exported function for scraping Instagram posts
 export async function scrapeInstagramPosts(startUrls: string[]) {

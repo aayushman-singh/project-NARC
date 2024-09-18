@@ -1,18 +1,18 @@
 // Express server file (e.g., server.ts or app.ts)
 import express from 'express';
 import cors from 'cors';
-import { scrapeInstagramProfiles } from './Instagram/InstagramProfile.js';
-import { scrapeInstagramPosts } from './Instagram/InstagramPosts.js';  // Import the new function
-import { InstaScraper } from './Instagram/InstaScraper.js';
+import { scrapeFacebookProfile } from './helpers/FacebookProfile.js';
+import { scrapeFacebookPosts } from './helpers/FacebookPosts.js';  // Import the new function
 import { start } from 'repl';
+import { scrapeFacebook } from './helpers/FacebookTimeline.js';
 
 const app = express();
-const PORT = 3001; // Instagram Scraper Port
+const PORT = 3002; 
 
 app.use(express.json());
 app.use(cors());
 
-app.post('/instagram', async (req, res) => {
+app.post('/facebook', async (req, res) => {
     const { startUrls, password } = req.body;
 
     // Check if startUrls is undefined or not an array
@@ -23,23 +23,23 @@ app.post('/instagram', async (req, res) => {
 
     try {
         console.log('Scraping profiles...');
-        await scrapeInstagramProfiles(startUrls);  
+        await scrapeFacebookProfile(startUrls);  
 
         console.log('Scraping followers and following...');
 
         for (const username of startUrls) {
-            await InstaScraper(username, password);
+            await scrapeFacebook(username, password);
         }
         console.log('Scraping posts...');
-        const result = await scrapeInstagramPosts(startUrls);
+        const result = await scrapeFacebookPosts(startUrls);
         res.json(result);
         res.status(200);
     } catch (error) {
-        console.error('Error scraping Instagram:', error.message);
-        res.status(500).send('Error scraping Instagram');
+        console.error('Error scraping Facebook:', error.message);
+        res.status(500).send('Error scraping Facebook');
     }
 });
 
 app.listen(PORT, () => {
-    console.log(`Instagram scraper listening on port ${PORT}`);
+    console.log(`Facebook scraper listening on port ${PORT}`);
 });

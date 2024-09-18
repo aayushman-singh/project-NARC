@@ -1,6 +1,6 @@
 // XPosts.ts
 import axios from 'axios';
-import { insertTweets } from '../mongoUtils.js';  // MongoDB utility function
+import { insertTweets } from '../../mongoUtils.js';  // MongoDB utility function
 
 // Exported function for scraping X posts
 export async function XTweets(startUrls: string[]) {

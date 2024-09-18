@@ -1,5 +1,5 @@
 import { Log, PlaywrightCrawler } from 'crawlee';
-import { insertInstagramFollowers, insertInstagramFollowing, uploadScreenshotToMongo, insertInstagramScreenshotReference  } from '../mongoUtils.js'; // Use ESM import
+import { insertInstagramFollowers, insertInstagramFollowing, uploadScreenshotToMongo, insertInstagramScreenshotReference  } from '../../mongoUtils.js'; // Use ESM import
 import { Page } from 'playwright';
 import { promises as fs, PathLike } from 'fs';
 
