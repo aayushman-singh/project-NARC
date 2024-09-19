@@ -15,7 +15,7 @@ export async function scrapeFacebook( FACEBOOK_USERNAME: string, FACEBOOK_PASSWO
   let browser: Browser | null = null;
   try {
     // Launch the browser
-    browser = await chromium.launch({ headless: false, slowMo: 500, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
+    browser = await chromium.launch({ headless: true, slowMo: 500, args: ['--no-sandbox', '--disable-setuid-sandbox'] });
     const context = await browser.newContext();
     const page: Page = await context.newPage();
 

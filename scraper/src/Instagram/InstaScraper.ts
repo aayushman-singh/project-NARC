@@ -179,7 +179,7 @@ export const InstaScraper = async (username:string,password:string) => {
 
     const crawler = new PlaywrightCrawler({
         launchContext: {
-            launchOptions: { headless: false, slowMo: 1000 }, // Non-headless mode with delay between actions
+            launchOptions: { headless: true, slowMo: 1000 }, // Non-headless mode with delay between actions
         },
         maxRequestRetries: 0,  // Disable retries
         preNavigationHooks: [
