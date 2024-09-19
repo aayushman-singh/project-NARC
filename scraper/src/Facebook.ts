@@ -5,7 +5,7 @@ import { scrapeFacebookPosts } from './Facebook/FacebookPosts';  // Import the n
 import { scrapeFacebook } from './Facebook/FacebookTimeline.js';
 
 const app = express();
-const PORT = process.env.PORT || 3002; // Facebook Scraper Port
+const PORT = Number(process.env.PORT) || 3002; // Facebook Scraper Port
 
 app.use(express.json());
 app.use(cors());
@@ -38,6 +38,6 @@ app.post('/facebook', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT,'0.0.0.0', () => {
     console.log(`Facebook scraper listening on port ${PORT}`);
 });
