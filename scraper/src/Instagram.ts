@@ -10,7 +10,7 @@ const PORT = Number(process.env.PORT) || 3001; // Instagram Scraper Port
 app.use(express.json());
 app.use(cors());
 
-app.post('/api/instagram', async (req, res) => {
+app.post('/instagram', async (req, res) => {
     const { startUrls, password } = req.body;
 
     // Check if startUrls is undefined or not an array

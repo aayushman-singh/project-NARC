@@ -10,7 +10,7 @@ app.use(express.json());
 const port = Number(process.env.PORT) || 3003; // Use Vercel's port or fallback to 3003
 
 // Define a POST route to trigger the scraping
-app.post('/', async (req, res) => {
+app.post('/x', async (req, res) => {
     const { startUrls, password } = req.body;
 
     // Check if startUrls is undefined or not an array
