@@ -37,7 +37,7 @@ const Services = () => {
       alert('Please enter the password');
       return;
     }
-
+    const baseUrl = 'http://3.109.1.248';
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     const password = passwordInputElement.value; // Get the password
@@ -69,7 +69,7 @@ const Services = () => {
 
     try {
       console.log(`Payload being sent to platform ${platform}:`, payload);
-      const response1 = await fetch(`http://localhost:${port}/${platform}`, {
+      const response1 = await fetch(`http://${baseUrl}:${port}/${platform}`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
