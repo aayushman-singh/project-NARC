@@ -37,7 +37,8 @@ const Services = () => {
       alert('Please enter the password');
       return;
     }
-    const baseUrl = 'http://3.109.1.248';
+
+    const baseUrl = '/api'; // Vercel's API route base URL
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     const password = passwordInputElement.value; // Get the password
@@ -52,13 +53,13 @@ const Services = () => {
       password: password.trim(), // Add password to the payload
     };
 
-    let port;
+    let apiEndpoint;
     if (platform === 'instagram') {
-      port = 3001;
+      apiEndpoint = `${baseUrl}/instagram`; // Vercel API route for Instagram
     } else if (platform === 'facebook') {
-      port = 3002;
+      apiEndpoint = `${baseUrl}/facebook`; // Vercel API route for Facebook
     } else if (platform === 'x') {
-      port = 3003;
+      apiEndpoint = `${baseUrl}/x`; // Vercel API route for X
     } else {
       console.error('Unsupported platform:', platform);
       alert('Unsupported platform. Please choose Instagram, Facebook, or X.');
@@ -69,7 +70,7 @@ const Services = () => {
 
     try {
       console.log(`Payload being sent to platform ${platform}:`, payload);
-      const response1 = await fetch(`http://${baseUrl}:${port}/${platform}`, {
+      const response1 = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -80,8 +81,6 @@ const Services = () => {
       if (!response1.ok) {
         throw new Error(`First request failed for ${platform}: ${response1.statusText}`);
       }
-
-
 
       alert('User Submitted Successfully');
       tagInputElement.value = '';
