@@ -7,7 +7,7 @@ const app = express();
 
 app.use(cors());
 app.use(express.json());
-const port = process.env.PORT || 3003; // Use Vercel's port or fallback to 3003
+const port = Number(process.env.PORT) || 3003; // Use Vercel's port or fallback to 3003
 
 // Define a POST route to trigger the scraping
 app.post('/', async (req, res) => {
@@ -40,6 +40,6 @@ app.post('/', async (req, res) => {
 });
 
 // Start the Express server
-app.listen(port, () => {
+app.listen(port,'0.0.0.0', () => {
     console.log(`X scraper is running on port ${port}`);
 });

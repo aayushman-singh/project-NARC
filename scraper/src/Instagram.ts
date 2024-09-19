@@ -5,7 +5,7 @@ import { scrapeInstagramPosts } from './Instagram/InstagramPosts.js';
 import { InstaScraper } from './Instagram/InstaScraper.js';
 
 const app = express();
-const PORT = process.env.PORT || 3001; // Instagram Scraper Port
+const PORT = Number(process.env.PORT) || 3001; // Instagram Scraper Port
 
 app.use(express.json());
 app.use(cors());
@@ -41,6 +41,6 @@ app.post('/api/instagram', async (req, res) => {
     }
 });
 
-app.listen(PORT, () => {
+app.listen(PORT,'0.0.0.0', () => {
     console.log(`Instagram scraper listening on port ${PORT}`);
 });
