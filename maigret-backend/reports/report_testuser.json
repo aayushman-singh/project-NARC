@@ -1,0 +1,200 @@
+myenv\Scripts\activate : File S:\Repo\SIH\project-NARC\myenv\Scripts\Activate.ps1 cannot be loaded 
+because running scripts is disabled on this system. For more information, see about_Execution_Policies 
+at https:/go.microsoft.com/fwlink/?LinkID=135170.
+At line:1 char:1
++ myenv\Scripts\activate ; maigret testuser --json ndjson
++ ~~~~~~~~~~~~~~~~~~~~~~
+    + CategoryInfo          : SecurityError: (:) [], PSSecurityException
+    + FullyQualifiedErrorId : UnauthorizedAccess
+[-] Starting a search on top 500 sites from the Maigret database...
+[!] You can run search by full list of sites with flag `-a`
+[*] Checking username testuser on:
+[+] Twitch: https://www.twitch.tv/testuser
+[+] AppleDiscussions: https://discussions.apple.com/profile/testuser
+[+] Naver: https://blog.naver.com/testuser
+[+] AppleDeveloper: https://developer.apple.com/forums/profile/testuser
+[?] StackOverflow: https://stackoverflow.com/users/filter?search=testuser
+[+] WordPress: https://testuser.wordpress.com/
+[+] TradingView: https://www.tradingview.com/u/testuser
+[+] Facebook: https://www.facebook.com/testuser
+[+] SoundCloud: [+] Trello: [+] Imgur: [+] Slack: https://testuser.slack.com
+[+] xHamster: https://xhamster.com/users/testuser
+[+] Unsplash: https://unsplash.com/@testuser
+[+] Aparat: [+] Ameblo: https://ameblo.jp/testuser
+[+] Figma: https://www.figma.com/@testuser
+[+] BuzzFeed: [+] Issuu: https://issuu.com/testuser
+[+] linktr.ee: https://linktr.ee/testuser
+[+] SourceForge: https://sourceforge.net/u/testuser/profile
+[+] Steam: [+] Mozilla Support: https://support.mozilla.org/en-US/user/testuser
+[+] Disqus: [+] giphy.com: https://giphy.com/channel/testuser
+[+] Telegram: [+] Pinterest: https://www.pinterest.com/testuser/
+[+] SlideShare: https://slideshare.net/testuser
+[+] Freelancer.com: [+] MicrosoftTechNet: https://social.technet.microsoft.com/profile/testuser/
+[+] social.msdn.microsoft.com: https://social.msdn.microsoft.com/profile/testuser
+[+] Flickr: https://www.flickr.com/photos/testuser
+[+] Ebay: https://ebay.com/usr/testuser
+[+] Roblox: https://www.roblox.com/user.aspx?username=testuser
+[+] Patreon: https://www.patreon.com/testuser
+[+] WordPressOrg: https://profiles.wordpress.org/testuser/
+[+] Behance: [+] Wattpad: https://www.wattpad.com/user/testuser
+[+] Zhihu: https://www.zhihu.com/people/testuser
+[+] My.Mail.ru@gmail.com: [+] Scribd: https://www.scribd.com/testuser
+[+] Scratch: https://scratch.mit.edu/users/testuser
+[+] GoodReads: https://www.goodreads.com/testuser
+[+] Tumblr: https://testuser.tumblr.com/
+[+] Zomato: https://www.zomato.com/pl/testuser/foodjourney
+[+] MyAnimeList: https://myanimelist.net/profile/testuser
+[+] Ultimate-Guitar: https://ultimate-guitar.com/u/testuser
+[+] note: https://note.com/testuser
+[+] DeviantART: [+] LiveJournal: [+] ChaturBate: https://chaturbate.com/testuser
+[+] Instructables: https://www.instructables.com/member/testuser
+[+] Sbnation: https://www.sbnation.com/users/testuser
+[+] Duolingo: https://www.duolingo.com/profile/testuser
+[+] Ccm: https://ccm.net/profile/user/testuser
+[+] Pikabu: https://pikabu.ru/@testuser
+[+] Championat: https://www.championat.com/user/testuser
+[+] Kaggle: https://www.kaggle.com/testuser
+[+] Ameba: https://profile.ameba.jp/ameba/testuser/
+[+] metacritic: https://www.metacritic.com/user/testuser
+[+] drive2: https://www.drive2.ru/users/testuser
+[+] profile.hatena.ne.jp: https://profile.hatena.ne.jp/testuser/
+[+] jeuxvideo: http://www.jeuxvideo.com/profil/testuser?mode=infos
+[+] Tinder: [+] Strava: https://www.strava.com/athletes/testuser
+[+] Myspace: [+] Lichess: https://lichess.org/@/testuser
+[+] Kaskus: https://www.kaskus.co.id/@testuser
+[+] Codecanyon: https://codecanyon.net/user/testuser
+[+] ArchiveOfOurOwn: https://archiveofourown.org/users/testuser
+[+] Pastebin: [+] Habr: [+] Plurk: https://www.plurk.com/testuser
+[+] Eurogamer: https://www.eurogamer.net/profiles/testuser
+[+] Rajce.net: https://testuser.rajce.idnes.cz/
+[+] ThemeForest: https://themeforest.net/user/testuser
+[+] Cbr: https://community.cbr.com/member.php?username=testuser
+[+] Tom's guide: http://forums.tomsguide.com/members/?username=testuser
+[+] last.fm: [+] Bit.ly: https://bit.ly/testuser
+[+] Freecodecamp: https://www.freecodecamp.org/forum/u/testuser/summary
+[+] TomsHardware: https://forums.tomshardware.com/members/?username=testuser
+[+] My.Mail.ru@bk.ru: [+] Bandcamp: https://www.bandcamp.com/testuser
+[+] My.Mail.ru@list.ru: [+] Flightradar24: https://my.flightradar24.com/testuser
+[+] HubPages: https://hubpages.com/@testuser
+[+] Warrior Forum: https://www.warriorforum.com/members/testuser.html
+[+] amp.flipboard.com: https://amp.flipboard.com/@testuser
+[+] Windy: https://community.windy.com/user/testuser
+[+] MixCloud: [+] My.Mail.ru@ya.ru: [+] videohive.net: https://videohive.net/user/testuser
+[+] BitBucket: [+] Wikidot: http://www.wikidot.com/user:info/testuser
+[+] Genius: https://genius.com/testuser
+[+] BodyBuilding: https://bodyspace.bodybuilding.com/testuser
+[+] My.Mail.ru@yandex.ru: [+] Letterboxd: https://letterboxd.com/testuser
+[?] community.adobe.com: https://community.adobe.com/t5/forums/searchpage/tab/user?q=testuser
+[+] Itch.io: https://testuser.itch.io/
+[+] Guru: https://www.guru.com/freelancers/testuser
+[+] My.Mail.ru@mail.ru: [+] FilmWeb: https://www.filmweb.pl/user/testuser
+[+] aminoapp: https://aminoapps.com/u/testuser
+[?] VC.ru: https://vc.ru/search/v2/subsite/relevant?query=testuser
+[+] DEV Community: https://dev.to/testuser
+[+] Eporner: https://www.eporner.com/profile/testuser/
+[+] opensource: https://opensource.com/users/testuser
+[+] TechPowerUp: https://www.techpowerup.com/forums/members/?username=testuser
+[+] BoardGameGeek: https://www.boardgamegeek.com/user/testuser
+[+] GitLab: [+] osu!: https://osu.ppy.sh/users/testuser
+[+] Virgool: https://virgool.io/@testuser
+[+] pr0gramm: [+] IFTTT: https://www.ifttt.com/p/testuser
+[+] Audiojungle: https://audiojungle.net/user/testuser
+[+] Gog: https://www.gog.com/u/testuser
+[+] NPM: https://www.npmjs.com/~testuser
+[+] LiveLib: https://www.livelib.ru/reader/testuser
+[+] OpenStreetMap: https://www.openstreetmap.org/user/testuser
+[+] Gitee: https://gitee.com/testuser
+[+] steemit: https://steemit.com/@testuser
+[+] Crossfire: https://cfire.mail.ru/forums/member.php?username=testuser
+[+] Flipboard: https://flipboard.com/@testuser
+[+] www.minds.com: https://www.minds.com/testuser
+[+] Jigsawplanet: https://www.jigsawplanet.com/testuser
+[+] forums.imore.com: https://forums.imore.com/member.php?username=testuser
+[+] BuyMeACoffee: https://buymeacoff.ee/testuser
+[+] dailykos: https://www.dailykos.com/user/testuser
+[+] YandexZenChannel [Yandex]: https://zen.yandex.ru/testuser
+[+] Cheezburger: https://profile.cheezburger.com/testuser
+[+] WikimapiaSearch: [+] forums.serebii.net: https://forums.serebii.net/members/?username=testuser
+[+] F6S: https://www.f6s.com/testuser
+[+] AllKPop: https://www.allkpop.com/profile/testuser
+[+] Lolchess: https://lolchess.gg/profile/na/testuser
+[+] Thechive: https://i.thechive.com/testuser
+[+] Fark: https://www.fark.com/users/testuser/
+[+] Venmo: https://venmo.com/testuser
+[+] Typeracer: https://data.typeracer.com/pit/profile?user=testuser
+[+] Hotcopper: https://hotcopper.com.au/search/search?type=post&users=testuser
+[+] kwork: https://kwork.ru/user/testuser
+[+] Yummly: https://mapi.yummly.com/mapi/v19/user/testuser
+[+] Truelancer: https://www.truelancer.com/freelancer/testuser
+[+] Kwejk: https://kwejk.pl/uzytkownik/testuser#/tablica/
+[+] HackerNews: https://news.ycombinator.com/user?id=testuser
+[+] Gumroad: https://www.gumroad.com/testuser
+[+] blogs.klerk.ru: https://blogs.klerk.ru/users/testuser/
+[+] Pokemon Showdown: https://pokemonshowdown.com/users/testuser
+[+] Picsart: https://picsart.com/u/testuser
+[+] VSCO: https://vsco.co/testuser
+[+] Diigo: https://www.diigo.com/interact_api/load_profile_info?name=testuser
+[+] BeerMoneyForum: https://www.beermoneyforum.com/members/?username=testuser
+[+] PerfectWorld: https://pw.mail.ru/member.php?username=testuser
+[+] Codechef: https://www.codechef.com/users/testuser
+[+] Sporcle: https://www.sporcle.com/user/testuser/people
+[+] SublimeForum: https://forum.sublimetext.com/u/testuser/summary
+[+] banki.ru: https://banki.ru/blog/testuser/
+[+] About.me: https://about.me/testuser
+[+] ifunny.co: [+] Scorcher: [+] Soloby: http://www.soloby.ru/user/testuser
+[+] Teletype: https://teletype.in/@testuser
+[+] PyPi: https://pypi.org/user/testuser
+[+] Speedrun.com: https://speedrun.com/user/testuser
+[+] Computerbase: https://www.computerbase.de/forum/members/?username=testuser
+[+] TheStudentRoom: [+] 3ddd: https://3ddd.ru/users/testuser
+[+] hashnode: https://hashnode.com/@testuser
+[+] Freesound: https://freesound.org/people/testuser/
+[+] Mix: https://mix.com/testuser
+[+] ReverbNation: https://www.reverbnation.com/testuser
+[?] TJournal: https://tjournal.ru/search/v2/subsite/relevant?query=testuser
+[+] AskFM: https://ask.fm/testuser
+[+] TheSimsResource: https://www.thesimsresource.com/members/testuser/
+[+] Kongregate: https://www.kongregate.com/accounts/testuser
+[+] Advego: https://advego.com/profile/testuser/author/
+[+] ImageShack: https://imageshack.com/user/testuser
+[+] MoneySavingExpert: https://forums.moneysavingexpert.com/profile/testuser
+[+] Diary.ru: https://testuser.diary.ru/
+[+] Smule: https://www.smule.com/testuser
+[+] interpals: https://www.interpals.net/testuser
+[+] lnk.bio: https://lnk.bio/testuser
+[+] Slides: https://slides.com/testuser
+[+] eBaumsWorld: https://www.ebaumsworld.com/user/profile/testuser
+[+] Niftygateway: https://niftygateway.com/profile/testuser
+[+] Mouthshut: https://www.mouthshut.com/testuser
+[+] Launchpad: [+] Mobypicture: http://www.mobypicture.com/user/testuser
+[+] forums.indiegala.com: https://forums.indiegala.com/members/?username=testuser
+[+] Coderwall: https://coderwall.com/testuser
+[+] Folkd: http://www.folkd.com/user/testuser
+[+] Contently: https://testuser.contently.com/
+[+] Blu-ray: https://forum.blu-ray.com/member.php?username=testuser
+[+] akniga: https://akniga.org/profile/testuser
+[+] NPM-Package: https://www.npmjs.com/package/testuser
+[+] ProductHunt: https://www.producthunt.com/@testuser
+[+] couchsurfing: https://www.couchsurfing.com/people/testuser
+[+] InfosecInstitute: https://community.infosecinstitute.com/profile/testuser
+[+] Ariva: https://www.ariva.de/profil/testuser
+[+] hi5: http://www.hi5.com/testuser
+[+] ForumHouse: https://www.forumhouse.ru/members/?username=testuser
+[+] Etxt: https://www.etxt.ru/testuser.html
+[+] DonationsAlerts: https://www.donationalerts.com/r/testuser
+[+] DTF: https://dtf.ru/search/v2/subsite/relevant?query=testuser
+[+] BabyBlog.ru: https://www.babyblog.ru/user/testuser
+[+] forums.digitalpoint.com: https://forums.digitalpoint.com/members/?username=testuser
+[+] geocaching: https://www.geocaching.com/profile/?u=testuser
+[+] MyMiniFactory: https://www.myminifactory.com/users/testuser
+[+] club.cnews.ru: https://club.cnews.ru/testuser
+[+] TRASHBOX.RU: https://trashbox.ru/users/testuser
+[+] Iphones.ru: https://www.iphones.ru/iNotes/author/testuser?profile=1
+[+] Fodors: https://www.fodors.com/community/profile/testuser/forum-activity
+[+] DigitalPoint: https://www.digitalpoint.com/members/?username=testuser
+[+] SeoClerks: https://www.seoclerks.com/user/testuser
+[+] Brusheezy: https://www.brusheezy.com/members/testuser
+[?] MirTesen: https://mirtesen.ru/people/testuser/profile
+[+] Coub: https://coub.com/testuser
+[+] forums.linuxmint.com: https://forums.linuxmint.com/search.php?author=testuser
+Maigret is interrupted.
