@@ -9,7 +9,6 @@ app.use(cors());
 app.use(express.json());
 
 const projectRoot = path.join(__dirname); // Root directory
-const venvPath = path.join(projectRoot, 'myenv', 'Scripts', 'activate'); // Virtual environment activation path
 const reportsDir = path.join(projectRoot, 'reports');
 
 // Ensure reports directory exists
@@ -17,21 +16,30 @@ if (!fs.existsSync(reportsDir)) {
   fs.mkdirSync(reportsDir, { recursive: true });
 }
 
+// Sanitize the filename to remove invalid characters for Windows
+const sanitizeFilename = (filename) => {
+  return filename.replace(/[^a-z0-9]/gi, '_').toLowerCase(); // Replace non-alphanumeric characters with underscores
+};
+
 app.post('/api/search', (req, res) => {
   const { username } = req.body;
   if (!username) {
     return res.status(400).json({ error: 'Username is required' });
   }
 
-  const jsonFilePath = path.join(reportsDir, `report_${username}.json`);
+  // Sanitize the username before using it in the filename
+  const sanitizedUsername = sanitizeFilename(username);
+  const jsonFilePath = path.join(reportsDir, `report_${sanitizedUsername}.json`);
 
   // PowerShell command to activate virtual environment and run Maigret
-  const command = `sherlock ${username} --output ${username}`;
+  const command = `maigret ${username} --json ndjson --timeout 10`;
 
   // Spawn the process to run Maigret in Windows using PowerShell
   const maigretProcess = spawn('powershell.exe', ['-Command', command], {
     cwd: projectRoot, // Ensure we are in the correct working directory
-    shell: true
+    shell: true,
+    maxBuffer: 1024 * 1024 * 20, // Increase buffer size to handle large outputs
+    stdio: 'inherit', // Inherit stdio to capture progress
   });
 
   let outputData = '';
@@ -64,5 +72,5 @@ app.post('/api/search', (req, res) => {
 
 const port = 5000;
 app.listen(port, () => {
-  console.log(`Server running on port ${port}`);
+  console.log(`Server running on port ${5000}`);
 });
