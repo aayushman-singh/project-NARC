@@ -9,3 +9,4 @@ scraper/src/storage/key_value_stores/default/SDK_SESSION_POOL_STATE.json
 /maigret-backend/node_modules
 yarn.lock
 /.aws
+/myenv

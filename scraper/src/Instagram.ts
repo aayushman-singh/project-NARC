@@ -3,6 +3,7 @@ import cors from 'cors';
 import { scrapeInstagramProfiles } from './Instagram/InstagramProfile.js';
 import { scrapeInstagramPosts } from './Instagram/InstagramPosts.js';
 import { InstaScraper } from './Instagram/InstaScraper.js';
+import retry from 'async-retry'; // For retry logic
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3001; // Instagram Scraper Port
@@ -22,18 +23,45 @@ app.post('/instagram', async (req, res) => {
     try {
         console.log(`Received request to scrape ${startUrls.length} profiles`);
 
-        console.log('Scraping profiles...');
-        await scrapeInstagramProfiles(startUrls);  
-        console.log('Scraping posts...');
-        const result = await scrapeInstagramPosts(startUrls);
+        // Scraping profiles with retry logic
+        await retry(async () => {
+            console.log('Starting profile scraping...');
+            await scrapeInstagramProfiles(startUrls);  
+            console.log('Profile scraping completed');
+        }, {
+            retries: 3,
+            onRetry: (err, attempt) => {
+                console.log(`Retrying profile scraping, attempt ${attempt} after error: ${err.message}`);
+            }
+        });
 
-        //console.log('Scraping followers and following...');
-        // for (const username of startUrls) {
-        //     console.log(`Scraping data for username: ${username}`);
-        //     await InstaScraper(username, password);
-        // }
+        // Scraping posts with retry logic
+        await retry(async () => {
+            console.log('Starting post scraping...');
+            await scrapeInstagramPosts(startUrls);
+            console.log('Post scraping completed');
+        }, {
+            retries: 3,
+            onRetry: (err, attempt) => {
+                console.log(`Retrying post scraping, attempt ${attempt} after error: ${err.message}`);
+            }
+        });
 
-        return res.status(200).json({ message: 'Scraping complete', data: result });
+        // Scraping followers and following with retry logic
+        for (const username of startUrls) {
+            await retry(async () => {
+                console.log(`Starting data scraping for username: ${username}`);
+                await InstaScraper(username, password);
+                console.log(`Data scraping for ${username} completed`);
+            }, {
+                retries: 3,
+                onRetry: (err, attempt) => {
+                    console.log(`Retrying scraping for ${username}, attempt ${attempt} after error: ${err.message}`);
+                }
+            });
+        }
+
+        return res.status(200).json({ message: 'Scraping complete' });
     } catch (error: any) {
         console.error('Error scraping Instagram:', error.message);
         return res.status(500).json({ error: 'Error scraping Instagram', details: error.message });
