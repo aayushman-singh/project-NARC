@@ -21,53 +21,55 @@ const Services = () => {
   const handleSectionClick = (section) => {
     setActiveSection((prev) => (prev === section ? '' : section));
   };
-
   const handleSubmit = async (platform) => {
     const tagInputElement = document.getElementById(`${platform}Input`);
     const passwordInputElement = document.getElementById(`${platform}Password`); // New password input element
-
+  
     if (!tagInputElement) {
       console.error(`${platform}Input element not found`);
       alert('Please enter tags');
       return;
     }
-
+  
     if (!passwordInputElement) {
       console.error(`${platform}Password element not found`);
       alert('Please enter the password');
       return;
     }
-
-    const baseUrl = '/api'; // Vercel's API route base URL
+  
+    // Update the base URL to your EC2 instance’s HTTPS endpoint
+    const baseUrl = 'https://3.109.1.248'; // Replace with your AWS EC2 instance's public IP or domain
+  
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     const password = passwordInputElement.value; // Get the password
-
+  
     if (!password || password.trim() === "") {
       alert('Please enter the password');
       return;
     }
-
+  
     const payload = {
       startUrls: tagsArray,
       password: password.trim(), // Add password to the payload
     };
-
+  
+    // Adjust the endpoint based on the platform (Instagram, Facebook, or X)
     let apiEndpoint;
     if (platform === 'instagram') {
-      apiEndpoint = `${baseUrl}/instagram`; // Vercel API route for Instagram
+      apiEndpoint = `${baseUrl}/instagram`; // AWS API route for Instagram
     } else if (platform === 'facebook') {
-      apiEndpoint = `${baseUrl}/facebook`; // Vercel API route for Facebook
+      apiEndpoint = `${baseUrl}/facebook`; // AWS API route for Facebook
     } else if (platform === 'x') {
-      apiEndpoint = `${baseUrl}/x`; // Vercel API route for X
+      apiEndpoint = `${baseUrl}/x`; // AWS API route for X
     } else {
       console.error('Unsupported platform:', platform);
       alert('Unsupported platform. Please choose Instagram, Facebook, or X.');
       return;
     }
-
+  
     setIsLoading(true);
-
+  
     try {
       console.log(`Payload being sent to platform ${platform}:`, payload);
       const response1 = await fetch(apiEndpoint, {
@@ -77,11 +79,11 @@ const Services = () => {
         },
         body: JSON.stringify(payload),
       });
-
+  
       if (!response1.ok) {
         throw new Error(`First request failed for ${platform}: ${response1.statusText}`);
       }
-
+  
       alert('User Submitted Successfully');
       tagInputElement.value = '';
       passwordInputElement.value = ''; // Clear the password input after submission
@@ -92,6 +94,7 @@ const Services = () => {
       setIsLoading(false);
     }
   };
+  
 
   const handleShowDetails = () => {
     const username = document.getElementById('instagramInput').value;
