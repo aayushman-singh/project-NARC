@@ -13,9 +13,16 @@ const SearchPage = () => {
     setResults(null);
 
     try {
-      const response = await fetch(`http://localhost:5000/api/search?username=${username}`);
+      const response = await fetch('http://localhost:5000/api/search', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ username }), // Send data in request body
+      });
+
       if (!response.ok) {
-        throw new Error('Failed to fetch results');
+        throw new Error(`Failed to fetch results: ${response.statusText}`);
       }
 
       const data = await response.json();
@@ -26,7 +33,6 @@ const SearchPage = () => {
       setLoading(false);
     }
   };
-
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 flex flex-col items-center justify-center">
       <h1 className="text-3xl font-bold mb-8 text-center">Maigret Search</h1>
