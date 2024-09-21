@@ -27,11 +27,11 @@ app.post('/instagram', async (req, res) => {
         console.log('Scraping posts...');
         const result = await scrapeInstagramPosts(startUrls);
 
-        console.log('Scraping followers and following...');
-        for (const username of startUrls) {
-            console.log(`Scraping data for username: ${username}`);
-            await InstaScraper(username, password);
-        }
+        //console.log('Scraping followers and following...');
+        // for (const username of startUrls) {
+        //     console.log(`Scraping data for username: ${username}`);
+        //     await InstaScraper(username, password);
+        // }
 
         return res.status(200).json({ message: 'Scraping complete', data: result });
     } catch (error: any) {
