@@ -54,29 +54,36 @@ interface InstagramUserDocument extends Document {
     profile?: InstagramProfile;
 }
 
-
+// Function to read the file, convert to base64, and store it in MongoDB
 export async function uploadScreenshotToMongo(username: string, screenshotPath: string, fieldName: string) {
-    
-    await client.connect();
+    try {
+        // Connect to MongoDB
+        await client.connect();
         const database = client.db('instagramDB');
         const collection = database.collection('instagram_users');
-    const bucket = new GridFSBucket(database, { bucketName: 'instagram_users' });
 
-    // Create a new ObjectId for each screenshot
-    const fileId = new ObjectId();
+        // Read the screenshot file as a binary buffer
+        const fileBuffer = fs.readFileSync(screenshotPath);
 
-    const fileStream = fs.createReadStream(screenshotPath);
-    const uploadStream = bucket.openUploadStreamWithId(fileId, `${fieldName}_${Date.now()}`);
+        // Convert the binary buffer to a Base64 string
+        const base64String = fileBuffer.toString('base64');
 
-    return new Promise((resolve, reject) => {
-        fileStream.pipe(uploadStream)
-            .on('error', reject)
-            .on('finish', () => {
-                // Store a reference to the fileId under the username with the given field name
-                resolve({ message: `${fieldName} screenshot uploaded successfully to MongoDB`, fileId });
-            });
-    });
+        // Store the Base64 string in MongoDB under the specified field for the user
+        await collection.updateOne(
+            { username: username },  // Match document by username
+            { $set: { [fieldName]: base64String } },  // Store the Base64 string in the specified field
+            { upsert: true }  // Insert the document if it doesn't exist
+        );
+
+        console.log(`${fieldName} screenshot uploaded and stored in Base64 format successfully for ${username}.`);
+    } catch (error) {
+        console.error(`Error uploading screenshot for ${username}:`, error);
+    } finally {
+        // Ensure the MongoDB client is closed after the operation
+        await client.close();
+    }
 }
+
 
 export async function insertInstagramScreenshotReference(username: string, fieldName: string, fileId: ObjectId) {
     try {
