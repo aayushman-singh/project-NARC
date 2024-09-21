@@ -226,22 +226,25 @@ const Services = () => {
       }
     />
               <DetailSection
-                title="Posts"
-                content={
-                  <div>
-                    {userData.posts.map((post, index) => (
-                      <div key={index} className="mb-4 border border-gray-300 p-4 rounded-lg">
-                        <p>Post ID: {post.post_id}</p>
-                        <img
-                          src={`/images/post/post${index + 1}.jpg`} // Dynamically generate the file name based on the index
-                          alt={`Post ${index + 1}`}
-                          className="w-full max-w-2xl my-2"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                }
-              />
+  title="Posts"
+  content={
+    <div>
+      {userData.posts.map((post, index) => (
+        <div key={index} className="mb-4 border border-gray-300 p-4 rounded-lg">
+          <p>Post ID: {post.post_id}</p>
+          <img
+            src={`/images/post/post${index + 1}.jpg`} // Dynamically generate the file name based on the index
+            alt={`Post ${index + 1}`}
+            className="w-full max-w-2xl my-2"
+          />
+          {/* Display the caption below the image */}
+          <p className="text-gray-100 text-md mt-2">Caption: {post.caption}</p>
+        </div>
+      ))}
+    </div>
+  }
+/>
+
 
 
 
