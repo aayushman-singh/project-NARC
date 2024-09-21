@@ -178,8 +178,9 @@ export const InstaScraper = async (username:string,password:string) => {
     }
 
     const crawler = new PlaywrightCrawler({
+        args: ['--enable-http2', '--tls-min-v1.2'],
         launchContext: {
-            launchOptions: { headless: true, slowMo: 1000 }, // Non-headless mode with delay between actions
+            launchOptions: { headless: true, slowMo: 500 , }, // Non-headless mode with delay between actions
         },
         maxRequestRetries: 0,  // Disable retries
         preNavigationHooks: [
