@@ -30,6 +30,6 @@
     "start:instagram": "cd scraper/src/ && npx tsx src/Instagram.ts",
     "start:x": "cd scraper/src/ && npx tsx src/X.ts",
     "start:facebook": "cd scraper/src/ && npx tsx src/Facebook.ts",
-    "start:all": "npm-run-all --parallel start:frontend start:instagram start:x start:facebook"
+    "start:all": "npm-run-all --parallel start:maigret start:instagram start:x start:facebook"
   }
 }
