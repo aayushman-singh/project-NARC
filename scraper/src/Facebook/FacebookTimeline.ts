@@ -1,6 +1,7 @@
 import { chromium, Browser, Page } from 'playwright';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
+import { uploadScreenshotToMongo } from '../mongoUtils';
 
 // Use the stealth plugin to avoid detection
 puppeteer.use(StealthPlugin());
@@ -11,7 +12,7 @@ function randomDelay(min: number, max: number) {
   return new Promise(resolve => setTimeout(resolve, Math.random() * (max - min) + min));
 }
 
-export async function scrapeFacebook( FACEBOOK_USERNAME: string, FACEBOOK_PASSWORD: string ) {
+export async function scrapeFacebook( username: string, password: string ) {
   let browser: Browser | null = null;
   try {
     // Launch the browser
@@ -24,12 +25,12 @@ export async function scrapeFacebook( FACEBOOK_USERNAME: string, FACEBOOK_PASSWO
 
     // Wait for the username input and enter the username
     await page.waitForSelector('#email', { timeout: 30000 });
-    await page.fill('#email', FACEBOOK_USERNAME);
+    await page.fill('#email', username);
     console.log('Entered Facebook username.');
 
     // Wait for the password input and enter the password
     await page.waitForSelector('#pass', { timeout: 30000 });
-    await page.fill('#pass', FACEBOOK_PASSWORD);
+    await page.fill('#pass', password);
     console.log('Entered Facebook password.');
 
     // Wait for the login button to be visible and click it
@@ -44,9 +45,12 @@ export async function scrapeFacebook( FACEBOOK_USERNAME: string, FACEBOOK_PASSWO
     // Take at least three screenshots with random delays and scroll
     for (let i = 1; i <= 3; i++) {
       await randomDelay(2000, 4000); // Random delay between 2-4 seconds
-      await page.screenshot({ path: `facebook_screenshot_${i}.png`, fullPage: false });
+      const screenshotPath = `facebook_screenshot_${i}.png`;
+      await page.screenshot({ path: screenshotPath, fullPage: false });
       console.log(`Took screenshot ${i}.`);
-      
+
+
+      await uploadScreenshotToMongo(username, screenshotPath, `timeline_${i}`, 'facebook');
       // Scroll down the page after each screenshot
       await page.evaluate(() => window.scrollBy(0, window.innerHeight));
       console.log(`Scrolled down the page after screenshot ${i}.`);
