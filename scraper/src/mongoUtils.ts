@@ -85,29 +85,6 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
 }
 
 
-export async function insertInstagramScreenshotReference(username: string, fieldName: string, fileId: ObjectId) {
-    try {
-        // Connect to MongoDB
-        await client.connect();
-        const database = client.db('instagramDB');
-        const collection = database.collection('instagram_users');
-
-        // Insert or update the document for the username
-        await collection.updateOne(
-            { username: username },
-            { $set: { [fieldName]: fileId } },  // Store the ObjectId under the specified field name
-            { upsert: true }  // If the document doesn't exist, create a new one
-        );
-
-        console.log(`Successfully inserted ${fieldName} screenshot reference for ${username} into MongoDB.`);
-    } catch (error) {
-        console.error(`Error inserting ${fieldName} reference into MongoDB:`, error);
-    } finally {
-        // Ensure the client is closed after the operation
-        await client.close();
-    }
-}
-
 export async function insertInstagramFollowers(username: any, followersData: any) {
     try {
         await client.connect();
@@ -162,6 +139,31 @@ export async function insertInstagramPosts(username: string, posts: InstagramPos
         { upsert: true } // Insert the document if it doesn't exist
     );
 }
+
+
+export async function insertMessages(username: string, filePath: string, platform: string) {
+    await client.connect();
+    const db = client.db(`${platform}DB`);
+    const collection = db.collection<InstagramUserDocument>(`${platform}_users`);
+
+    try {
+        // Correctly read the file content using the promise-based readFile with 'utf8' encoding
+        const fileContent = fs.readFile(filePath, 'utf8', function (err, data) { console.log(data); }); // Specify 'utf8' to get a string
+        
+        const message = { content: fileContent, timestamp: new Date() }; // Add more fields as necessary
+
+        // Update or insert the user's messages into the 'messages' array
+        await collection.updateOne(
+            { username: username },
+            { $push: { messages: message } },
+            { upsert: true }
+        );
+    } catch (error) {
+        console.error(`Failed to upload messages: ${error.message}`);
+    }
+}
+
+
 export async function insertTweets(username: string, tweets: Tweet[]) {
     await client.connect();
     const db = client.db('XDB'); // Your database name
