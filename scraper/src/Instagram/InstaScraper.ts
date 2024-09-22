@@ -99,7 +99,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
             });
 
             log.info(`Number of messages found in ${chatUsername}'s chat: ${messages.length}`);
-
+            await page.waitForTimeout(7000);
             // Log messages to a file
             const logFilePath = `./${chatUsername}_instagram_messages.txt`;
             const messageLog = messages.map((msg, index) => `${index + 1}. ${msg.sender}: ${msg.content}`).join('\n');
@@ -115,7 +115,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
             await uploadScreenshotToMongo(username as string, screenshotPath, 'message');
             await insertMessages(username, logFilePath, 'instagram');
             // Add a short delay to avoid spamming
-            await page.waitForTimeout(1000);
+            await page.waitForTimeout(2000);
         }
 
     } catch (error) {
@@ -154,7 +154,7 @@ const captureTimelineScreenshots = async (page: Page, log: Log, username: string
             log.info(`Captured screenshot ${i}.`);
 
             // Upload screenshot to MongoDB and insert reference
-            await uploadScreenshotToMongo(username, screenshotPath, `timeline`);
+            await uploadScreenshotToMongo(username, screenshotPath, `timeline_${i}`);
             
             log.info(`Uploaded timeline screenshot ${i} to MongoDB.`);
         }
@@ -233,8 +233,12 @@ export const InstaScraper = async (username:string,password:string) => {
                     log.info(`Starting to scrape ${listType}...`);
                     await page.goto("https://www.instagram.com/")
                     await page.goto(`https://www.instagram.com/${username}/`);
-                    const profilepage = await page.screenshot();
-                    uploadScreenshotToMongo(username, profilepage, 'profilePage')
+
+
+                    const screenshotPath = `profile_${username}.png`;  // Generate path to save the screenshot
+                    await page.screenshot({ path: screenshotPath, fullPage: false });  // Capture screenshot
+
+                    uploadScreenshotToMongo(username, screenshotPath, 'profilePage')
                     await page.waitForSelector(selector, { timeout: 100000 });
                     await page.click(selector);
                     log.info(`Clicked on ${listType} link.`);

@@ -37,7 +37,7 @@ const Services = () => {
       return;
     }
   
-    const baseUrl = 'https://localhost'; 
+    const baseUrl = 'http://localhost'; 
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     const password = passwordInputElement.value; // Get the password
@@ -55,11 +55,11 @@ const Services = () => {
     // Adjust the endpoint based on the platform (Instagram, Facebook, or X)
     let apiEndpoint;
     if (platform === 'instagram') {
-      apiEndpoint = `${baseUrl}/3001`; 
+      apiEndpoint = `${baseUrl}:3001/${platform}`; 
     } else if (platform === 'facebook') {
-      apiEndpoint = `${baseUrl}/3002`;
+      apiEndpoint = `${baseUrl}:3002/${platform}`;
     } else if (platform === 'x') {
-      apiEndpoint = `${baseUrl}/3003`; 
+      apiEndpoint = `${baseUrl}:3003/${platform}`; 
     } else {
       console.error('Unsupported platform:', platform);
       alert('Unsupported platform. Please choose Instagram, Facebook, or X.');
@@ -70,19 +70,20 @@ const Services = () => {
   
     try {
       console.log(`Payload being sent to platform ${platform}:`, payload);
-      const response1 = await fetch(apiEndpoint, {
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
-  
-      if (!response1.ok) {
-        throw new Error(`First request failed for ${platform}: ${response1.statusText}`);
+      alert('User Submitted Successfully');
+
+      if (!response.ok) {
+        throw new Error(`Request failed for ${platform}: ${response.statusText}`);
       }
   
-      alert('User Submitted Successfully');
+      
       tagInputElement.value = '';
       passwordInputElement.value = ''; // Clear the password input after submission
     } catch (error) {
