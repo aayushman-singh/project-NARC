@@ -26,7 +26,6 @@
     "maigret"
   ],
   "scripts": {
-    "start:frontend": "cd frontend && npm run dev",
     "start:maigret": "cd maigret && node server",
     "start:instagram": "cd scraper/src/ && npx tsx src/Instagram.ts",
     "start:x": "cd scraper/src/ && npx tsx src/X.ts",
