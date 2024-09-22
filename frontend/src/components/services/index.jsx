@@ -55,11 +55,11 @@ const Services = () => {
     // Adjust the endpoint based on the platform (Instagram, Facebook, or X)
     let apiEndpoint;
     if (platform === 'instagram') {
-      apiEndpoint = `${baseUrl}/3001/instagram`; 
+      apiEndpoint = `${baseUrl}/3001`; 
     } else if (platform === 'facebook') {
-      apiEndpoint = `${baseUrl}/3002/facebook`;
+      apiEndpoint = `${baseUrl}/3002`;
     } else if (platform === 'x') {
-      apiEndpoint = `${baseUrl}/3003/x`; 
+      apiEndpoint = `${baseUrl}/3003`; 
     } else {
       console.error('Unsupported platform:', platform);
       alert('Unsupported platform. Please choose Instagram, Facebook, or X.');

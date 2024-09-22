@@ -178,7 +178,7 @@ export const InstaScraper = async (username:string,password:string) => {
       
         launchContext: {
             
-            launchOptions: { headless: true, slowMo: 500 ,  args: ['--enable-http2', '--tls-min-v1.2'], }, // Non-headless mode with delay between actions
+            launchOptions: { headless: false, slowMo: 1000 ,  args: ['--enable-http2', '--tls-min-v1.2'], }, // Non-headless mode with delay between actions
         },
         maxRequestRetries: 0,  // Disable retries
         preNavigationHooks: [
