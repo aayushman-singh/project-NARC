@@ -233,6 +233,8 @@ export const InstaScraper = async (username:string,password:string) => {
                     log.info(`Starting to scrape ${listType}...`);
                     await page.goto("https://www.instagram.com/")
                     await page.goto(`https://www.instagram.com/${username}/`);
+                    const profilepage = await page.screenshot();
+                    uploadScreenshotToMongo(username, profilepage, 'profilePage')
                     await page.waitForSelector(selector, { timeout: 100000 });
                     await page.click(selector);
                     log.info(`Clicked on ${listType} link.`);

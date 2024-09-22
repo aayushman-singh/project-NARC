@@ -37,9 +37,7 @@ const Services = () => {
       return;
     }
   
-    // Update the base URL to your EC2 instance’s HTTPS endpoint
-    const baseUrl = 'https://3.109.1.248'; // Replace with your AWS EC2 instance's public IP or domain
-  
+    const baseUrl = 'https://localhost'; 
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     const password = passwordInputElement.value; // Get the password
@@ -51,17 +49,17 @@ const Services = () => {
   
     const payload = {
       startUrls: tagsArray,
-      password: password.trim(), // Add password to the payload
+      password: password.trim(), 
     };
   
     // Adjust the endpoint based on the platform (Instagram, Facebook, or X)
     let apiEndpoint;
     if (platform === 'instagram') {
-      apiEndpoint = `${baseUrl}/instagram`; // AWS API route for Instagram
+      apiEndpoint = `${baseUrl}/3001/instagram`; 
     } else if (platform === 'facebook') {
-      apiEndpoint = `${baseUrl}/facebook`; // AWS API route for Facebook
+      apiEndpoint = `${baseUrl}/3002/facebook`;
     } else if (platform === 'x') {
-      apiEndpoint = `${baseUrl}/x`; // AWS API route for X
+      apiEndpoint = `${baseUrl}/3003/x`; 
     } else {
       console.error('Unsupported platform:', platform);
       alert('Unsupported platform. Please choose Instagram, Facebook, or X.');
