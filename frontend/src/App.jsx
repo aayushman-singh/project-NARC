@@ -7,7 +7,7 @@ import Services1 from "./components/servicesMain";
 import SearchPage from "./components/servicesOsint";
 import InstagramDataDisplay from "./components/pastData";
 import DataAnalysisPage from "./components/analysis";
-
+// import CursorFollower from "./components/cursor";
 import { AuthProvider } from "./contexts/authContext";
 import { useRoutes } from "react-router-dom";
 
@@ -55,6 +55,8 @@ function App() {
 
   return (
     <AuthProvider>
+
+      {/* <CursorFollower/> */}
       <Header />
       {/* Full screen height minus header with flex column */}
       <div className="w-full flex-grow flex flex-col pt-16 bg-gray-700">

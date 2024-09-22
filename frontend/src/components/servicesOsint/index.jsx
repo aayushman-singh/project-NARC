@@ -18,7 +18,7 @@ const SearchPage = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ username }), // Send data in request body
+        body: JSON.stringify({ username }),
       });
 
       if (!response.ok) {
@@ -26,19 +26,20 @@ const SearchPage = () => {
       }
 
       const data = await response.json();
-      setResults(data);
+      setResults(data.results);
     } catch (err) {
       setError(err.message);
     } finally {
       setLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 flex flex-col items-center justify-center">
       <h1 className="text-3xl font-bold mb-8 text-center">Maigret Search</h1>
 
-      <form 
-        onSubmit={handleSearch} 
+      <form
+        onSubmit={handleSearch}
         className="bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md"
       >
         <input
@@ -58,16 +59,27 @@ const SearchPage = () => {
         </button>
       </form>
 
-      {/* Loading, error, and results */}
       <div className="mt-6 w-full max-w-md">
         {loading && <p className="text-center text-gray-400">Loading...</p>}
         {error && <p className="text-center text-red-500">Error: {error}</p>}
         {results && (
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg mt-4">
             <h3 className="text-xl font-bold mb-4 text-blue-500">Results for {username}:</h3>
-            <pre className="text-gray-300 bg-gray-700 p-4 rounded-md overflow-x-auto">
-              {JSON.stringify(results, null, 2)}
-            </pre>
+            <ul className="space-y-2">
+              {results.map((result, index) => (
+                <li key={index} className="bg-gray-700 p-3 rounded-md">
+                  <span className="font-semibold">{result.site_name}:</span>{' '}
+                  <a
+                    href={result.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-blue-400 hover:underline"
+                  >
+                    {result.url}
+                  </a>
+                </li>
+              ))}
+            </ul>
           </div>
         )}
       </div>

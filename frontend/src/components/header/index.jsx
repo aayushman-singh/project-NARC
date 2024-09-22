@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { Link as ScrollLink } from 'react-scroll'; // For smooth scrolling
 import { Link, useNavigate } from 'react-router-dom'; // For navigation
 import { useAuth } from '../../contexts/authContext';
@@ -8,6 +8,7 @@ const Header = () => {
   const navigate = useNavigate();
   const { userLoggedIn } = useAuth();
   const [dropdownOpen, setDropdownOpen] = useState(false); // State for dropdown
+  const dropdownRef = useRef(null); // Reference to the dropdown element
 
   const handleLogout = () => {
     doSignOut().then(() => {
@@ -19,27 +20,45 @@ const Header = () => {
     setDropdownOpen(!dropdownOpen); // Toggle dropdown visibility
   };
 
+  // Close the dropdown when clicking outside
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropdownOpen(false); // Close the dropdown if click is outside the dropdown
+      }
+    };
+
+    // Add event listener when the dropdown is open
+    if (dropdownOpen) {
+      document.addEventListener('mousedown', handleClickOutside);
+    }
+
+    // Clean up event listener on unmount or when dropdown closes
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside);
+    };
+  }, [dropdownOpen]);
+
   return (
     <nav className="fixed top-0 left-0 w-full z-50 h-16 bg-black/30 backdrop-blur-lg shadow-lg flex justify-between items-center px-8 transition-all duration-300">
-    {/* Logo Section */}
-    <div className="flex items-center space-x-1"> {/* Flex container for alignment */}
-      {/* Image Logo */}
-      <Link to="/home">
-        <img
-          src="/images/logo/logo.png" // Replace with the actual path to your logo image
-          alt="Logo"
-          className="h-10" // Adjust the height as needed
-        />
-      </Link>
-      
-      {/* Text Logo */}
-      <div className="text-2xl font-bold text-white font-montserrat cursor-pointer">
-        <Link to="/home" smooth={true} duration={500} className="hover:text-blue-400 transition-colors">
-          tattletale
+      {/* Logo Section */}
+      <div className="flex items-center space-x-1"> {/* Flex container for alignment */}
+        {/* Image Logo */}
+        <Link to="/home">
+          <img
+            src="/images/logo/logo.png" // Replace with the actual path to your logo image
+            alt="Logo"
+            className="h-10" // Adjust the height as needed
+          />
         </Link>
+
+        {/* Text Logo */}
+        <div className="text-2xl font-bold text-white font-montserrat cursor-pointer">
+          <Link to="/home" smooth={true} duration={500} className="hover:text-blue-400 transition-colors">
+            tattletale
+          </Link>
+        </div>
       </div>
-    </div>
-  
 
       {/* Navigation Links */}
       <div className="flex items-center space-x-6 relative">
@@ -55,7 +74,7 @@ const Header = () => {
             </ScrollLink>
 
             {/* Dropdown for Services */}
-            <div className="relative">
+            <div className="relative" ref={dropdownRef}>
               <button
                 onClick={toggleDropdown}
                 className="text-white text-sm font-semibold cursor-pointer hover:text-blue-400 transition-colors flex items-center"
@@ -75,35 +94,29 @@ const Header = () => {
                 </svg>
               </button>
               {dropdownOpen && (
-               <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg z-50">
-               {/* Redirect to Social Media Investigation Tools Page */}
-               <Link
-                 to="/services"
-                 className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
-                 onClick={() => setDropdownOpen(false)} // Close dropdown on click
-               >
-                 Social Media Investigation Tools
-               </Link>
-             
-               {/* Redirect to OSINT Tools Page */}
-               <Link
-                 to="/osint"
-                 className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
-                 onClick={() => setDropdownOpen(false)} // Close dropdown on click
-               >
-                 OSINT Tools
-               </Link>
-             
-               {/* Redirect to Past Data Page */}
-               <Link
-                 to="/pastData"
-                 className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
-                 onClick={() => setDropdownOpen(false)} // Close dropdown on click
-               >
-                 Past Data
-               </Link>
-             </div>
-             
+                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg z-50">
+                  <Link
+                    to="/services"
+                    className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Social Media Investigation Tools
+                  </Link>
+                  <Link
+                    to="/osint"
+                    className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    OSINT Tools
+                  </Link>
+                  <Link
+                    to="/pastData"
+                    className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
+                    onClick={() => setDropdownOpen(false)}
+                  >
+                    Past Data
+                  </Link>
+                </div>
               )}
             </div>
 
