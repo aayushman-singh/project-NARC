@@ -17,6 +17,7 @@
     "async-retry": "^1.3.3",
     "firebase": "^10.13.1",
     "framer-motion": "^11.5.4",
+    "gsap": "^3.12.5",
     "lucide-react": "^0.441.0",
     "phosphor-react": "^1.4.1",
     "react": "^18.3.1",
