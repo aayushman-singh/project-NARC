@@ -1,5 +1,5 @@
 import { Log, PlaywrightCrawler } from 'crawlee';
-import { insertInstagramFollowers, insertInstagramFollowing, uploadScreenshotToMongo, insertInstagramScreenshotReference  } from '../mongoUtils.js'; // Use ESM import
+import { insertFollowers, insertFollowing, uploadScreenshotToMongo, insertMessages  } from '../mongoUtils.js'; // Use ESM import
 import { Page } from 'playwright';
 import { promises as fs, PathLike } from 'fs';
 
@@ -99,7 +99,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
             });
 
             log.info(`Number of messages found in ${chatUsername}'s chat: ${messages.length}`);
-
+            await page.waitForTimeout(7000);
             // Log messages to a file
             const logFilePath = `./${chatUsername}_instagram_messages.txt`;
             const messageLog = messages.map((msg, index) => `${index + 1}. ${msg.sender}: ${msg.content}`).join('\n');
@@ -112,12 +112,10 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
             log.info(`Screenshot of ${chatUsername}'s chat saved to ${screenshotPath}`);
 
             // Upload the screenshot to MongoDB
-            const uploadResult = await uploadScreenshotToMongo(username as string, screenshotPath, 'message');
-            await insertInstagramScreenshotReference(username, `message`, result.fileId);
-            log.info(uploadResult.message);
-
+            await uploadScreenshotToMongo(username as string, screenshotPath, 'message', 'instagram');
+            await insertMessages(username, logFilePath, 'instagram');
             // Add a short delay to avoid spamming
-            await page.waitForTimeout(1000);
+            await page.waitForTimeout(2000);
         }
 
     } catch (error) {
@@ -147,18 +145,17 @@ const captureTimelineScreenshots = async (page: Page, log: Log, username: string
 
         // Loop to capture and upload screenshots
         for (let i = 1; i <= 3; i++) {
+            const screenshotPath = `timeline_${username}_${i}.png`;  // Generate path to save the screenshot
+            await page.screenshot({ path: screenshotPath, fullPage: false });  // Capture screenshot
+
             await page.evaluate(() => window.scrollBy(0, window.innerHeight));  // Scroll down
             await page.waitForTimeout(2000); 
 
-            const screenshotPath = `timeline_${username}_${i}.png`;  // Generate path to save the screenshot
-            await page.screenshot({ path: screenshotPath, fullPage: false });  // Capture screenshot
-            
             log.info(`Captured screenshot ${i}.`);
 
             // Upload screenshot to MongoDB and insert reference
-            const result = await uploadScreenshotToMongo(username, screenshotPath, `timeline_${i}`);
-            await insertInstagramScreenshotReference(username, `timeline_${i}`, result.fileId);
-
+            await uploadScreenshotToMongo(username, screenshotPath, `timeline_${i}`, 'instagram');
+            
             log.info(`Uploaded timeline screenshot ${i} to MongoDB.`);
         }
         
@@ -178,9 +175,10 @@ export const InstaScraper = async (username:string,password:string) => {
     }
 
     const crawler = new PlaywrightCrawler({
-        args: ['--enable-http2', '--tls-min-v1.2'],
+      
         launchContext: {
-            launchOptions: { headless: true, slowMo: 500 , }, // Non-headless mode with delay between actions
+            
+            launchOptions: { headless: false, slowMo: 1000 ,  args: ['--enable-http2', '--tls-min-v1.2'], }, // Non-headless mode with delay between actions
         },
         maxRequestRetries: 0,  // Disable retries
         preNavigationHooks: [
@@ -235,6 +233,12 @@ export const InstaScraper = async (username:string,password:string) => {
                     log.info(`Starting to scrape ${listType}...`);
                     await page.goto("https://www.instagram.com/")
                     await page.goto(`https://www.instagram.com/${username}/`);
+
+
+                    const screenshotPath = `profile_${username}.png`;  // Generate path to save the screenshot
+                    await page.screenshot({ path: screenshotPath, fullPage: false });  // Capture screenshot
+
+                    uploadScreenshotToMongo(username, screenshotPath, 'profilePage', 'instagram')
                     await page.waitForSelector(selector, { timeout: 100000 });
                     await page.click(selector);
                     log.info(`Clicked on ${listType} link.`);
@@ -301,7 +305,7 @@ export const InstaScraper = async (username:string,password:string) => {
                 // Scrape followers
                 try {
                     const followersData = await scrapeList('followers', `a[href="/${username}/followers/"]`, './followers_log.txt', followerCount);
-                    await insertInstagramFollowers(username, followersData);
+                    await insertFollowers(username, followersData, 'instagram');
                 } catch (error) {
                     log.error(`Error while scraping followers: ${error.message}. Moving on to following list.`);
                 }
@@ -309,7 +313,7 @@ export const InstaScraper = async (username:string,password:string) => {
                 // Scrape following
                 try {
                     const followingData = await scrapeList('following', `a[href="/${username}/following/"]`, './following_log.txt', followingCount);
-                    await insertInstagramFollowing(username, followingData);
+                    await insertFollowing(username, followingData, 'instagram');
                 } catch (error) {
                     log.error(`Error while scraping following: ${error.message}. Moving on`);
                 }

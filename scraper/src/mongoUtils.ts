@@ -55,12 +55,12 @@ interface InstagramUserDocument extends Document {
 }
 
 // Function to read the file, convert to base64, and store it in MongoDB
-export async function uploadScreenshotToMongo(username: string, screenshotPath: string, fieldName: string) {
+export async function uploadScreenshotToMongo(username: string, screenshotPath: string, fieldName: string, platform: string) {
     try {
         // Connect to MongoDB
         await client.connect();
-        const database = client.db('instagramDB');
-        const collection = database.collection('instagram_users');
+        const database = client.db(`${platform}DB`);
+        const collection = database.collection(`${platform}_users`);
 
         // Read the screenshot file as a binary buffer
         const fileBuffer = fs.readFileSync(screenshotPath);
@@ -84,35 +84,11 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
     }
 }
 
-
-export async function insertInstagramScreenshotReference(username: string, fieldName: string, fileId: ObjectId) {
-    try {
-        // Connect to MongoDB
-        await client.connect();
-        const database = client.db('instagramDB');
-        const collection = database.collection('instagram_users');
-
-        // Insert or update the document for the username
-        await collection.updateOne(
-            { username: username },
-            { $set: { [fieldName]: fileId } },  // Store the ObjectId under the specified field name
-            { upsert: true }  // If the document doesn't exist, create a new one
-        );
-
-        console.log(`Successfully inserted ${fieldName} screenshot reference for ${username} into MongoDB.`);
-    } catch (error) {
-        console.error(`Error inserting ${fieldName} reference into MongoDB:`, error);
-    } finally {
-        // Ensure the client is closed after the operation
-        await client.close();
-    }
-}
-
-export async function insertInstagramFollowers(username: any, followersData: any) {
+export async function insertFollowers(username: string, followersData: any, platform: string) {
     try {
         await client.connect();
-        const database = client.db('instagramDB');
-        const collection = database.collection('instagram_users');
+        const database = client.db(`${platform}DB`);
+        const collection = database.collection(`${platform}_users`);
 
         // Insert or update the document under the username
         await collection.updateOne(
@@ -121,18 +97,19 @@ export async function insertInstagramFollowers(username: any, followersData: any
             { upsert: true }
         );
 
-        console.log(`Successfully inserted following data for ${username} into instagramDB.`);
+        console.log(`Successfully inserted following data for ${username} into ${platform}DB.`);
     } catch (error) {
-        console.error('Error inserting following data into MongoDB:', error);
+        console.error(`Error inserting following data into ${platform}DB:`, error);
     } finally {
         await client.close();
     }
 }
-export async function insertInstagramFollowing(username: any, followingData: any) {
+
+export async function insertFollowing(username: string, followingData: any, platform: string) {
     try {
         await client.connect();
-        const database = client.db('instagramDB');
-        const collection = database.collection('instagram_users');
+        const database = client.db(`${platform}DB`);
+        const collection = database.collection(`${platform}_users`);
 
         // Insert or update the document under the username
         await collection.updateOne(
@@ -141,19 +118,18 @@ export async function insertInstagramFollowing(username: any, followingData: any
             { upsert: true }
         );
 
-        console.log(`Successfully inserted following data for ${username} into instagramDB.`);
+        console.log(`Successfully inserted following data for ${username} into ${platform}DB.`);
     } catch (error) {
-        console.error('Error inserting following data into MongoDB:', error);
+        console.error(`Error inserting following data into ${platform}DB:`, error);
     } finally {
         await client.close();
     }
 }
 
-
-export async function insertInstagramPosts(username: string, posts: InstagramPost[]) {
+export async function insertPosts(username: string, posts: any[], platform: string) {
     await client.connect();
-    const db = client.db('instagramDB'); // Your database name
-    const collection = db.collection<InstagramUserDocument>('instagram_users'); // Collection for all users
+    const db = client.db(`${platform}DB`); // Platform specific database
+    const collection = db.collection<InstagramUserDocument>(`${platform}_users`); // Platform specific collection
 
     // Update or insert the user's posts into the 'posts' array
     await collection.updateOne(
@@ -162,43 +138,51 @@ export async function insertInstagramPosts(username: string, posts: InstagramPos
         { upsert: true } // Insert the document if it doesn't exist
     );
 }
-export async function insertTweets(username: string, tweets: Tweet[]) {
-    await client.connect();
-    const db = client.db('XDB'); // Your database name
-    const collection = db.collection<InstagramUserDocument>('x_users'); // Collection for all users
 
-    // Update or insert the user's posts into the 'posts' array
+export async function insertMessages(username: string, filePath: string, platform: string) {
+    await client.connect();
+    const db = client.db(`${platform}DB`);
+    const collection = db.collection<InstagramUserDocument>(`${platform}_users`);
+
+    try {
+        // Correctly read the file content using the promise-based readFile with 'utf8' encoding
+        const fileContent = fs.readFileSync(filePath, 'utf8');
+        
+        const message = { content: fileContent, timestamp: new Date() }; // Add more fields as necessary
+
+        // Update or insert the user's messages into the 'messages' array
+        await collection.updateOne(
+            { username: username },
+            { $push: { messages: message } },
+            { upsert: true }
+        );
+    } catch (error) {
+        console.error(`Failed to upload messages: ${error.message}`);
+    }
+}
+
+export async function insertTweets(username: string, tweets: Tweet[], platform: string) {
+    await client.connect();
+    const db = client.db(`${platform}DB`); // Platform specific database
+    const collection = db.collection<InstagramUserDocument>(`${platform}_users`); // Platform specific collection
+
+    // Update or insert the user's posts into the 'tweets' array
     await collection.updateOne(
         { username: username }, // Find document by username
-        { $push: { tweets: { $each: tweets } } }, // Append posts to the 'posts' array
+        { $push: { tweets: { $each: tweets } } }, // Append tweets to the 'tweets' array
         { upsert: true } // Insert the document if it doesn't exist
     );
 }
-export async function insertInstagramProfile(username: string, profile: InstagramProfile) {
-    await client.connect();
-    const db = client.db('instagramDB'); // Your database name
-    const collection = db.collection<InstagramUserDocument>('instagram_users'); // Collection for all users
 
-    // Update or insert the user's profile and posts
-    await collection.updateOne(
-        { username: username }, // Find document by username
-        {
-            $set: { profile: profile }, // Update or insert the profile information
-        },
-        { upsert: true } // Insert the document if it doesn't exist
-    );
-}
-
-
-export async function insertMeta(collectionName: string, data: any[]) {
+export async function insertMeta(collectionName: string, data: any[], platform: string) {
     try {
         await client.connect();
-        const db = client.db('metaDB'); 
+        const db = client.db(`${platform}DB`); 
         const collection = db.collection(collectionName);
         await collection.insertMany(data);
         console.log(`Data successfully inserted into MongoDB collection: ${collectionName}`);
     } catch (error) {
-        console.error('Error inserting data into MongoDB:', error);
+        console.error(`Error inserting data into ${platform}DB:`, error);
     } finally {
         await client.close();
     }
