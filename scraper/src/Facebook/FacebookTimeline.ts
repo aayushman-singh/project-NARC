@@ -65,5 +65,3 @@ export async function scrapeFacebook( username: string, password: string ) {
     }
   }
 }
-
-

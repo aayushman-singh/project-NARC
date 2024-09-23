@@ -187,3 +187,18 @@ export async function insertMeta(collectionName: string, data: any[], platform: 
         await client.close();
     }
 }
+
+export async function insertInstagramProfile(username: string, profile: InstagramProfile) {
+    await client.connect();
+    const db = client.db('instagramDB'); // Your database name
+    const collection = db.collection<InstagramUserDocument>('instagram_users'); // Collection for all users
+
+    // Update or insert the user's profile and posts
+    await collection.updateOne(
+        { username: username }, // Find document by username
+        {
+            $set: { profile: profile }, // Update or insert the profile information
+        },
+        { upsert: true } // Insert the document if it doesn't exist
+    );
+}

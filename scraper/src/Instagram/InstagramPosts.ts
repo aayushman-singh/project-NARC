@@ -1,6 +1,6 @@
 // InstagramPosts.ts
 import axios from 'axios';
-import { insertInstagramPosts } from '../mongoUtils.js';  // MongoDB utility function
+import { insertPosts } from '../mongoUtils.js';  // MongoDB utility function
 
 // Exported function for scraping Instagram posts
 export async function scrapeInstagramPosts(startUrls: string[]) {
@@ -32,7 +32,7 @@ export async function scrapeInstagramPosts(startUrls: string[]) {
 
         // Insert the posts into MongoDB for each username
         for (const username of startUrls) {
-            await insertInstagramPosts(username, items);
+            await insertPosts(username, items, 'instagram');
         }
 
         console.log('Posts successfully inserted into MongoDB.');
