@@ -14,6 +14,7 @@ const Services = () => {
   const [userData, setUserData] = useState(null);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
+  const [selectedNumber, setSelectedNumber] = useState(1);
 
 
   const toggleFollowers = () => setShowFollowers(!showFollowers);
@@ -112,6 +113,17 @@ const Services = () => {
       {content}
     </div>
   );
+  const renderDropdown = () => (
+    <select
+      value={selectedNumber}
+      onChange={(e) => setSelectedNumber(parseInt(e.target.value))}
+      className="mt-4 bg-gray-800 text-white p-2 rounded-md border border-gray-600 focus:ring-2 focus:ring-pink-500 transition ease-in-out duration-200"
+    >
+      {[...Array(10).keys()].map(i => (
+        <option key={i + 1} value={i + 1}>{i + 1}</option>
+      ))}
+    </select>
+  );
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 relative">
@@ -170,6 +182,7 @@ const Services = () => {
             placeholder="Enter Instagram password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
           />
+           {renderDropdown()}
           <div className="flex space-x-4 mt-4">
             <button
               onClick={() => handleSubmit('instagram')}
@@ -324,6 +337,7 @@ const Services = () => {
             placeholder="Enter WhatsApp username"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
+
           <button
             onClick={() => handleSubmit('whatsapp')}
             className="mt-4 bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 disabled:opacity-50"
@@ -349,13 +363,22 @@ const Services = () => {
             placeholder="Enter X password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          {renderDropdown()}
+          <div className="flex space-x-4 mt-4">
           <button
             onClick={() => handleSubmit('x')}
-            className="mt-4 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+            className=" bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
             disabled={isLoading}
           >
             Submit
           </button>
+          <button
+              onClick={handleShowDetails}
+              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+            >
+              Show Details
+            </button>
+        </div>
         </div>
       )}
 
@@ -374,13 +397,22 @@ const Services = () => {
             placeholder="Enter Telegram password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+          {renderDropdown()}
+          <div className="flex space-x-4 mt-4">
           <button
             onClick={() => handleSubmit('telegram')}
-            className="mt-4 bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
+            className=" bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
             disabled={isLoading}
           >
             Submit
           </button>
+          <button
+              onClick={handleShowDetails}
+              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+            >
+              Show Details
+            </button>
+        </div>
         </div>
       )}
 
@@ -399,15 +431,23 @@ const Services = () => {
             placeholder="Enter Facebook password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
+          {renderDropdown()}
+          <div className="flex space-x-4 mt-4">
           <button
             onClick={() => handleSubmit('facebook')}
-            className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            className=" bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
             disabled={isLoading}
           >
             Submit
           </button>
+          <button
+              onClick={handleShowDetails}
+              className=" bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+            >
+              Show Details
+            </button>
         </div>
-
+</div>
       )}
 
     </div>
