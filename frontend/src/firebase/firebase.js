@@ -14,10 +14,10 @@ const firebaseConfig = {
   storageBucket: "narc-9ebc2.appspot.com",
   messagingSenderId: "181479348290",
   appId: "1:181479348290:web:f558be37bda916f881f5db",
-  measurementId: "G-Q99G2621YH",
+  measurementId: "G-Q99G2621YH"
 };
 
 // Initialize Firebase
 export const app = initializeApp(firebaseConfig);
-export const auth = getAuth(app);
+export const auth = getAuth(app)
 const analytics = getAnalytics(app);
