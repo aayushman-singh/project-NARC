@@ -12,7 +12,7 @@ const followingData = [
   "mr_faisu_07",
   "dharmendra_bilotia_",
   "jj_mobile_world",
-  "jenniferwinget1",
+  "jenniferwinget1"
 ];
 
 export default followingData;

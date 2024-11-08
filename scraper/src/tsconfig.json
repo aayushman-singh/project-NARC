@@ -1,14 +1,14 @@
 {
-    "compilerOptions": {
-        "target": "es2020",
-        "module": "ESNext",
-        "moduleResolution": "node",
-        "esModuleInterop": true,
-        "forceConsistentCasingInFileNames": true,
-        "strict": true,
-        "skipLibCheck": true,
-        "noEmit": true,
-        "allowImportingTsExtensions": true
-    },
-    "include": ["**/*.ts", "Facebook/FacebookTimeline.ts"] // Look for all .ts files in the current folder and subfolders
+  "compilerOptions": {
+    "target": "es2020",
+    "module": "ESNext",
+    "moduleResolution": "node",
+    "esModuleInterop": true,
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+    "skipLibCheck": true,
+    "noEmit": true,
+    "allowImportingTsExtensions": true,
+  },
+  "include": ["**/*.ts", "Facebook/FacebookTimeline.ts"]  // Look for all .ts files in the current folder and subfolders
 }

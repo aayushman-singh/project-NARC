@@ -1,8 +1,8 @@
-import React, { useState } from "react";
-import { motion } from "framer-motion";
+import React, { useState } from 'react';
+import { motion } from 'framer-motion';
 
 const DataAnalysisPage = () => {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState('');
   const [showImage, setShowImage] = useState(false);
 
   const handleSubmit = (e) => {
@@ -15,10 +15,8 @@ const DataAnalysisPage = () => {
   return (
     <div className="min-h-screen bg-gray-900 flex flex-col items-center justify-start p-4 space-y-8">
       <div className="bg-gray-800 rounded-lg shadow-2xl p-8 max-w-md w-full">
-        <h1 className="text-3xl font-bold text-center mb-6 text-gray-100">
-          Data Analysis
-        </h1>
-
+        <h1 className="text-3xl font-bold text-center mb-6 text-gray-100">Data Analysis</h1>
+        
         <form onSubmit={handleSubmit} className="mb-6">
           <div className="relative">
             <input
@@ -31,9 +29,9 @@ const DataAnalysisPage = () => {
             <button
               type="submit"
               className={`absolute right-2 top-1/2 transform -translate-y-1/2 px-4 py-1 rounded-md transition duration-300 ${
-                username.trim()
-                  ? "bg-blue-500 text-white hover:bg-blue-600"
-                  : "bg-gray-500 text-gray-300 cursor-not-allowed"
+                username.trim() 
+                  ? 'bg-blue-500 text-white hover:bg-blue-600' 
+                  : 'bg-gray-500 text-gray-300 cursor-not-allowed'
               }`}
               disabled={!username.trim()}
             >
@@ -57,7 +55,9 @@ const DataAnalysisPage = () => {
             className="relative z-10 rounded-lg shadow-lg w-full"
           />
           <div className="absolute inset-0 z-20 flex items-center justify-center">
-            <p className="text-white text-2xl font-bold bg-black bg-opacity-50 px-6 py-3 rounded"></p>
+            <p className="text-white text-2xl font-bold bg-black bg-opacity-50 px-6 py-3 rounded">
+              
+            </p>
           </div>
         </motion.div>
       )}

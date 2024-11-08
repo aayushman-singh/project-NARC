@@ -1,1 +1,1 @@
-export async function scrapeFacebookProfile(FACEBOOK_USERNAME: string[]) {}
+export async function scrapeFacebookProfile( FACEBOOK_USERNAME: string[]) {}

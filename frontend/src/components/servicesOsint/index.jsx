@@ -1,7 +1,7 @@
-import React, { useState } from "react";
+import React, { useState } from 'react';
 
 const SearchPage = () => {
-  const [username, setUsername] = useState("");
+  const [username, setUsername] = useState('');
   const [results, setResults] = useState(null);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
@@ -13,10 +13,10 @@ const SearchPage = () => {
     setResults(null);
 
     try {
-      const response = await fetch("http://localhost:5000/api/search", {
-        method: "POST",
+      const response = await fetch('http://localhost:5000/api/search', {
+        method: 'POST',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username }),
       });
@@ -64,13 +64,11 @@ const SearchPage = () => {
         {error && <p className="text-center text-red-500">Error: {error}</p>}
         {results && (
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg mt-4">
-            <h3 className="text-xl font-bold mb-4 text-blue-500">
-              Results for {username}:
-            </h3>
+            <h3 className="text-xl font-bold mb-4 text-blue-500">Results for {username}:</h3>
             <ul className="space-y-2">
               {results.map((result, index) => (
                 <li key={index} className="bg-gray-700 p-3 rounded-md">
-                  <span className="font-semibold">{result.site_name}:</span>{" "}
+                  <span className="font-semibold">{result.site_name}:</span>{' '}
                   <a
                     href={result.url}
                     target="_blank"
