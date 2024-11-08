@@ -5,18 +5,18 @@ import { insertTweets } from '../mongoUtils.js';  // MongoDB utility function
 // Exported function for scraping X posts
 export async function XTweets(startUrls: string[]) {
     const fullUrls = startUrls.map((username: string) => `https://www.x.com/${username}/`);
-    const endpoint = 'https://api.apify.com/v2/acts/apidojo~tweet-scraper/run-sync-get-dataset-items?token=apify_api_PX0pmbuYEg3gO4cHjqIb8D8ah9MOnr2lJs5D';
+    const endpoint = 'https://api.apify.com/v2/acts/gentle_cloud~twitter-tweets-scraper/run-sync-get-dataset-items?token=apify_api_PX0pmbuYEg3gO4cHjqIb8D8ah9MOnr2lJs5D';
     
     const data = {
-        "customMapFunction": "(object) => { return {...object} }",
-        "maxItems": 6,
-        "onlyImage": false,
-        "onlyQuote": false,
-        "onlyTwitterBlue": false,
-        "onlyVerifiedUsers": false,
-        "onlyVideo": false,
-        "sort": "Latest",
-        "startUrls": fullUrls
+        "result_count": "1",
+        "startUrls": [
+            {
+                "url" : fullUrls,
+                "method" : "GET"
+            }
+            
+        ],
+        
     };
 
     try {
@@ -32,7 +32,7 @@ export async function XTweets(startUrls: string[]) {
 
         // Insert the posts into MongoDB for each username
         for (const username of startUrls) {
-            await insertTweets(username, items);
+            await insertTweets(username, items, 'twitter');
         }
 
         console.log('Posts successfully inserted into MongoDB.');
