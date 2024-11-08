@@ -172,7 +172,7 @@ const Home = () => {
         loop
         muted
       >
-        <source src="/public/videos/vecteezy_digital-spinning-hologram-globe-of-planet-earth_26687898.mp4" type="video/mp4" />
+        <source src="/videos/vecteezy_digital-spinning-hologram-globe-of-planet-earth_26687898.mp4" type="video/mp4" />
       </video>
 
       <div className="relative z-10">
