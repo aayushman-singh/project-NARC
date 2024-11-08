@@ -186,7 +186,7 @@ const Home = () => {
             </p>
             <div className="text-center mt-8">
             <Link
-              to="/services1"
+              to="/servicesMain"
               className="inline-block px-7 py-3 text-lg font-semibold bg-blue-600 bg-opacity-70 rounded-full hover:bg-opacity-75 transition-all"
             >
               Explore Services

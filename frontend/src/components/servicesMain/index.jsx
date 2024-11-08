@@ -1,4 +1,5 @@
 import React from 'react';
+import { Link } from 'react-router-dom';
 
 const GlassCard = ({ title, description, buttonText, buttonLink }) => (
   <div className="bg-white flex items-center bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl  p-8 border border-white border-opacity-20 flex flex-col justify-between">
@@ -6,16 +7,16 @@ const GlassCard = ({ title, description, buttonText, buttonLink }) => (
       <h3 className="text-2xl font-semibold text-white mb-4">{title}</h3>
       <p className="text-lg text-gray-300 mb-6">{description}</p>
     </div>
-    <a
-      href={buttonLink}
+    <Link
+      to={buttonLink}
       className="inline-block px-6 py-3 text-lg font-semibold bg-blue-600 bg-opacity-70 text-white rounded-full hover:bg-opacity-85 transition-all text-center"
     >
       {buttonText}
-    </a>
+    </Link>
   </div>
 );
 
-const Services1 = () => {
+const ServicesMain = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-900 to-blue-900 text-white flex items-center justify-center">
         {/* Fixed video background */}
@@ -59,4 +60,4 @@ const Services1 = () => {
   );
 };
 
-export default Services1;
+export default ServicesMain;

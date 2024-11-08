@@ -3,7 +3,7 @@ import Register from "./components/auth/register";
 import Services from "./components/services";
 import Header from "./components/header";
 import Home from "./components/home";
-import Services1 from "./components/servicesMain";
+import ServicesMain from "./components/servicesMain";
 import SearchPage from "./components/servicesOsint";
 import InstagramDataDisplay from "./components/pastData";
 import DataAnalysisPage from "./components/analysis";
@@ -34,8 +34,8 @@ function App() {
       element: <Home />,
     },
     {
-      path: "/services1",
-      element: <Services1 />,
+      path: "/servicesMain",
+      element: <ServicesMain />,
     },
     {
       path: "/osint",
