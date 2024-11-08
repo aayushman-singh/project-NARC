@@ -1,8 +1,8 @@
-import React, { useState } from 'react';
-import { User, Image, Heart, MessageCircle } from 'lucide-react';
+import React, { useState } from "react";
+import { User, Image, Heart, MessageCircle } from "lucide-react";
 
 // Import the JSON data (assuming it's in a file named instagramData.json)
-import instagramData from '../data/Instagram.json';
+import instagramData from "../data/Instagram.json";
 
 const GlassCard = ({ children }) => (
   <div className="bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg rounded-xl p-6 shadow-xl">
@@ -32,8 +32,12 @@ const PostCard = ({ post }) => (
     <Image className="w-full h-48 object-cover rounded-lg mb-4" />
     <p className="text-gray-300 mb-2">{post.caption}</p>
     <div className="flex justify-between text-sm text-gray-300">
-      <span><Heart className="inline w-4 h-4 mr-1" /> {post.likes}</span>
-      <span><MessageCircle className="inline w-4 h-4 mr-1" /> {post.comments}</span>
+      <span>
+        <Heart className="inline w-4 h-4 mr-1" /> {post.likes}
+      </span>
+      <span>
+        <MessageCircle className="inline w-4 h-4 mr-1" /> {post.comments}
+      </span>
     </div>
   </GlassCard>
 );
@@ -49,12 +53,17 @@ const InstagramDataDisplay = () => {
           User Data
         </h2>
         <p className="text-xl sm:text-2xl text-gray-300 mt-4 max-w-3xl mx-auto text-center mb-12">
-          Explore user profiles and posts from our comprehensive data collection.
+          Explore user profiles and posts from our comprehensive data
+          collection.
         </p>
-        
+
         <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-12">
           {users.map((user) => (
-            <div key={user._id} onClick={() => setSelectedUser(user)} className="cursor-pointer">
+            <div
+              key={user._id}
+              onClick={() => setSelectedUser(user)}
+              className="cursor-pointer"
+            >
               <UserCard user={user} />
             </div>
           ))}
@@ -62,7 +71,9 @@ const InstagramDataDisplay = () => {
 
         {selectedUser && (
           <div>
-            <h3 className="text-3xl font-bold text-white mb-6">Posts by {selectedUser.username}</h3>
+            <h3 className="text-3xl font-bold text-white mb-6">
+              Posts by {selectedUser.username}
+            </h3>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
               {selectedUser.posts.slice(0, 6).map((post) => (
                 <PostCard key={post.post_id} post={post} />

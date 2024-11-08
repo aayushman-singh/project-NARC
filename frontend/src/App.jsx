@@ -48,14 +48,13 @@ function App() {
     {
       path: "profileAnalysis",
       element: <DataAnalysisPage />,
-    }
+    },
   ];
 
   let routesElement = useRoutes(routesArray);
 
   return (
     <AuthProvider>
-
       {/* <CursorFollower/> */}
       <Header />
       {/* Full screen height minus header with flex column */}
