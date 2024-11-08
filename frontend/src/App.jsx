@@ -19,7 +19,7 @@ function App() {
     },
     {
       path: "/services",
-      element: <Services />,
+      element: <Services1 />,
     },
     {
       path: "/login",
