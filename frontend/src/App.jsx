@@ -46,7 +46,7 @@ function App() {
       element: <InstagramDataDisplay />,
     },
     {
-      path: "profileAnalysis",
+      path: "/profileAnalysis",
       element: <DataAnalysisPage />,
     }
   ];
