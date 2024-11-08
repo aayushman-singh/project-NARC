@@ -1,5 +1,5 @@
 import React, { useEffect } from 'react';
-import { Link } from 'react-scroll';
+import { Link } from 'react-router-dom';
 import { gsap } from 'gsap';
 import { ScrollTrigger } from 'gsap/ScrollTrigger';
 
@@ -13,16 +13,16 @@ const Card = ({ icon, title, children }) => (
   </div>
 );
 
-const GlassButton = ({ to, children }) => (
-  <Link
-    to={to}
-    smooth={true}
-    duration={500}
-    className="mt-8 inline-block px-8 py-4 text-lg font-semibold bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg border border-white border-opacity-20 rounded-full text-white hover:bg-opacity-20 transition-all"
-  >
-    {children}
-  </Link>
-);
+// const GlassButton = ({ to, children }) => (
+//   <Link
+//     to={to}
+//     smooth={true}
+//     duration={500}
+//     className="mt-8 inline-block px-8 py-4 text-lg font-semibold bg-white bg-opacity-10 backdrop-filter backdrop-blur-lg border border-white border-opacity-20 rounded-full text-white hover:bg-opacity-20 transition-all"
+//   >
+//     {children}
+//   </Link>
+// );
 
 const ShieldIcon = () => (
   <svg className="w-16 h-16 mb-4 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
@@ -185,12 +185,12 @@ const Home = () => {
               Streamline your social media investigations with tattletale.
             </p>
             <div className="text-center mt-8">
-              <a
-                href="/services1"
-                className="inline-block px-7 py-3 text-lg font-semibold bg-blue-600 bg-opacity-70 rounded-full hover:bg-opacity-75 transition-all"
-              >
-                Explore Services
-              </a>
+            <Link
+              to="/services1"
+              className="inline-block px-7 py-3 text-lg font-semibold bg-blue-600 bg-opacity-70 rounded-full hover:bg-opacity-75 transition-all"
+            >
+              Explore Services
+            </Link>
             </div>
           </div>
         </section>
@@ -235,12 +235,12 @@ const Home = () => {
       </Card>
     </div>
     <div className="text-center mt-12">
-      <a
-        href="/services1"
-        className="inline-block px-8 py-4 text-lg font-semibold bg-blue-600 bg-opacity-70 rounded-full hover:bg-opacity-85 transition-all"
-      >
-        Explore Services
-      </a>
+    <Link
+  to="/services1"
+  className="inline-block px-7 py-3 text-lg font-semibold bg-blue-600 bg-opacity-70 rounded-full hover:bg-opacity-75 transition-all"
+>
+  Explore Services
+</Link>
     </div>
   </div>
 </section>

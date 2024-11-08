@@ -25,7 +25,7 @@ const Services1 = () => {
         loop
         muted
       >
-        <source src="/public/videos/vecteezy_digital-spinning-hologram-globe-of-planet-earth_26687898.mp4" type="video/mp4" />
+        <source src="/videos/vecteezy_digital-spinning-hologram-globe-of-planet-earth_26687898.mp4" type="video/mp4" />
         
       </video>
       <div className="absolute inset-0 bg-[url('/api/placeholder/1920/1080')] bg-cover bg-center opacity-10"></div>
