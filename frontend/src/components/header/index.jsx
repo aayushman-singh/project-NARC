@@ -1,8 +1,8 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link as ScrollLink } from 'react-scroll'; // For smooth scrolling
-import { Link, useNavigate } from 'react-router-dom'; // For navigation
-import { useAuth } from '../../contexts/authContext';
-import { doSignOut } from '../../firebase/auth';
+import React, { useState, useRef, useEffect } from "react";
+import { Link as ScrollLink } from "react-scroll"; // For smooth scrolling
+import { Link, useNavigate } from "react-router-dom"; // For navigation
+import { useAuth } from "../../contexts/authContext";
+import { doSignOut } from "../../firebase/auth";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ const Header = () => {
 
   const handleLogout = () => {
     doSignOut().then(() => {
-      navigate('/login'); // Redirect to login page after logout
+      navigate("/login"); // Redirect to login page after logout
     });
   };
 
@@ -30,19 +30,21 @@ const Header = () => {
 
     // Add event listener when the dropdown is open
     if (dropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     // Clean up event listener on unmount or when dropdown closes
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownOpen]);
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 h-16 bg-black/30 backdrop-blur-lg shadow-lg flex justify-between items-center px-8 transition-all duration-300">
       {/* Logo Section */}
-      <div className="flex items-center space-x-1"> {/* Flex container for alignment */}
+      <div className="flex items-center space-x-1">
+        {" "}
+        {/* Flex container for alignment */}
         {/* Image Logo */}
         <Link to="/home">
           <img
@@ -51,10 +53,14 @@ const Header = () => {
             className="h-10" // Adjust the height as needed
           />
         </Link>
-
         {/* Text Logo */}
         <div className="text-2xl font-bold text-white font-montserrat cursor-pointer">
-          <Link to="/home" smooth={true} duration={500} className="hover:text-blue-400 transition-colors">
+          <Link
+            to="/home"
+            smooth={true}
+            duration={500}
+            className="hover:text-blue-400 transition-colors"
+          >
             tattletale
           </Link>
         </div>
