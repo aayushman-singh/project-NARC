@@ -105,22 +105,53 @@ export async function scrapeX(USERNAME:string, PASSWORD:string) {
     while (currentHeight !== previousHeight) {
       previousHeight = currentHeight;
 
-      // Scroll down the page
-      await page.evaluate(() => window.scrollBy(0, window.innerHeight));
-      console.log('Scrolled down following page.');
 
       // Wait for content to load
-      await randomDelay(3000, 5000); // Random delay between 3-5 seconds
+      await randomDelay(1000, 3000); // Random delay between 3-5 seconds
 
       // Take a screenshot after each scroll
       await page.screenshot({ path: `${USERNAME}_following_${Date.now()}.png`, fullPage: false });
       console.log('Took following page screenshot.');
+      
+      
+      // Wait for content to load
+      await randomDelay(1000, 3000); // Random delay between 3-5 seconds
+
+      // Scroll down the page
+      await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+      console.log('Scrolled down following page.');
 
       // Update current height to check if we reached the bottom
       currentHeight = await page.evaluate(() => document.body.scrollHeight);
     }
 
     console.log('Completed scraping profile, followers, and following.');
+
+    await page.goto('https://x.com/messages');
+  
+    // Wait for user tiles to be present
+    await page.waitForSelector('[data-testid="conversation"]');
+  
+    // Get all user conversation tiles
+    const userTiles = await page.$$('[data-testid="conversation"]');
+  
+    for (let i = 0; i < userTiles.length; i++) {
+      // Click on each user tile
+      await userTiles[i].click();
+      
+      // Wait for the chat content to load (adjust the selector as necessary)
+      await page.waitForSelector('[data-testid="chat-content"]', { timeout: 5000 });
+  
+      // Take a screenshot of the chat
+      await page.screenshot({
+        path: `chat_screenshot_${i + 1}.png`,
+        fullPage: true
+      });
+  
+      // Optional: Navigate back to the main messages list if needed
+      await page.goBack();
+      await page.waitForSelector('[data-testid="conversation"]'); // Ensure user tiles are visible again
+    }
   } catch (error) {
     console.error('Error during scraping:', error);
   } finally {
