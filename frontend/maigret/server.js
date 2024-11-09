@@ -30,12 +30,12 @@ app.post('/api/search', (req, res) => {
   const sanitizedUsername = sanitizeFilename(username);
   const jsonFilePath = path.join(reportsDir, `report_${sanitizedUsername}.json`);
 
-  const command = `maigret ${username} --json ndjson --timeout 10`;
+  const command = `maigret ${username} -H --timeout 7 --no-recursion --top-sites 100 --retries 0`;
 
   const maigretProcess = spawn('powershell.exe', ['-Command', command], {
     cwd: projectRoot,
     shell: true,
-    maxBuffer: 1024 * 1024 * 20,
+    maxBuffer: 1024 * 1024 * 200,
   });
 
   let outputData = '';
@@ -55,20 +55,10 @@ app.post('/api/search', (req, res) => {
     if (code === 0) {
       console.log(`Maigret finished with code ${code}`);
       
-      // Parse the JSON data
-      const results = outputData.split('\n')
-        .filter(line => line.trim() !== '')
-        .map(line => JSON.parse(line))
-        .filter(item => item.status && item.status.code === "CLAIMED")
-        .map(item => ({
-          site_name: item.site_name,
-          url: item.url_user
-        }));
-
-      // Send the parsed results back to the client
+      // Send the raw output data back to the client
       return res.status(200).json({ 
         message: 'Maigret finished successfully', 
-        results: results
+        rawOutput: outputData 
       });
     } else {
       console.error(`Maigret process exited with code ${code}`);
