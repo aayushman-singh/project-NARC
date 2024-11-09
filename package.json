@@ -26,6 +26,7 @@
     "maigret"
   ],
   "scripts": {
+    "start:auth": "cd backend && node server",
     "start:maigret": "cd maigret && node server",
     "start:instagram": "cd scraper/src/routes/ && npx tsx src/routes/Instagram.ts",
     "start:x": "cd scraper/src/routes/ && npx tsx src/routes/X.ts",
