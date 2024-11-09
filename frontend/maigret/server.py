@@ -2,6 +2,7 @@ from flask import Flask, request, jsonify
 import os
 import subprocess
 import shlex
+import sys  # Importing sys for standard error output
 
 app = Flask(__name__)
 
@@ -27,7 +28,7 @@ def search_user():
     sanitized_username = sanitize_filename(username)
     json_file_path = os.path.join(reports_dir, f'report_{sanitized_username}.json')
 
-    command = f'maigret {username} -H --timeout 7 --no-recursion --top-sites 100 --retries 0'
+    command = f'maigret {username} -H --timeout 7 --no-recursion --top-sites 20 --retries 0'
 
     try:
         maigret_process = subprocess.Popen(
