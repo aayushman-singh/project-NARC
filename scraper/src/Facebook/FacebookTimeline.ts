@@ -68,7 +68,7 @@ export async function scrapeFacebook( email: string, password: string ) {
       await page.evaluate(() => window.scrollBy(0, window.innerHeight));
       console.log(`Scrolled down the page after screenshot ${i}.`);
     }
-
+    await page.goto("https://www.facebook.com/me/")
     // Wait for the profile page to load
     await page.waitForNavigation({ waitUntil: 'networkidle' });
 
