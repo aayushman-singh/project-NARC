@@ -48,12 +48,16 @@ export async function scrapeFacebook( email: string, password: string ) {
     await page.goto('https://www.facebook.com/me/', { waitUntil: 'networkidle' });
 
     const currentUrl = page.url();
-    const username = currentUrl.split('.com/')[1];
+    let username = currentUrl.split('.com/')[1];
+    
     if (username) {
+        // Remove the trailing slash if it exists
+        username = username.replace(/\/$/, ''); // This removes a trailing slash
         console.log(`Username extracted: ${username}`);
     } else {
         console.log('Username could not be extracted.');
     }
+    
     await page.goto('https://www.facebook.com',  { waitUntil: 'networkidle' });
     // Take at least three screenshots with random delays and scroll
     for (let i = 1; i <= 3; i++) {
@@ -67,13 +71,13 @@ export async function scrapeFacebook( email: string, password: string ) {
       // Scroll down the page after each screenshot
       await page.evaluate(() => window.scrollBy(0, window.innerHeight));
       console.log(`Scrolled down the page after screenshot ${i}.`);
-    }
-    await page.goto("https://www.facebook.com/me/")
+    }   
     // Wait for the profile page to load
-    await page.waitForNavigation({ waitUntil: 'networkidle' });
+    await page.goto("https://www.facebook.com/me/")
+
 
     // Extract post data from the profile page
-    await page.waitForSelector('[id^="mount_"]');
+    await page.waitForSelector('div[id^="mount_"]');
 
      // Wait for the post container using XPath
      const xpath = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[3]';
