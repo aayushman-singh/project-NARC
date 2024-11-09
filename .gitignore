@@ -21,3 +21,4 @@ backend/node_modules
 *.txt
 package-lock.json
 yarn.lock
+/venv
