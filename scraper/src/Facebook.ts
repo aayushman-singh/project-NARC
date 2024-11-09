@@ -1,11 +1,9 @@
 import express from 'express';
 import cors from 'cors';
-import { scrapeFacebookProfile } from './Facebook/FacebookProfile';
-import { scrapeFacebookPosts } from './Facebook/FacebookPosts';  // Import the new function
 import { scrapeFacebook } from './Facebook/FacebookTimeline.js';
 
 const app = express();
-const PORT = Number(process.env.PORT) || 3002; // Facebook Scraper Port
+const PORT = Number(process.env.PORT) || 3002; 
 
 app.use(express.json());
 app.use(cors());
@@ -20,16 +18,12 @@ app.post('/facebook', async (req, res) => {
     }
 
     try {
-        console.log('Scraping profiles...');
-        await scrapeFacebookProfile(startUrls);
 
-        console.log('Scraping followers and following...');
+        console.log('Scraping facebook...');
         for (const username of startUrls) {
             await scrapeFacebook(username, password);
         }
 
-        console.log('Scraping posts...');
-        const result = await scrapeFacebookPosts(startUrls);
 
         return res.status(200).json(result); // Return final response with status 200
     } catch (error:any) {
