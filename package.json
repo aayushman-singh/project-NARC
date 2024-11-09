@@ -23,12 +23,12 @@
   "workspaces": [
     "scraper",
     "frontend",
-    "maigret"
+    "backend"
   ],
   "scripts": {
     "start:script": "python frontend/script/server.py",
     "start:auth": "cd backend && node server",
-    "start:maigret": "node frontend/maigret/server.js",
+    "start:maigret": "py frontend/maigret/server.py",
     "start:instagram": "cd scraper/src/routes/ && npx tsx src/routes/Instagram.ts",
     "start:x": "cd scraper/src/routes/ && npx tsx src/routes/X.ts",
     "start:facebook": "cd scraper/src/routes/ && npx tsx src/routes/Facebook.ts",
