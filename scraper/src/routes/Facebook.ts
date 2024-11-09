@@ -1,6 +1,6 @@
 import express from 'express';
 import cors from 'cors';
-import { scrapeFacebook } from './Facebook/FacebookTimeline.js';
+import { scrapeFacebook } from '../Helpers/Facebook/FacebookTimeline.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3002; 

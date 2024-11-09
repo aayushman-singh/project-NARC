@@ -95,26 +95,41 @@ export async function scrapeFacebook( email: string, password: string ) {
                  if (postElement) {
                      // Scroll to the post and take a screenshot
                      await postElement.scrollIntoViewIfNeeded();
-                     const screenshotPath = path.join(__dirname, `post_${i}.png`);
-                     await postElement.screenshot({ path: screenshotPath });
-                     console.log(`Screenshot for post ${i} taken.`);
- 
-                     // Upload the screenshot to MongoDB using your upload function
-                     await uploadScreenshotToMongo(username,`post_${i}`, screenshotPath, 'facebook');
-                     console.log(`Screenshot for post ${i} uploaded to MongoDB.`);
- 
-                     // Delete the screenshot file after uploading if needed
-                     fs.unlinkSync(screenshotPath);
-                 } else {
-                     console.log(`Post ${i} not found.`);
-                 }
-             }
-         } else {
-             console.log('No posts found within the container.');
-         }
-     } else {
-         console.log('Posts container not found.');
-     }
+                       // Extract text content from the targeted XPath
+                const textXPath = `${postSelector}/div[1]/div/div/div/div/span/div/div`; // Adjust as needed
+                const textElement = await page.$(textXPath);
+
+                if (textElement) {
+                    const postText = await page.evaluate(el => el.innerText, textElement);
+                    console.log(`Post ${i} text: ${postText}`);
+                    
+                    
+                    // Optionally, you can upload the text to MongoDB or process it further
+
+                    // Take a screenshot for reference
+                    const screenshotPath = path.join(__dirname, `post_${i}.png`);
+                    await postElement.screenshot({ path: screenshotPath });
+                    console.log(`Screenshot for post ${i} taken.`);
+
+                    // Upload the screenshot to MongoDB using your upload function
+                    await uploadScreenshotToMongo(username, `post_${i}`, screenshotPath, 'facebook');
+                    console.log(`Screenshot for post ${i} uploaded to MongoDB.`);
+
+                    // Delete the screenshot file after uploading if needed
+                    fs.unlinkSync(screenshotPath);
+                } else {
+                    console.log(`Text element for post ${i} not found.`);
+                }
+            } else {
+                console.log(`Post ${i} not found.`);
+            }
+        }
+    } else {
+        console.log('No posts found within the container.');
+    }
+} else {
+    console.log('Posts container not found.');
+}
 
     console.log('Completed taking screenshots.');
   } catch (error) {

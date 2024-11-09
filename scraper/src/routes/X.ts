@@ -1,7 +1,7 @@
 import express from 'express';
-import { scrapeX } from './X/Xtimeline';  // Adjust the path to your scraper file
+import { scrapeX } from '../Helpers/X/Xtimeline';  // Adjust the path to your scraper file
 import cors from 'cors';
-import { XTweets } from './X/XTweets';
+import { XTweets } from '../Helpers/X/XTweets';
 
 const app = express();
 
