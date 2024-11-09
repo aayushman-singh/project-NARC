@@ -126,17 +126,47 @@ export async function insertFollowing(username: string, followingData: any, plat
     }
 }
 
-export async function insertPosts(username: string, posts: any[], platform: string) {
-    await client.connect();
-    const db = client.db(`${platform}DB`); // Platform specific database
-    const collection = db.collection<InstagramUserDocument>(`${platform}_users`); // Platform specific collection
+export async function insertPosts(username: string, posts: any[], platform: string): Promise<void> {
+    try {
+        await client.connect();
+        const db = client.db(`${platform}DB`); // Platform specific database
+        const collection = db.collection<InstagramUserDocument>(`${platform}_users`); // Platform specific collection
 
-    // Update or insert the user's posts into the 'posts' array
-    await collection.updateOne(
-        { username: username }, // Find document by username
-        { $push: { posts: { $each: posts } } }, // Append posts to the 'posts' array
-        { upsert: true } // Insert the document if it doesn't exist
-    );
+        for (const post of posts) {
+            await collection.updateOne(
+                { 
+                    username: username, 
+                    "posts.id": post.id // Match existing post by unique identifier (e.g., post ID)
+                },
+                { 
+                    $set: { "posts.$": post } // Overwrite existing post data
+                },
+                { 
+                    upsert: true // Insert a new document if it doesn't exist
+                }
+            );
+
+            // Add post if not found and matched by ID
+            await collection.updateOne(
+                { 
+                    username: username,
+                    "posts.id": { $ne: post.id } // Check if the post ID does not exist
+                },
+                { 
+                    $push: { posts: post } // Add the new post to the array
+                },
+                { 
+                    upsert: true // Ensure document exists
+                }
+            );
+        }
+
+        console.log(`Posts successfully updated/inserted for user: ${username}`);
+    } catch (error) {
+        console.error(`Failed to update/insert posts for user ${username}:`, error);
+    } finally {
+        await client.close();
+    }
 }
 
 export async function insertMessages(username: string, filePath: string, platform: string) {
