@@ -54,7 +54,7 @@ function App() {
   let routesElement = useRoutes(routesArray);
 
   return (
-    <AuthProvider>
+<>
 
       {/* <CursorFollower/> */}
       <Header />
@@ -62,7 +62,7 @@ function App() {
       <div className="w-full flex-grow flex flex-col pt-16 bg-gray-700">
         {routesElement}
       </div>
-    </AuthProvider>
+      </> 
   );
 }
 

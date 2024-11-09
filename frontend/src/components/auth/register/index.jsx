@@ -1,20 +1,20 @@
 import React, { useState } from 'react';
 import { Navigate, Link, useNavigate } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 import { setUserInfo } from '../../../features/userSlice';
-import { useAuth } from '../../../contexts/authContext';
 import axios from 'axios';
 
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { userLoggedIn } = useAuth();
+
+  // Get userInfo from Redux to check if a user is logged in
+  const userInfo = useSelector((state) => state.user.userInfo);
 
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
-    
     termsAccepted: false,
   });
 
@@ -41,12 +41,11 @@ const Register = () => {
 
     try {
       const { data } = await axios.post(
-        'http://localhost:5000/api/users/',
+        'http://localhost:5001/api/users/',
         {
-            name: formData.name,
+          name: formData.name,
           email: formData.email,
           password: formData.password,
-          
         },
         { headers: { 'Content-Type': 'application/json' } }
       );
@@ -61,7 +60,7 @@ const Register = () => {
     }
   };
 
-  if (userLoggedIn) return <Navigate to="/home" replace={true} />;
+ 
 
   return (
     <main className="w-full h-screen bg-gray-900 text-gray-100 flex justify-center items-center">
