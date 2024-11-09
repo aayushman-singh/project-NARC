@@ -35,7 +35,7 @@ export async function XTweets(startUrls: string[]) {
             await insertTweets(username, items, 'twitter');
         }
 
-        console.log('Posts successfully inserted into MongoDB.');
+        console.log('Tweets successfully inserted into MongoDB.');
 
       
 
