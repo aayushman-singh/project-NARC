@@ -1766,13 +1766,6 @@
   dependencies:
     tslib "^2.4.0"
 
-"@types/async-retry@^1.4.8":
-  version "1.4.8"
-  resolved "https://registry.npmjs.org/@types/async-retry/-/async-retry-1.4.8.tgz"
-  integrity sha512-Qup/B5PWLe86yI5I3av6ePGaeQrIHNKCwbsQotD6aHQ6YkHsMUxVZkZsmx/Ry3VZQ6uysHwTjQ7666+k6UjVJA==
-  dependencies:
-    "@types/retry" "*"
-
 "@types/babel__core@^7.20.5":
   version "7.20.5"
   resolved "https://registry.npmjs.org/@types/babel__core/-/babel__core-7.20.5.tgz"
@@ -1969,11 +1962,6 @@
   dependencies:
     "@types/prop-types" "*"
     csstype "^3.0.2"
-
-"@types/retry@*":
-  version "0.12.5"
-  resolved "https://registry.npmjs.org/@types/retry/-/retry-0.12.5.tgz"
-  integrity sha512-3xSjTp3v03X/lSQLkczaN9UIEwJMoMCA1+Nb5HfbJEQWogdeQIyVtTvxPXDQjZ5zws8rFQfVfRdz03ARihPJgw==
 
 "@types/sax@^1.2.7":
   version "1.2.7"
@@ -4299,7 +4287,7 @@ front-matter@^4.0.2:
   dependencies:
     js-yaml "^3.13.1"
 
-"frontend@file:S:\\Repo\\SIH\\project-NARC\\frontend":
+"frontend@file:C:\\Users\\asus\\project-NARC\\frontend":
   version "0.0.0"
   resolved "file:frontend"
   dependencies:
@@ -7958,7 +7946,7 @@ scheduler@^0.23.2:
   dependencies:
     loose-envify "^1.1.0"
 
-"scraper@file:S:\\Repo\\SIH\\project-NARC\\scraper":
+"scraper@file:C:\\Users\\asus\\project-NARC\\scraper":
   version "0.0.1"
   resolved "file:scraper"
   dependencies:
