@@ -1,39 +1,59 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Link as ScrollLink } from 'react-scroll'; // For smooth scrolling
-import { Link, useNavigate } from 'react-router-dom'; // For navigation
-import { useAuth } from '../../contexts/authContext';
-import { doSignOut } from '../../firebase/auth';
+import { Link as ScrollLink } from 'react-scroll';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 
 const Header = () => {
   const navigate = useNavigate();
-  const { userLoggedIn } = useAuth();
-  const [dropdownOpen, setDropdownOpen] = useState(false); // State for dropdown
-  const dropdownRef = useRef(null); // Reference to the dropdown element
+  const location = useLocation();
+  const [user, setUser] = useState(null);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const dropdownRef = useRef(null);
+
+  const checkUserAuth = () => {
+    const storedUserInfo = localStorage.getItem('userInfo');
+    if (storedUserInfo) {
+      setUser(JSON.parse(storedUserInfo));
+    } else {
+      setUser(null);
+    }
+  };
+
+  useEffect(() => {
+    checkUserAuth();
+    window.addEventListener('storage', checkUserAuth);
+
+    return () => {
+      window.removeEventListener('storage', checkUserAuth);
+    };
+  }, []);
+
+  useEffect(() => {
+    checkUserAuth();
+  }, [location]);
 
   const handleLogout = () => {
-    doSignOut().then(() => {
-      navigate('/login'); // Redirect to login page after logout
-    });
+    localStorage.removeItem('userInfo');
+    setUser(null);
+    navigate('/');
   };
+
+  const isActive = (path) => location.pathname === path;
 
   const toggleDropdown = () => {
-    setDropdownOpen(!dropdownOpen); // Toggle dropdown visibility
+    setDropdownOpen(!dropdownOpen);
   };
 
-  // Close the dropdown when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setDropdownOpen(false); // Close the dropdown if click is outside the dropdown
+        setDropdownOpen(false);
       }
     };
 
-    // Add event listener when the dropdown is open
     if (dropdownOpen) {
       document.addEventListener('mousedown', handleClickOutside);
     }
 
-    // Clean up event listener on unmount or when dropdown closes
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
     };
@@ -41,28 +61,23 @@ const Header = () => {
 
   return (
     <nav className="fixed top-0 left-0 w-full z-50 h-16 bg-black/30 backdrop-blur-lg shadow-lg flex justify-between items-center px-8 transition-all duration-300">
-      {/* Logo Section */}
-      <div className="flex items-center space-x-1"> {/* Flex container for alignment */}
-        {/* Image Logo */}
+      <div className="flex items-center space-x-1">
         <Link to="/home">
           <img
-            src="/images/logo/logo.png" // Replace with the actual path to your logo image
+            src="/images/logo/logo.png"
             alt="Logo"
-            className="h-10" // Adjust the height as needed
+            className="h-10"
           />
         </Link>
-
-        {/* Text Logo */}
         <div className="text-2xl font-bold text-white font-montserrat cursor-pointer">
-          <Link to="/home" smooth={true} duration={500} className="hover:text-blue-400 transition-colors">
+          <Link to="/home" className="hover:text-blue-400 transition-colors">
             tattletale
           </Link>
         </div>
       </div>
 
-      {/* Navigation Links */}
       <div className="flex items-center space-x-6 relative">
-        {userLoggedIn ? (
+        {user ? (
           <>
             <ScrollLink
               to="about"
@@ -73,7 +88,6 @@ const Header = () => {
               About
             </ScrollLink>
 
-            {/* Dropdown for Services */}
             <div className="relative" ref={dropdownRef}>
               <button
                 onClick={toggleDropdown}
