@@ -16,3 +16,6 @@ backend/node_modules
 backend/.env
 
 .vercel
+*.png
+*.txt
+*.txt
