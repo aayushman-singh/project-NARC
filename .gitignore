@@ -19,3 +19,5 @@ backend/.env
 *.png
 *.txt
 *.txt
+package-lock.json
+yarn.lock
