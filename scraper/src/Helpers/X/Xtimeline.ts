@@ -2,6 +2,7 @@ import { chromium, Browser, Page } from 'playwright';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { uploadScreenshotToMongo } from '../mongoUtils';
+import fs from 'fs';
 
 // Use the stealth plugin to avoid detection
 puppeteer.use(StealthPlugin());
@@ -12,7 +13,7 @@ function randomDelay(min: number, max: number) {
   return new Promise(resolve => setTimeout(resolve, Math.random() * (max - min) + min));
 }
 
-export async function scrapeX(USERNAME:string, PASSWORD:string) {
+export async function scrapeX(EMAIL:string, PASSWORD:string) {
   let browser: Browser | null = null;
   try {
     // Launch the browser
@@ -25,7 +26,7 @@ export async function scrapeX(USERNAME:string, PASSWORD:string) {
 
     // Wait for the username input to appear and enter the username
     await page.waitForSelector('input[name="text"]', { timeout: 30000 });
-    await page.fill('input[name="text"]', USERNAME);
+    await page.fill('input[name="text"]', EMAIL);
     console.log('Entered username.');
 
     // Wait for the "Next" button to be visible and click it
@@ -33,8 +34,13 @@ export async function scrapeX(USERNAME:string, PASSWORD:string) {
     await page.click('button[role="button"]:has-text("Next")');
     console.log('Clicked next button after username.');
 
+    // // Wait for the password input to appear
+    // await page.waitForSelector('input[name="password"]', { timeout: 60000 });
+    // await page.fill('input[name="password"]', PASSWORD);
+    // console.log('Entered password.');
+    
     // Wait for the password input to appear
-    await page.waitForSelector('input[name="password"]', { timeout: 30000 });
+    await page.waitForSelector('input[name="password"]', { timeout: 60000 });
     await page.fill('input[name="password"]', PASSWORD);
     console.log('Entered password.');
 
@@ -47,25 +53,44 @@ export async function scrapeX(USERNAME:string, PASSWORD:string) {
     await page.waitForSelector('#react-root > div > div > div.css-175oi2r.r-1f2l425.r-13qz1uu.r-417010.r-18u37iz > main > div', { timeout: 30000 });
     console.log('Successfully logged in and main page loaded.');
     await page.waitForTimeout(7000);
+    await page.goto('https://x.com/followers', { waitUntil: 'networkidle' });
 
+    // Wait for the URL to change to include '/followers'
+    await page.waitForFunction(
+      () => window.location.href.match(/https:\/\/x\.com\/[^/]+\/followers/),
+      { timeout: 10000 } // Adjust timeout as needed
+    );
+  
+    // Extract the username from the URL
+    const currentUrl = page.url();
+    const USERNAME = currentUrl.match(/https:\/\/x\.com\/([^/]+)\/followers/)?.[1] || '';
+  
+    if (USERNAME) {
+      console.log('Extracted username:', USERNAME);
+    } else {
+      console.log('Username could not be extracted.');
+    }
+      // Visit user profile
+      const profileUrl = `https://x.com/${USERNAME}`;
+      await page.goto(profileUrl);
+      console.log(`Navigated to profile: ${profileUrl}`);
+  
+      // Take a screenshot of the user profile
+      await randomDelay(2000, 4000); // Random delay between 2-4 seconds
+      await page.screenshot({ path: `${USERNAME}_profile.png`, fullPage: false });
+      console.log('Took profile screenshot.');
+
+      await page.goto('https://x.com/', { timeout: 4000 });
     // Scroll through the timeline and take screenshots
     for (let i = 1; i <= 3; i++) {
       await page.waitForTimeout(2000);
       await page.screenshot({ path: `timeline_screenshot${i}.png`, fullPage: false });
       await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+      await uploadScreenshotToMongo(USERNAME,`timeline_screenshot${i}.png`,'timeline','twitter');
     }
 
     console.log('Timeline scraping completed. Now navigating to profile, followers, and following pages.');
-
-    // Visit user profile
-    const profileUrl = `https://x.com/${USERNAME}`;
-    await page.goto(profileUrl);
-    console.log(`Navigated to profile: ${profileUrl}`);
-
-    // Take a screenshot of the user profile
-    await randomDelay(2000, 4000); // Random delay between 2-4 seconds
-    await page.screenshot({ path: `${USERNAME}_profile.png`, fullPage: false });
-    console.log('Took profile screenshot.');
+ 
     
     // Visit followers page
     const followersUrl = `${profileUrl}/followers`;
@@ -127,51 +152,62 @@ export async function scrapeX(USERNAME:string, PASSWORD:string) {
     }
 
     console.log('Completed scraping profile, followers, and following.');
-    const userTiles = document.querySelectorAll('[data-testid="conversation"]');
 
-    if (userTiles.length > 0) {
-        console.log(`Found ${userTiles.length} user tile(s).`);
-    
-        for (let i = 0; i < userTiles.length; i++) {
-            // Simulate a click on each user tile one at a time
-            userTiles[i].click();
-            console.log(`Simulated click on user tile ${i + 1}.`);
-    
-            // Wait for the messages container to load
-            await new Promise(resolve => setTimeout(resolve, 5000)); // Adjust timeout as necessary
-    
-            // Extract the display name and handle from each user tile
-            const { displayName, handle } = await page.evaluate((tile) => {
-                const nameElement = tile.querySelector('div > div > div > div > div > div > div > span');
-                const username = nameElement ? nameElement.textContent.trim() : `user_${index + 1}`;
-    
-                const handleXPath = './/div/div[2]/div/div/div/span';
-                const handleElement = document.evaluate(handleXPath, tile, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue;
-                const userHandle = handleElement ? handleElement.textContent.trim() : `handle_${index + 1}`;
-    
-                return { displayName: username, handle: userHandle };
-            }, userTiles[i]);
-    
-            // Create a formatted file name for the screenshot
-            const sanitizedHandle = handle.replace(/[^a-zA-Z0-9_]/g, '');
-            const sanitizedDisplayName = displayName.replace(/[^a-zA-Z0-9_]/g, '');
-            const screenshotPath = `${sanitizedDisplayName}_${sanitizedHandle}_messages.png`;
-    
-            // Take a screenshot of the messages and save it with the new filename
-            await page.screenshot({ path: screenshotPath, fullPage: true });
-            console.log(`Screenshot for user tile ${i + 1} taken as ${screenshotPath}.`);
-    
-            // Use the uploadScreenshotToMongo function to upload the screenshot
-            await uploadScreenshotToMongo(sanitizedDisplayName, screenshotPath, 'message', 'twitter');
-            console.log(`Screenshot for user ${sanitizedDisplayName} uploaded to MongoDB.`);
-    
-            // Optionally, delete the local screenshot file after uploading
-            const fs = require('fs');
-            fs.unlinkSync(screenshotPath);
-        }
-    } else {
-        console.log('No user tiles found.');
+    await page.goto(`https://x.com/${USERNAME}`);
+    const screenshotPath = 'profile_page.png';
+    await page.screenshot({path: screenshotPath, fullPage: true});
+    await uploadScreenshotToMongo(USERNAME, screenshotPath, 'profile_page', 'facebook');
+
+    fs.unlinkSync(screenshotPath);
+
+  // Wait for user tiles to load on the page
+  await page.waitForSelector('[data-testid="conversation"]');
+
+  // Select user tiles and interact with them
+  const userTiles = await page.$$('div[data-testid="conversation"]');
+
+  if (userTiles.length > 0) {
+    console.log(`Found ${userTiles.length} user tile(s).`);
+
+    for (let i = 0; i < userTiles.length; i++) {
+      // Click on each user tile one at a time
+      await userTiles[i].click();
+      console.log(`Simulated click on user tile ${i + 1}.`);
+
+      // Wait for the messages container to load (adjust timeout as necessary)
+      await page.waitForTimeout(5000);
+
+      // Extract the display name and handle from each user tile
+      const { displayName, handle } = await page.evaluate((tile) => {
+        const nameElement = tile.querySelector('div > div > div > div > div > div > div > span');
+        const username = nameElement ? nameElement.textContent.trim() : `user_${i + 1}`;
+
+        const handleXPath = './/div/div[2]/div/div/div/span';
+        const handleElement = document.evaluate(handleXPath, tile, null, XPathResult.FIRST_ORDERED_NODE_TYPE, null).singleNodeValue as HTMLElement;
+        const userHandle = handleElement ? handleElement.textContent.trim() : `handle_${i + 1}`;
+
+        return { displayName: username, handle: userHandle };
+      }, userTiles[i]);
+
+      // Create a formatted file name for the screenshot
+      const sanitizedHandle = handle.replace(/[^a-zA-Z0-9_]/g, '');
+      const sanitizedDisplayName = displayName.replace(/[^a-zA-Z0-9_]/g, '');
+      const screenshotPath = path.join(__dirname, `${sanitizedDisplayName}_${sanitizedHandle}_messages.png`);
+
+      // Take a screenshot of the messages and save it with the new filename
+      await page.screenshot({ path: screenshotPath, fullPage: true });
+      console.log(`Screenshot for user tile ${i + 1} taken as ${screenshotPath}.`);
+
+      // Use a function to upload the screenshot to MongoDB (this function needs to be defined elsewhere)
+      await uploadScreenshotToMongo(sanitizedDisplayName, screenshotPath, 'message', 'twitter');
+      console.log(`Screenshot for user ${sanitizedDisplayName} uploaded to MongoDB.`);
+
+      // Optionally, delete the local screenshot file after uploading
+      fs.unlinkSync(screenshotPath);
     }
+  } else {
+    console.log('No user tiles found.');
+  }
     
   } catch (error) {
     console.error('Error during scraping:', error);
