@@ -1,20 +1,18 @@
 from flask import Flask, request, jsonify
 import os
 import subprocess
-import shlex
-import sys  # Importing sys for standard error output
-from flask_cors import CORS  # Import CORS
+import re  # Import regex for URL extraction
+import sys
+from flask_cors import CORS
 
 app = Flask(__name__)
 CORS(app)
 project_root = os.path.dirname(os.path.abspath(__file__))
 reports_dir = os.path.join(project_root, 'reports')
 
-# Ensure reports directory exists
 if not os.path.exists(reports_dir):
     os.makedirs(reports_dir)
 
-# Sanitize the filename to remove invalid characters for Windows
 def sanitize_filename(filename):
     return ''.join([c if c.isalnum() else '_' for c in filename]).lower()
 
@@ -42,30 +40,37 @@ def search_user():
             bufsize=1
         )
 
-        output_data = ''
-        error_data = ''
+        output_data = []
+        error_data = []
 
+        # Capture output and parse URLs
         for line in maigret_process.stdout:
-            output_data += line
-            print(f'Maigret Progress: {line.strip()}')
+            output_data.append(line.strip())
+            print(f'Maigret Output: {line.strip()}')
 
         for line in maigret_process.stderr:
-            error_data += line
+            error_data.append(line.strip())
             print(f'Error: {line.strip()}', file=sys.stderr)
 
         maigret_process.wait()
 
         if maigret_process.returncode == 0:
-            print(f'Maigret finished with code {maigret_process.returncode}')
+            # Parse URLs from output
+            urls = []
+            url_pattern = re.compile(r'(https?://\S+)')  # Simple URL matching regex
+            for line in output_data:
+                found_urls = url_pattern.findall(line)
+                urls.extend(found_urls)
+            print("Extracted URLs:", urls)
+            # Return URLs in the JSON response
             return jsonify({
                 'message': 'Maigret finished successfully',
-                'rawOutput': output_data
+                'urls': urls
             }), 200
         else:
-            print(f'Maigret process exited with code {maigret_process.returncode}')
             return jsonify({
                 'error': f'Maigret process exited with code {maigret_process.returncode}',
-                'details': error_data
+                'details': "\n".join(error_data)
             }), 500
 
     except Exception as e:
