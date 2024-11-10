@@ -1,10 +1,9 @@
 import React, { useState, useEffect } from 'react';
 import { InstagramLogo, WhatsappLogo, FacebookLogo, TelegramLogo, TwitterLogo, FileCsv, FilePdf, CloudArrowUp, Coins } from 'phosphor-react';
-import followersData from '../data/followers_log';  // Import followers data
+import followersData from '../data/followers_log';
 import followingData from '../data/following_log';
 import './style.css';
 
-// Import the JSON data
 import instagramData from '../data/Instagram.json';
 
 const Services = () => {
@@ -16,15 +15,15 @@ const Services = () => {
   const [showFollowing, setShowFollowing] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState(1);
 
-
   const toggleFollowers = () => setShowFollowers(!showFollowers);
   const toggleFollowing = () => setShowFollowing(!showFollowing);
   const handleSectionClick = (section) => {
     setActiveSection((prev) => (prev === section ? '' : section));
   };
+
   const handleSubmit = async (platform) => {
     const tagInputElement = document.getElementById(`${platform}Input`);
-    const passwordInputElement = document.getElementById(`${platform}Password`); // New password input element
+    const passwordInputElement = document.getElementById(`${platform}Password`);
   
     if (!tagInputElement) {
       console.error(`${platform}Input element not found`);
@@ -41,7 +40,7 @@ const Services = () => {
     const baseUrl = 'http://localhost'; 
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-    const password = passwordInputElement.value; // Get the password
+    const password = passwordInputElement.value;
   
     if (!password || password.trim() === "") {
       alert('Please enter the password');
@@ -53,7 +52,6 @@ const Services = () => {
       password: password.trim(), 
     };
   
-    // Adjust the endpoint based on the platform (Instagram, Facebook, or X)
     let apiEndpoint;
     if (platform === 'instagram') {
       apiEndpoint = `${baseUrl}:3001/${platform}`; 
@@ -84,9 +82,8 @@ const Services = () => {
         throw new Error(`Request failed for ${platform}: ${response.statusText}`);
       }
   
-      
       tagInputElement.value = '';
-      passwordInputElement.value = ''; // Clear the password input after submission
+      passwordInputElement.value = '';
     } catch (error) {
       console.error(`Error submitting tags for ${platform}:`, error);
       alert('Failed to submit tags. Please try again.');
@@ -94,7 +91,6 @@ const Services = () => {
       setIsLoading(false);
     }
   };
-  
 
   const handleShowDetails = () => {
     const username = document.getElementById('instagramInput').value;
@@ -113,6 +109,7 @@ const Services = () => {
       {content}
     </div>
   );
+
   const renderDropdown = () => (
     <select
       value={selectedNumber}
@@ -120,7 +117,7 @@ const Services = () => {
       className="mt-4 bg-gray-800 text-white p-2 rounded-md border border-gray-600 focus:ring-2 focus:ring-pink-500 transition ease-in-out duration-200"
     >
       {[...Array(10).keys()].map(i => (
-        <option key={i + 1} value={i + 1}>{i + 1}</option>
+      <option key={i + 1} value={i + 1}>{i + 1}</option>
       ))}
     </select>
   );
@@ -137,7 +134,6 @@ const Services = () => {
       )}
       <h1 className="text-3xl font-bold mb-8 text-center">Social Media Investigation Tool</h1>
 
-      {/* Section Headers */}
       <div className="flex justify-center space-x-8 mb-8">
         <button onClick={() => handleSectionClick('instagram')} className="flex items-center space-x-2">
           <InstagramLogo size={32} color={activeSection === 'instagram' ? '#E1306C' : '#ccc'} />
@@ -149,7 +145,6 @@ const Services = () => {
           <span className={`text-lg ${activeSection === 'facebook' ? 'text-blue-600' : 'text-gray-400'}`}>Facebook</span>
         </button>
 
-
         <button onClick={() => handleSectionClick('x')} className="flex items-center space-x-2">
           <TwitterLogo size={32} color={activeSection === 'x' ? '#1DA1F2' : '#ccc'} />
           <span className={`text-lg ${activeSection === 'x' ? 'text-blue-500' : 'text-gray-400'}`}>X</span>
@@ -159,14 +154,13 @@ const Services = () => {
           <TelegramLogo size={32} color={activeSection === 'telegram' ? '#0088cc' : '#ccc'} />
           <span className={`text-lg ${activeSection === 'telegram' ? 'text-blue-400' : 'text-gray-400'}`}>Telegram</span>
         </button>
+
         <button onClick={() => handleSectionClick('whatsapp')} className="flex items-center space-x-2">
           <WhatsappLogo size={32} color={activeSection === 'whatsapp' ? '#25D366' : '#ccc'} />
           <span className={`text-lg ${activeSection === 'whatsapp' ? 'text-green-500' : 'text-gray-400'}`}>WhatsApp</span>
         </button>
-
       </div>
 
-      {/* Instagram Section */}
       {activeSection === 'instagram' && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-pink-500">Instagram</h2>
@@ -182,7 +176,8 @@ const Services = () => {
             placeholder="Enter Instagram password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
           />
-           {renderDropdown()}
+          Max post: 
+          {renderDropdown()}
           <div className="flex space-x-4 mt-4">
             <button
               onClick={() => handleSubmit('instagram')}
@@ -201,68 +196,58 @@ const Services = () => {
 
           {showDetails && userData && (
             <div className="mt-8">
-             <DetailSection
-      title="Profile"
-      content={
-        <div>
-          <p>Username: {userData.username}</p>
-          <p>Full Name: {userData.full_name}</p>
-
-          {/* Followers Dropdown */}
-          <div>
-            <p className="cursor-pointer" onClick={toggleFollowers}>
-              Followers: {userData.followers} {showFollowers ? '▲' : '▼'}
-            </p>
-            {showFollowers && (
-              <ul className="ml-4 list-disc">
-                {followersData.map((follower, index) => (
-                  <li key={index}>{follower}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          {/* Following Dropdown */}
-          <div>
-            <p className="cursor-pointer" onClick={toggleFollowing}>
-              Following: {userData.following} {showFollowing ? '▲' : '▼'}
-            </p>
-            {showFollowing && (
-              <ul className="ml-4 list-disc">
-                {followingData.map((following, index) => (
-                  <li key={index}>{following}</li>
-                ))}
-              </ul>
-            )}
-          </div>
-
-          <p>Bio: {userData.biography}</p>
-        </div>
-      }
-    />
               <DetailSection
-  title="Posts"
-  content={
-    <div>
-      {userData.posts.map((post, index) => (
-        <div key={index} className="mb-4 border border-gray-300 p-4 rounded-lg">
-          <p>Post ID: {post.post_id}</p>
-          <img
-            src={`/images/post/post${index + 1}.jpg`} // Dynamically generate the file name based on the index
-            alt={`Post ${index + 1}`}
-            className="w-full max-w-2xl my-2"
-          />
-          {/* Display the caption below the image */}
-          <p className="text-gray-100 text-md mt-2">Caption: {post.caption}</p>
-        </div>
-      ))}
-    </div>
-  }
-/>
-
-
-
-
+                title="Profile"
+                content={
+                  <div>
+                    <p>Username: {userData.username}</p>
+                    <p>Full Name: {userData.full_name}</p>
+                    <div>
+                      <p className="cursor-pointer" onClick={toggleFollowers}>
+                        Followers: {userData.followers} {showFollowers ? '▲' : '▼'}
+                      </p>
+                      {showFollowers && (
+                        <ul className="ml-4 list-disc">
+                          {followersData.map((follower, index) => (
+                            <li key={index}>{follower}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <div>
+                      <p className="cursor-pointer" onClick={toggleFollowing}>
+                        Following: {userData.following} {showFollowing ? '▲' : '▼'}
+                      </p>
+                      {showFollowing && (
+                        <ul className="ml-4 list-disc">
+                          {followingData.map((following, index) => (
+                            <li key={index}>{following}</li>
+                          ))}
+                        </ul>
+                      )}
+                    </div>
+                    <p>Bio: {userData.biography}</p>
+                  </div>
+                }
+              />
+              <DetailSection
+                title="Posts"
+                content={
+                  <div>
+                    {userData.posts.map((post, index) => (
+                      <div key={index} className="mb-4 border border-gray-300 p-4 rounded-lg">
+                        <p>Post ID: {post.post_id}</p>
+                        <img
+                          src={`/images/post/post${index + 1}.jpg`}
+                          alt={`Post ${index + 1}`}
+                          className="w-full max-w-2xl my-2"
+                        />
+                        <p className="text-gray-100 text-md mt-2">Caption: {post.caption}</p>
+                      </div>
+                    ))}
+                  </div>
+                }
+              />
               <DetailSection
                 title="Timeline"
                 content={
@@ -270,53 +255,38 @@ const Services = () => {
                     {userData.timeline_screenshots.map((screenshot, index) => (
                       <div key={index}>
                         <p>Timeline ID: {screenshot.timeline_id}</p>
-
                         <img
-                          src={`/images/timeline/timeline_aayushman3260_${index + 1}.png`} // Dynamically generate the file name based on the index
+                          src={`/images/timeline/timeline_aayushman3260_${index + 1}.png`}
                           alt={`Timeline ${index + 1}`}
                           className="w-full max-w-2xl my-2"
                         />
-
                       </div>
                     ))}
                   </div>
-
-
                 }
               />
               <DetailSection
                 title="messages"
                 content={
-                  <DetailSection
-                    title="messages"
-                    content={
-                      <img
-                        src={`/images/screenshot/instagram_direct_first_message.png`} // Access the image from public/images/screenshot
-
-                        className="w-full max-w-2xl h-auto my-2" // Adjust size as needed
-                      />
-                    }
+                  <img
+                    src={`/images/screenshot/instagram_direct_first_message.png`}
+                    className="w-full max-w-2xl h-auto my-2"
                   />
                 }
               />
-
-              {/* Export Buttons - Show only when details are visible */}
               <div className="flex mt-12 space-x-2">
                 <button className="flex items-center space-x-2 bg-green-200 text-green-700 px-4 py-2 rounded-md hover:bg-green-300 transition-colors">
                   <FileCsv size={24} weight="bold" />
                   <span className="text-md font-semibold">Export to CSV</span>
                 </button>
-
                 <button className="flex items-center space-x-2 bg-red-200 text-red-700 px-4 py-2 rounded-md hover:bg-red-300 transition-colors">
                   <FilePdf size={24} weight="bold" />
                   <span className="text-md font-semibold">Export to PDF</span>
                 </button>
-
                 <button className="flex items-center space-x-2 bg-blue-200 text-blue-700 px-4 py-2 rounded-md hover:bg-blue-300 transition-colors">
                   <CloudArrowUp size={24} weight="bold" />
                   <span className="text-md font-semibold">Export to Drive</span>
                 </button>
-
                 <button className="flex items-center space-x-2 bg-yellow-200 text-yellow-700 px-4 py-2 rounded-md hover:bg-yellow-300 transition-colors">
                   <Coins size={24} weight="bold" />
                   <span className="text-md font-semibold">Export to Blockchain</span>
@@ -327,7 +297,6 @@ const Services = () => {
         </div>
       )}
 
-      {/* WhatsApp Section */}
       {activeSection === 'whatsapp' && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-green-500">WhatsApp</h2>
@@ -337,7 +306,7 @@ const Services = () => {
             placeholder="Enter WhatsApp username"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
-
+          <p className="text-yellow-400 mt-4 mb-2 italic">Note: A QR code will be provided for authentication.</p>
           <button
             onClick={() => handleSubmit('whatsapp')}
             className="mt-4 bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 disabled:opacity-50"
@@ -348,7 +317,6 @@ const Services = () => {
         </div>
       )}
 
-      {/* X Section */}
       {activeSection === 'x' && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-blue-500">X (formerly Twitter)</h2>
@@ -363,26 +331,26 @@ const Services = () => {
             placeholder="Enter X password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
+          Max post:
           {renderDropdown()}
           <div className="flex space-x-4 mt-4">
-          <button
-            onClick={() => handleSubmit('x')}
-            className=" bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
-            disabled={isLoading}
-          >
-            Submit
-          </button>
-          <button
+            <button
+              onClick={() => handleSubmit('x')}
+              className=" bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+            <button
               onClick={handleShowDetails}
               className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
             >
               Show Details
             </button>
-        </div>
+          </div>
         </div>
       )}
 
-      {/* Telegram Section */}
       {activeSection === 'telegram' && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-blue-400">Telegram</h2>
@@ -397,26 +365,26 @@ const Services = () => {
             placeholder="Enter Telegram password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
+          Max post:
           {renderDropdown()}
           <div className="flex space-x-4 mt-4">
-          <button
-            onClick={() => handleSubmit('telegram')}
-            className=" bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
-            disabled={isLoading}
-          >
-            Submit
-          </button>
-          <button
+            <button
+              onClick={() => handleSubmit('telegram')}
+              className=" bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+            <button
               onClick={handleShowDetails}
               className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
             >
               Show Details
             </button>
-        </div>
+          </div>
         </div>
       )}
 
-      {/* Facebook Section */}
       {activeSection === 'facebook' && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-blue-600">Facebook</h2>
@@ -431,28 +399,28 @@ const Services = () => {
             placeholder="Enter Facebook password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
+          Max post:
           {renderDropdown()}
+          <p className="text-yellow-400 mt-4 mb-2 italic">Warning: A CAPTCHA may be required for verification.</p>
           <div className="flex space-x-4 mt-4">
-          <button
-            onClick={() => handleSubmit('facebook')}
-            className=" bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            disabled={isLoading}
-          >
-            Submit
-          </button>
-          <button
+            <button
+              onClick={() => handleSubmit('facebook')}
+              className=" bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+            <button
               onClick={handleShowDetails}
               className=" bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
             >
               Show Details
             </button>
+          </div>
         </div>
-</div>
       )}
-
     </div>
-
   );
 };
 
-export default Services;
+export default Services;  
