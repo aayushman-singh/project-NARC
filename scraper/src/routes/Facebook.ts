@@ -25,7 +25,7 @@ app.post('/facebook', async (req, res) => {
         }
 
 
-        return res.status(200).json(result); // Return final response with status 200
+        return res.status(200).json("Success"); // Return final response with status 200
     } catch (error:any) {
         console.error('Error scraping Facebook:', error.message);
         return res.status(500).send('Error scraping Facebook');
