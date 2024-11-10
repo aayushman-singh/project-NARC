@@ -2,10 +2,13 @@ import { chromium, Browser, Page } from 'playwright';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
 import { uploadScreenshotToMongo } from '../mongoUtils';
+import { fileURLToPath } from 'url';
 import fs from 'fs';
-import path from 'path';
-
+import path, {dirname} from 'path';
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 // Use the stealth plugin to avoid detection
+
 puppeteer.use(StealthPlugin());
 
 
@@ -75,14 +78,14 @@ export async function scrapeFacebook( email: string, password: string ) {
     // Wait for the profile page to load
     await page.goto("https://www.facebook.com/me/")
 
-
+    const profileSS = '';
     // Extract post data from the profile page
     await page.waitForSelector('div[id^="mount_"]');
 // Wait for the post container using XPath
 const xpath = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[3]';
-await page.waitForSelector('xpath/' + xpath);
+await page.waitForSelector('xpath=' + xpath);
 
-const postsContainer = await page.$('xpath/' + xpath);
+const postsContainer = await page.$('xpath=' + xpath);
 
 if (postsContainer) {
     console.log('Posts container found');
@@ -96,7 +99,7 @@ if (postsContainer) {
         console.log(`Found ${postDivs.length} post(s).`);
         for (let i = 0; i < postDivs.length; i++) {
             const postXPath = `${xpath}/div[${postDivs[i]}]`;
-            const postElement = await page.$('xpath/' + postXPath);
+            const postElement = await page.$('xpath=' + postXPath);
 
             if (postElement) {
                 // Scroll to the post and wait for it to load
