@@ -3,9 +3,10 @@ import os
 import subprocess
 import shlex
 import sys  # Importing sys for standard error output
+from flask_cors import CORS  # Import CORS
 
 app = Flask(__name__)
-
+CORS(app)
 project_root = os.path.dirname(os.path.abspath(__file__))
 reports_dir = os.path.join(project_root, 'reports')
 
