@@ -12,7 +12,7 @@ const SearchPage = () => {
     setLoading(true)
     setError(null)
     setUrls(null)
-
+  
     try {
       const response = await fetch('http://localhost:5000/api/search', {
         method: 'POST',
@@ -21,25 +21,29 @@ const SearchPage = () => {
         },
         body: JSON.stringify({ username }),
       })
-
+  
       if (!response.ok) {
         throw new Error(`Failed to fetch results: ${response.statusText}`)
       }
-
+  
       const data = await response.json()
-      const rawOutput = data.rawOutput
-      console.log(rawOutput) // Log to verify the structure of rawOutput
-
-      // Extract URLs from the rawOutput string
-      const urlRegex = /(https?:\/\/[^\s]+)/g
-      const extractedUrls = rawOutput.match(urlRegex)
-
-      // If URLs were found, set them in state; otherwise, handle as no URLs found
-      if (extractedUrls && extractedUrls.length > 0) {
-        setUrls(extractedUrls)
+      console.log(data) // Log the response to see where URLs might be
+  
+      // Check if URLs are in a specific field or array in data
+      let extractedUrls = []
+  
+      if (Array.isArray(data.urls)) {
+        // If URLs are in an array, use them directly
+        extractedUrls = data.urls
+      } else if (typeof data.rawOutput === 'string') {
+        // Fallback to extracting from rawOutput if it exists
+        const urlRegex = /(https?:\/\/[^\s]+)/g
+        extractedUrls = data.rawOutput.match(urlRegex) || []
       } else {
         throw new Error('No URLs found for the given username.')
       }
+  
+      setUrls(extractedUrls)
     } catch (err) {
       setError(err.message)
     } finally {
