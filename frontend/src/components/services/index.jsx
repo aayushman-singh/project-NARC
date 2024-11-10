@@ -76,7 +76,7 @@ const Services = () => {
         },
         body: JSON.stringify(payload),
       });
-      alert('User Submitted Successfully');
+      alert('Account Scraped Successfully');
 
       if (!response.ok) {
         throw new Error(`Request failed for ${platform}: ${response.statusText}`);
