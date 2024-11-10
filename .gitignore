@@ -7,11 +7,11 @@ scraper/storage/
 scraper/src/storage/key_value_stores/default/SDK_SESSION_POOL_STATE.json
 /scraper/src/storage
 /scraper/src/storage
-/maigret-backend/node_modules
 yarn.lock
 /.aws
 /maigret-backend/myenv
 /maigret/node_modules
+/maigret/reports
 backend/package-lock.json
 backend/node_modules
 
