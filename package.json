@@ -5,7 +5,8 @@
   "dependencies": {
     "cors": "^2.8.5",
     "express": "^4.19.2",
-    "mongodb": "^6.8.1",
+    "mongodb": "^6.10.0",
+    "puppeteer": "^23.7.1",
     "rollup": "^4.21.2"
   },
   "devDependencies": {
@@ -32,7 +33,7 @@
     "start:instagram": "cd scraper/src/routes/ && npx tsx src/routes/Instagram.ts",
     "start:x": "cd scraper/src/routes/ && npx tsx src/routes/X.ts",
     "start:facebook": "cd scraper/src/routes/ && npx tsx src/routes/Facebook.ts",
-    "start:frontend": "cd frontend && npm run dev", 
+    "start:frontend": "cd frontend && npm run dev",
     "start:all": "npm-run-all --parallel start:maigret start:instagram start:x start:facebook start:frontend start:auth start:script"
   }
 }
