@@ -8,11 +8,11 @@ const SearchPage = () => {
   const [error, setError] = useState(null)
 
   const handleSearch = async (e) => {
-    e.preventDefault();
-    setLoading(true);
-    setError(null);
-    setUrls(null);
-  
+    e.preventDefault()
+    setLoading(true)
+    setError(null)
+    setUrls(null)
+
     try {
       const response = await fetch('http://localhost:5000/api/search', {
         method: 'POST',
@@ -20,28 +20,32 @@ const SearchPage = () => {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ username }),
-      });
-  
+      })
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch results: ${response.statusText}`);
+        throw new Error(`Failed to fetch results: ${response.statusText}`)
       }
-  
-      const data = await response.json();
-      console.log(data); // Verify the structure of the response
-  
-      if (data.urls && Array.isArray(data.urls)) {
-        setUrls(data.urls); // Directly set the URLs array
-        console.log(data.urls);
+
+      const data = await response.json()
+      const rawOutput = data.rawOutput
+      console.log(rawOutput) // Log to verify the structure of rawOutput
+
+      // Extract URLs from the rawOutput string
+      const urlRegex = /(https?:\/\/[^\s]+)/g
+      const extractedUrls = rawOutput.match(urlRegex)
+
+      // If URLs were found, set them in state; otherwise, handle as no URLs found
+      if (extractedUrls && extractedUrls.length > 0) {
+        setUrls(extractedUrls)
       } else {
-        throw new Error('No URLs found for the given username.');
+        throw new Error('No URLs found for the given username.')
       }
     } catch (err) {
-      setError(err.message);
+      setError(err.message)
     } finally {
-      setLoading(false);
+      setLoading(false)
     }
-  };
-  
+  }
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-8 flex flex-col items-center justify-center">
