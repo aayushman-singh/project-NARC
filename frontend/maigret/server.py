@@ -27,7 +27,7 @@ def search_user():
     sanitized_username = sanitize_filename(username)
     json_file_path = os.path.join(reports_dir, f'report_{sanitized_username}.json')
 
-    command = f'maigret {username} -H --timeout 7 --no-recursion --top-sites 20 --retries 0'
+    command = f'maigret {username} --json ndjson --timeout 7 --no-recursion --top-sites 20 --retries 0'
 
     try:
         maigret_process = subprocess.Popen(
