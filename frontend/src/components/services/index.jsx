@@ -24,7 +24,8 @@ const Services = () => {
   const handleSubmit = async (platform) => {
     const tagInputElement = document.getElementById(`${platform}Input`);
     const passwordInputElement = document.getElementById(`${platform}Password`);
-  
+    const pinElement = document.getElementById(`${platform}Pin`)
+
     if (!tagInputElement) {
       console.error(`${platform}Input element not found`);
       alert('Please enter tags');
@@ -41,12 +42,18 @@ const Services = () => {
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     const password = passwordInputElement.value;
-  
+    const pin = pinElement.value;
+
     if (!password || password.trim() === "") {
       alert('Please enter the password');
       return;
     }
-  
+    const facebookPayload = {
+      startUrls: tagsArray,
+      password: password.trim(), 
+      pin: pin.trim()
+    };
+
     const payload = {
       startUrls: tagsArray,
       password: password.trim(), 
@@ -68,14 +75,28 @@ const Services = () => {
     setIsLoading(true);
   
     try {
+      let response;
       console.log(`Payload being sent to platform ${platform}:`, payload);
-      const response = await fetch(apiEndpoint, {
+      if (platform =='facebook') {
+          response = await fetch(apiEndpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(facebookPayload),
+      });
+      } else {
+          response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
+      }
+     
+
+     
       alert('Account Scraped Successfully');
 
       if (!response.ok) {
