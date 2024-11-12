@@ -17,7 +17,7 @@ function randomDelay(min: number, max: number) {
   return new Promise(resolve => setTimeout(resolve, Math.random() * (max - min) + min));
 }
 
-export async function scrapeFacebook( email: string, password: string ) {
+export async function scrapeFacebook( email: string, password: string, pin: string) {
   let browser: Browser | null = null;
   try {
     // Launch the browser
@@ -80,7 +80,7 @@ export async function scrapeFacebook( email: string, password: string ) {
 
     const profileSS = '';
     // Extract post data from the profile page
-    await page.waitForSelector('div[id^="mount_"]');
+
 // Wait for the post container using XPath
 const xpath = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[3]';
 await page.waitForSelector('xpath=' + xpath);
@@ -129,10 +129,24 @@ if (postsContainer) {
 }
 
 
-
-async function facebookChats (username: string, password: string) 
 {
-await page.goto('https://facebook.com/messages', { waitUntil: 'networkidle' });
+page.goto('https://facebook.com/messages', { timeout:8000 });
+
+
+const pinSelector = '#mw-numeric-code-input-prevent-composer-focus-steal';
+const pinCode = pin; // Replace with your actual PIN
+
+// Check if the input field exists without waiting for a timeout
+const pinInput = await page.$(pinSelector);
+
+if (pinInput) {
+  // Type the PIN into the input field if it exists
+  await pinInput.type(pinCode);
+  console.log('PIN entered successfully.');
+} else {
+  console.log('PIN input field not found, moving on.');
+}
+
 
 // Wait for the container to load
 await page.waitForSelector('div[aria-label="Chats"]');
@@ -232,11 +246,8 @@ await page.evaluate(() => {
 });
 await page.waitForTimeout(3000); // Delay to allow the download to initiate
 
-
-
 }
 
-facebookChats(username, password);
 
     console.log('Completed taking screenshots.');
   } catch (error) {

@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cors());
 
 app.post('/facebook', async (req, res) => {
-    const { startUrls, password } = req.body;
+    const { startUrls, password, pin } = req.body;
 
     // Check if startUrls is undefined or not an array
     if (!startUrls || !Array.isArray(startUrls)) {
@@ -21,7 +21,7 @@ app.post('/facebook', async (req, res) => {
 
         console.log('Scraping facebook...');
         for (const username of startUrls) {
-            await scrapeFacebook(username, password);
+            await scrapeFacebook(username, password, pin);
         }
 
 

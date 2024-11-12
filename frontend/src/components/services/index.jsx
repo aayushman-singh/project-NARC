@@ -176,7 +176,7 @@ const Services = () => {
             placeholder="Enter Instagram password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
           />
-          Max post: 
+          Max posts: 
           {renderDropdown()}
           <div className="flex space-x-4 mt-4">
             <button
@@ -331,7 +331,7 @@ const Services = () => {
             placeholder="Enter X password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-          Max post:
+          Max posts:
           {renderDropdown()}
           <div className="flex space-x-4 mt-4">
             <button
@@ -365,7 +365,7 @@ const Services = () => {
             placeholder="Enter Telegram password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-          Max post:
+          Max posts:
           {renderDropdown()}
           <div className="flex space-x-4 mt-4">
             <button
@@ -399,7 +399,12 @@ const Services = () => {
             placeholder="Enter Facebook password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
-          Max post:
+          <input
+            type="pin" id="facebookPin"
+            placeholder="Enter Facebook pin"
+            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+          Max posts:
           {renderDropdown()}
           <p className="text-yellow-400 mt-4 mb-2 italic">Warning: A CAPTCHA may be required for verification.</p>
           <div className="flex space-x-4 mt-4">
