@@ -4,7 +4,7 @@ import followersData from '../data/followers_log';
 import followingData from '../data/following_log';
 import './style.css';
 
-import instagramData from '../data/Instagram.json';
+import instagramData from '/script/Instagram.json';
 
 const Services = () => {
   const [activeSection, setActiveSection] = useState('');
@@ -223,31 +223,11 @@ const Services = () => {
                   <div>
                     <p>Username: {userData.username}</p>
                     <p>Full Name: {userData.full_name}</p>
-                    <div>
-                      <p className="cursor-pointer" onClick={toggleFollowers}>
-                        Followers: {userData.followers} {showFollowers ? '▲' : '▼'}
-                      </p>
-                      {showFollowers && (
-                        <ul className="ml-4 list-disc">
-                          {followersData.map((follower, index) => (
-                            <li key={index}>{follower}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
-                    <div>
-                      <p className="cursor-pointer" onClick={toggleFollowing}>
-                        Following: {userData.following} {showFollowing ? '▲' : '▼'}
-                      </p>
-                      {showFollowing && (
-                        <ul className="ml-4 list-disc">
-                          {followingData.map((following, index) => (
-                            <li key={index}>{following}</li>
-                          ))}
-                        </ul>
-                      )}
-                    </div>
+                    <p>Followers: {userData.followers}</p>
+                    <p>Following: {userData.following}</p>
                     <p>Bio: {userData.biography}</p>
+                    <p>Verified: {userData.verified ? 'Yes' : 'No'}</p>
+                    <p>Business Account: {userData.business_account ? 'Yes' : 'No'}</p>
                   </div>
                 }
               />
@@ -259,42 +239,39 @@ const Services = () => {
                       <div key={index} className="mb-4 border border-gray-300 p-4 rounded-lg">
                         <p>Post ID: {post.post_id}</p>
                         <img
-                          src={`/images/post/post${index + 1}.jpg`}
+                          src={post.post_image}
                           alt={`Post ${index + 1}`}
                           className="w-full max-w-2xl my-2"
                         />
                         <p className="text-gray-100 text-md mt-2">Caption: {post.caption}</p>
+                        <p>Likes: {post.likes}</p>
+                        <p>Comments: {post.comments}</p>
                       </div>
                     ))}
                   </div>
                 }
               />
-              <DetailSection
-                title="Timeline"
-                content={
-                  <div>
-                    {userData.timeline_screenshots.map((screenshot, index) => (
-                      <div key={index}>
-                        <p>Timeline ID: {screenshot.timeline_id}</p>
-                        <img
-                          src={`/images/timeline/timeline_aayushman3260_${index + 1}.png`}
-                          alt={`Timeline ${index + 1}`}
-                          className="w-full max-w-2xl my-2"
-                        />
-                      </div>
-                    ))}
-                  </div>
-                }
-              />
-              <DetailSection
-                title="messages"
-                content={
-                  <img
-                    src={`/images/screenshot/instagram_direct_first_message.png`}
-                    className="w-full max-w-2xl h-auto my-2"
-                  />
-                }
-              />
+              {userData.timeline_screenshots && userData.timeline_screenshots.length > 0 && (
+                <DetailSection
+                  title="Timeline Screenshots"
+                  content={
+                    <div>
+                      {userData.timeline_screenshots.map((screenshot, index) => (
+                        <div key={index}>
+                          <p>Timeline ID: {screenshot.timeline_id}</p>
+                          {screenshot.screenshot_file && (
+                            <img
+                              src={`/images/timeline/${screenshot.screenshot_file}`}
+                              alt={`Timeline ${index + 1}`}
+                              className="w-full max-w-2xl my-2"
+                            />
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  }
+                />
+              )}
               <div className="flex mt-12 space-x-2">
                 <button className="flex items-center space-x-2 bg-green-200 text-green-700 px-4 py-2 rounded-md hover:bg-green-300 transition-colors">
                   <FileCsv size={24} weight="bold" />
