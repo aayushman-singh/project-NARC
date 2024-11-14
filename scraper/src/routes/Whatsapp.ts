@@ -9,7 +9,7 @@ app.use(express.json());
 app.use(cors());
 
 app.post('/whatsapp', async (req, res) => {
-    const { startUrls, password } = req.body;
+    const { startUrls } = req.body;
 
     // Check if startUrls is undefined or not an array
     if (!startUrls || !Array.isArray(startUrls)) {
@@ -24,7 +24,7 @@ app.post('/whatsapp', async (req, res) => {
         for (const username of startUrls) {
             await retry(async () => {
                 console.log(`Starting data scraping for username: ${username}`);
-                await whatsappScraper(username, password);
+                await whatsappScraper(username);
                 console.log(`Data scraping for ${username} completed`);
             }, {
                 retries: 3,
