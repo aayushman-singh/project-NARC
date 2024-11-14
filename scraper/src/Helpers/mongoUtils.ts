@@ -71,7 +71,11 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
         // Store the Base64 string in MongoDB under the specified field for the user
         await collection.updateOne(
             { username: username },  // Match document by username
-            { $set: { [fieldName]: base64String } },  // Store the Base64 string in the specified field
+            { 
+                $set: {
+                 [fieldName]: base64String 
+                } 
+            },  // Store the Base64 string in the specified field
             { upsert: true }  // Insert the document if it doesn't exist
         );
 
@@ -134,16 +138,11 @@ export async function insertPosts(username: string, posts: any[], platform: stri
 
         for (const post of posts) {
             await collection.updateOne(
+                { username: username },  // Match document by username
                 { 
-                    username: username, 
-                    "posts.id": post.id // Match existing post by unique identifier (e.g., post ID)
+                    $push: { posts: { $each: posts } }  // Append each post in the array
                 },
-                { 
-                    $set: { "posts.$": post } // Overwrite existing post data
-                },
-                { 
-                    upsert: true // Insert a new document if it doesn't exist
-                }
+                { upsert: true }  // Create the document if it doesn't exist
             );
 
             // Add post if not found and matched by ID

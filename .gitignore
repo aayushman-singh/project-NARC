@@ -24,3 +24,5 @@ package-lock.json
 yarn.lock
 /venv
 /.vscode
+scraper/followers_log.txt
+scraper/following_log.txt

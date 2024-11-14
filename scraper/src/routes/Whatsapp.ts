@@ -1,7 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import retry from 'async-retry'; 
-import whatsappScraper from '../Helpers/Whatsapp/whatsapp';
+import whatsappScraper from '../Helpers/Whatsapp/whatsappScraper';
 const app = express();
 const PORT = Number(process.env.PORT) || 3004; // Whatsapp Scraper Port
 
