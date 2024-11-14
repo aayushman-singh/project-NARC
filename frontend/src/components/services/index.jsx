@@ -25,26 +25,24 @@ const Services = () => {
     const tagInputElement = document.getElementById(`${platform}Input`);
     const passwordInputElement = document.getElementById(`${platform}Password`);
     let pin, pinElement;
-
-    if (platform =='facebook'){ 
+  
+    if (platform === 'facebook') { 
       pinElement = document.getElementById(`${platform}Pin`);
-      // Validate the pin element for Facebook
-         if (!pinElement) {
-          console.error(`${platform}Pin element not found`);
-          alert('Please enter the PIN for Facebook');
-          return;
+      if (!pinElement) {
+        console.error(`${platform}Pin element not found`);
+        alert('Please enter the PIN for Facebook');
+        return;
       }
       pin = pinElement.value;
     }
-   
-
+  
     if (!tagInputElement) {
       console.error(`${platform}Input element not found`);
       alert('Please enter tags');
       return;
     }
   
-    if (!passwordInputElement) {
+    if (platform !== 'whatsapp' && (!passwordInputElement || !passwordInputElement.value.trim())) {
       console.error(`${platform}Password element not found`);
       alert('Please enter the password');
       return;
@@ -53,18 +51,17 @@ const Services = () => {
     const baseUrl = 'http://localhost'; 
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-    const password = passwordInputElement.value;
+    const password = platform !== 'whatsapp' ? passwordInputElement.value.trim() : undefined;
   
-    if (!password || password.trim() === "") {
-      alert('Please enter the password');
-      return;
+    const payload = { startUrls: tagsArray };
+    if (platform === 'facebook') {
+      payload.password = password;
+      payload.pin = pin ? pin.trim() : undefined;
+    } else if (platform !== 'whatsapp') {
+      payload.password = password;
     }
-    const payload = platform === 'facebook' 
-      ? { startUrls: tagsArray, password: password.trim(), pin: pin ? pin.trim() : undefined }
-      : { startUrls: tagsArray, password: password.trim() };
-
+  
     let apiEndpoint;
-
     if (platform === 'instagram') {
       apiEndpoint = `${baseUrl}:3001/${platform}`; 
     } else if (platform === 'facebook') {
@@ -82,16 +79,14 @@ const Services = () => {
     setIsLoading(true);
   
     try {
-      console.log('Tags submitted')
-      alert('Tags submitted successfully')
-       const response = await fetch(apiEndpoint, {
+      const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
-        body: JSON.stringify(payload),
+        body: JSON.stringify(payload)
       });
-
+      
       console.log(`Payload being sent to platform ${platform}:`, payload);
 
      
@@ -303,7 +298,7 @@ const Services = () => {
           <input
             type="text"
             id="whatsappInput"
-            placeholder="Enter WhatsApp username"
+            placeholder="Enter WhatsApp phone number or leave empty for QR"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
           />
           <p className="text-yellow-400 mt-4 mb-2 italic">Note: A QR code will be provided for authentication.</p>
