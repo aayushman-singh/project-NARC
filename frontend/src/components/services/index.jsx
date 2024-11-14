@@ -24,7 +24,19 @@ const Services = () => {
   const handleSubmit = async (platform) => {
     const tagInputElement = document.getElementById(`${platform}Input`);
     const passwordInputElement = document.getElementById(`${platform}Password`);
-    const pinElement = document.getElementById(`${platform}Pin`)
+    let pin, pinElement;
+
+    if (platform =='facebook'){ 
+      pinElement = document.getElementById(`${platform}Pin`);
+      // Validate the pin element for Facebook
+         if (!pinElement) {
+          console.error(`${platform}Pin element not found`);
+          alert('Please enter the PIN for Facebook');
+          return;
+      }
+      pin = pinElement.value;
+    }
+   
 
     if (!tagInputElement) {
       console.error(`${platform}Input element not found`);
@@ -42,30 +54,25 @@ const Services = () => {
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
     const password = passwordInputElement.value;
-    const pin = pinElement.value;
-
+  
     if (!password || password.trim() === "") {
       alert('Please enter the password');
       return;
     }
-    const facebookPayload = {
-      startUrls: tagsArray,
-      password: password.trim(), 
-      pin: pin.trim()
-    };
+    const payload = platform === 'facebook' 
+      ? { startUrls: tagsArray, password: password.trim(), pin: pin ? pin.trim() : undefined }
+      : { startUrls: tagsArray, password: password.trim() };
 
-    const payload = {
-      startUrls: tagsArray,
-      password: password.trim(), 
-    };
-  
     let apiEndpoint;
+
     if (platform === 'instagram') {
       apiEndpoint = `${baseUrl}:3001/${platform}`; 
     } else if (platform === 'facebook') {
       apiEndpoint = `${baseUrl}:3002/${platform}`;
     } else if (platform === 'x') {
       apiEndpoint = `${baseUrl}:3003/${platform}`; 
+    } else if (platform === 'whatsapp') {
+      apiEndpoint = `${baseUrl}:3004/${platform}`; 
     } else {
       console.error('Unsupported platform:', platform);
       alert('Unsupported platform. Please choose Instagram, Facebook, or X.');
@@ -75,25 +82,18 @@ const Services = () => {
     setIsLoading(true);
   
     try {
-      let response;
-      console.log(`Payload being sent to platform ${platform}:`, payload);
-      if (platform =='facebook') {
-          response = await fetch(apiEndpoint, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(facebookPayload),
-      });
-      } else {
-          response = await fetch(apiEndpoint, {
+      console.log('Tags submitted')
+      alert('Tags submitted successfully')
+       const response = await fetch(apiEndpoint, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify(payload),
       });
-      }
+
+      console.log(`Payload being sent to platform ${platform}:`, payload);
+
      
 
      
@@ -105,6 +105,8 @@ const Services = () => {
   
       tagInputElement.value = '';
       passwordInputElement.value = '';
+      if (pinElement) pinElement.value = ''; 
+
     } catch (error) {
       console.error(`Error submitting tags for ${platform}:`, error);
       alert('Failed to submit tags. Please try again.');

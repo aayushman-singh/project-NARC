@@ -10,6 +10,16 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
         log.info('Navigating to Instagram Direct Inbox.');
         await page.goto('https://www.instagram.com/direct/inbox/', { waitUntil: 'networkidle' });
 
+           // Handle "Not Now" notification pop-up
+           try {
+            const notNowButtonSelector = 'button:has-text("Not Now")'; // Adjust if necessary
+            await page.waitForSelector(notNowButtonSelector, { timeout: 5000 });
+            await page.click(notNowButtonSelector);
+            log.info('Notification pop-up dismissed successfully.');
+        } catch (error) {
+            log.info('Notification pop-up did not appear or was already dismissed.');
+        }
+
         // Correct selector for user tiles using the role="listitem"
         const userTileSelector = 'div[role="listitem"].x9f619.x1n2onr6.x1ja2u2z.x78zum5.xdt5ytf.x1iyjqo2';
 
@@ -146,7 +156,7 @@ const captureTimelineScreenshots = async (page: Page, log: Log, username: string
         // Loop to capture and upload screenshots
         for (let i = 1; i <= 3; i++) {
             const screenshotPath = `timeline_${username}_${i}.png`;  // Generate path to save the screenshot
-            await page.screenshot({ path: screenshotPath, fullPage: false });  // Capture screenshot
+            await page.screenshot({ path: screenshotPath, fullPage: true });  // Capture screenshot
 
             await page.evaluate(() => window.scrollBy(0, window.innerHeight));  // Scroll down
             await page.waitForTimeout(2000); 
@@ -154,7 +164,7 @@ const captureTimelineScreenshots = async (page: Page, log: Log, username: string
             log.info(`Captured screenshot ${i}.`);
 
             // Upload screenshot to MongoDB and insert reference
-            await uploadScreenshotToMongo(username, screenshotPath, `timeline_${i}`, 'instagram');
+            await uploadScreenshotToMongo(username, screenshotPath, 'timeline', 'instagram');
             
             log.info(`Uploaded timeline screenshot ${i} to MongoDB.`);
         }
@@ -175,12 +185,13 @@ export const InstaScraper = async (username:string,password:string) => {
     }
 
     const crawler = new PlaywrightCrawler({
-      
+        requestHandlerTimeoutSecs: 500,
         launchContext: {
             
             launchOptions: { headless: false, slowMo: 1000 ,  args: ['--enable-http2', '--tls-min-v1.2'], }, // Non-headless mode with delay between actions
         },
         maxRequestRetries: 0,  // Disable retries
+        
         preNavigationHooks: [
             async ({ page, log }) => {
                 if (!isLoggedIn) {  // Only attempt login if not already logged in
@@ -215,6 +226,7 @@ export const InstaScraper = async (username:string,password:string) => {
             },
         ],
         requestHandler: async ({ request, page, log }) => {
+            
             log.info(`Processing ${request.url}`);
 
             try {
