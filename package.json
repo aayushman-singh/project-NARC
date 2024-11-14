@@ -33,6 +33,7 @@
     "start:instagram": "cd scraper/src/routes/ && npx tsx src/routes/Instagram.ts",
     "start:x": "cd scraper/src/routes/ && npx tsx src/routes/X.ts",
     "start:facebook": "cd scraper/src/routes/ && npx tsx src/routes/Facebook.ts",
+    "start:whatsapp": "npx tsx scraper/src/routes/Whatsapp.ts",
     "start:frontend": "cd frontend && npm run dev",
     "start:all": "npm-run-all --parallel start:maigret start:instagram start:x start:facebook start:frontend start:auth start:script"
   }
