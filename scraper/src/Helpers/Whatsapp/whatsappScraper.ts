@@ -1,9 +1,12 @@
 import { Browser, chromium, Page } from 'playwright';
 import fs from 'fs/promises';
 import path from 'path';
-import { uploadScreenshotToMongo } from '../mongoUtils';
+import { uploadChats } from '../mongoUtils';
+import { fileURLToPath } from 'url';
 
-async function whatsappScraper(username: string, password: string) {
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+async function whatsappScraper(username: string) {
     let browser: Browser | null = null;
     let page: Page | null = null;
 
@@ -42,9 +45,8 @@ async function whatsappScraper(username: string, password: string) {
             const messageContainerSelector = 'div[role="application"]';
             await page.waitForSelector(messageContainerSelector);
 
-            // Directory for screenshots per chat
-            const chatScreenshotDir = path.join(__dirname, 'screenshots', `${username}_chat_${index + 1}`);
-            await fs.mkdir(chatScreenshotDir, { recursive: true });
+            // Array to store screenshot paths for this chat
+            const screenshotPaths: string[] = [];
 
             // Number of times to scroll in each chat
             const scrollCount = 5;
@@ -59,14 +61,21 @@ async function whatsappScraper(username: string, password: string) {
 
                 // Take a screenshot after each scroll
                 const screenshotPath = path.join(
-                    chatScreenshotDir,
+                    __dirname,
+                    'screenshots',
+                    `${username}_chat_${index + 1}`,
                     `scroll_${scrollIndex + 1}.png`
                 );
-
+                await fs.mkdir(path.dirname(screenshotPath), { recursive: true });
                 await page.screenshot({ path: screenshotPath, fullPage: false });
                 console.log(`Screenshot saved for ${username}, chat ${index + 1}, scroll ${scrollIndex + 1}`);
-                uploadScreenshotToMongo(username, screenshotPath, 'messages', 'whatsapp');
+
+                // Add screenshot path to the array
+                screenshotPaths.push(screenshotPath);
             }
+
+            // Upload screenshots to MongoDB for this chat
+            await uploadChats(username, `chat_${index}`, screenshotPaths);
         }
     } catch (error) {
         console.error('Error in whatsappScraper:', error);

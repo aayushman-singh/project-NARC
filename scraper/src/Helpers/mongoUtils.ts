@@ -88,6 +88,41 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
     }
 }
 
+export async function uploadChats(phoneNumber: string, receiverUsername: string, screenshotPaths: string[]) {
+    try {
+        // Connect to MongoDB
+        await client.connect();
+        const db = client.db('whatsappDB');
+        const collection = db.collection('whatsapp_users');
+
+        // Convert each screenshot to a base64 string using Buffer
+        const base64Screenshots = screenshotPaths.map((screenshotPath) => {
+            const fileData = fs.readFileSync(screenshotPath); // Using synchronous read
+            return Buffer.from(fileData).toString('base64');
+        });
+
+        // Update the user document with the new chat data
+        await collection.updateOne(
+            { phoneNumber },
+            {
+                $setOnInsert: { phoneNumber }, // Creates the user document if it doesn’t exist
+                $addToSet: {
+                    chats: {
+                        receiverUsername,
+                        screenshots: base64Screenshots // Store base64 encoded screenshots
+                    }
+                }
+            },
+            { upsert: true }
+        );
+
+        console.log(`Screenshots uploaded to MongoDB for ${phoneNumber} -> ${receiverUsername}`);
+    } catch (error) {
+        console.error('Error uploading screenshots to MongoDB:', error);
+    } finally {
+        await client.close();
+    }
+}
 export async function insertFollowers(username: string, followersData: any, platform: string) {
     try {
         await client.connect();
