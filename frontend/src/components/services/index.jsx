@@ -99,7 +99,7 @@ const Services = () => {
       }
   
       tagInputElement.value = '';
-      passwordInputElement.value = '';
+      if (passwordInputElement) passwordInputElement.value = '';
       if (pinElement) pinElement.value = ''; 
 
     } catch (error) {

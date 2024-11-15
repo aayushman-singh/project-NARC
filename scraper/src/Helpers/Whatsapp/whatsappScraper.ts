@@ -6,17 +6,82 @@ import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-async function whatsappScraper(username: string) {
+// Reusable function for scrolling and capturing screenshots
+const scrollChatWithLogging = async (
+    username: string,
+    page: Page,
+    messageContainerSelector: string,
+    outputDir: string
+) => {
+    const screenshotPaths: string[] = [];
+    try {
+        console.log('Starting infinite scrolling upward...');
+        let previousMessageCount = 0;
+        let newMessageCount = 0;
+        let attempt = 0;
+
+        // Phase 1: Scroll upward until attempts are exhausted
+        while (attempt < 10) {
+            const messageRows = await page.$$(messageContainerSelector + ' div.message-in, div.message-out');
+            newMessageCount = messageRows.length;
+
+            if (newMessageCount > previousMessageCount) {
+                console.log(`Loaded ${newMessageCount - previousMessageCount} new messages.`);
+                previousMessageCount = newMessageCount;
+                attempt = 0; // Reset attempts if new messages are found
+
+                // Scroll to the first visible row
+                await messageRows[0].scrollIntoViewIfNeeded();
+                await page.waitForTimeout(1000); // Wait for messages to load
+            } else {
+                attempt++;
+                console.log(`No new messages found. Waiting... (Attempt ${attempt}/10)`);
+                await page.waitForTimeout(2000);
+            }
+        }
+
+        console.log('Finished scrolling upward. Now scrolling downward and taking screenshots...');
+
+        // Phase 2: Scroll downward and take screenshots every third message
+        let index = 0;
+        let messagesLogged = 0;
+
+        while (index < previousMessageCount) {
+            const messageRows = await page.$$(messageContainerSelector + ' div.message-in, div.message-out');
+
+            if (index >= messageRows.length) {
+                console.log('Reached the bottom of the chat.');
+                break;
+            }
+
+            // Scroll to the target row
+            await messageRows[index].scrollIntoViewIfNeeded();
+            await page.waitForTimeout(500); // Small delay for smooth scrolling
+
+            // Take and store screenshot
+            const screenshotPath = path.join(outputDir, `screenshot_${++messagesLogged}.png`);
+            await fs.mkdir(path.dirname(screenshotPath), { recursive: true });
+            await page.screenshot({ path: screenshotPath });
+            console.log(`Screenshot ${messagesLogged} saved for message at index ${index + 1}.`);
+            screenshotPaths.push(screenshotPath);
+            index += 3; // Move to every third message
+        }
+
+        // Upload captured screenshots to MongoDB
+        await uploadChats(username, outputDir, screenshotPaths);
+        console.log('Finished scrolling downward and capturing screenshots.');
+    } catch (error) {
+        console.error('Error during scrolling and screenshot capture:', error.message);
+    }
+};
+
+const whatsappScraper = async (username: string) => {
     let browser: Browser | null = null;
     let page: Page | null = null;
 
     try {
         // Launch a browser instance with Playwright
-        browser = await chromium.launch({
-            headless: false,  // Open in a visible browser for QR code scanning
-        });
-        
-        // Open a new browser page
+        browser = await chromium.launch({ headless: false });
         page = await browser.newPage();
 
         // Go to WhatsApp Web
@@ -27,62 +92,25 @@ async function whatsappScraper(username: string) {
         await page.waitForSelector('canvas[aria-label="Scan this QR code to link a device!"]', { state: 'detached' });
         console.log('Logged in successfully!');
 
-        // Select the main chat container once logged in
-        const chatContainerSelector = 'div[aria-label="Chat list"]';
+        // Open the chat with the specified username
+        const chatSelector = `span[title="${username}"]`;
+        await page.waitForSelector(chatSelector);
+        await page.click(chatSelector);
+        console.log(`Opened chat with ${username}`);
+        await page.waitForTimeout(2000); // Wait for chat to load
 
-        // Wait for the main chat list to load
-        await page.waitForSelector(chatContainerSelector);
+        // Define the message container selector
+        const messageContainerSelector = 'div[role="application"]';
 
-        // Iterate through each chat user tile
-        const chatTiles = await page.$$(chatContainerSelector + ' div[role="listitem"]');
-
-        for (const [index, chatTile] of chatTiles.entries()) {
-            // Click on each chat tile to open the chat
-            await chatTile.click();
-            await page.waitForTimeout(2000); // Wait for chat to load
-
-            // Scroll through messages
-            const messageContainerSelector = 'div[role="application"]';
-            await page.waitForSelector(messageContainerSelector);
-
-            // Array to store screenshot paths for this chat
-            const screenshotPaths: string[] = [];
-
-            // Number of times to scroll in each chat
-            const scrollCount = 5;
-            for (let scrollIndex = 0; scrollIndex < scrollCount; scrollIndex++) {
-                // Scroll a bit in the chat
-                await page.evaluate((selector) => {
-                    const chatElement = document.querySelector(selector);
-                    if (chatElement) chatElement.scrollBy(0, 300);
-                }, messageContainerSelector);
-
-                await page.waitForTimeout(1000); // Wait for content to load
-
-                // Take a screenshot after each scroll
-                const screenshotPath = path.join(
-                    __dirname,
-                    'screenshots',
-                    `${username}_chat_${index + 1}`,
-                    `scroll_${scrollIndex + 1}.png`
-                );
-                await fs.mkdir(path.dirname(screenshotPath), { recursive: true });
-                await page.screenshot({ path: screenshotPath, fullPage: false });
-                console.log(`Screenshot saved for ${username}, chat ${index + 1}, scroll ${scrollIndex + 1}`);
-
-                // Add screenshot path to the array
-                screenshotPaths.push(screenshotPath);
-            }
-
-            // Upload screenshots to MongoDB for this chat
-            await uploadChats(username, `chat_${index}`, screenshotPaths);
-        }
+        // Define the output directory for screenshots
+        const outputDir = path.join(__dirname, `screenshots_${username}`);
+        await scrollChatWithLogging(username, page, messageContainerSelector, outputDir);
     } catch (error) {
         console.error('Error in whatsappScraper:', error);
     } finally {
         if (page) await page.close();
         if (browser) await browser.close();
     }
-}
+};
 
 export default whatsappScraper;
