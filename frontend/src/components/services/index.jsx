@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { InstagramLogo, WhatsappLogo, FacebookLogo, TelegramLogo, TwitterLogo, FileCsv, FilePdf, CloudArrowUp, Coins } from 'phosphor-react';
+import { InstagramLogo, WhatsappLogo, FacebookLogo, TelegramLogo, TwitterLogo, FileCsv, FilePdf, CloudArrowUp, Coins, X } from 'phosphor-react';
 import followersData from '../data/followers_log';
 import followingData from '../data/following_log';
 import './style.css';
@@ -14,11 +14,17 @@ const Services = () => {
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState(1);
+  const [alert, setAlert] = useState({ visible: false, message: '', type: 'info' });
 
   const toggleFollowers = () => setShowFollowers(!showFollowers);
   const toggleFollowing = () => setShowFollowing(!showFollowing);
   const handleSectionClick = (section) => {
     setActiveSection((prev) => (prev === section ? '' : section));
+  };
+
+ const showAlert = (message, type = 'info') => {
+    setAlert({ visible: true, message, type });
+    setTimeout(() => setAlert({ visible: false, message: '', type: 'info' }), 3000);
   };
 
   const handleSubmit = async (platform) => {
@@ -38,13 +44,13 @@ const Services = () => {
   
     if (!tagInputElement) {
       console.error(`${platform}Input element not found`);
-      alert('Please enter tags');
+      showAlert('Please enter tags');
       return;
     }
   
     if (platform !== 'whatsapp' && (!passwordInputElement || !passwordInputElement.value.trim())) {
       console.error(`${platform}Password element not found`);
-      alert('Please enter the password');
+      showAlert('Please enter the password');
       return;
     }
   
@@ -72,7 +78,7 @@ const Services = () => {
       apiEndpoint = `${baseUrl}:3004/${platform}`; 
     } else {
       console.error('Unsupported platform:', platform);
-      alert('Unsupported platform. Please choose Instagram, Facebook, or X.');
+      showAlert('Unsupported platform. Please choose Instagram, Facebook, or X.');
       return;
     }
   
@@ -92,7 +98,7 @@ const Services = () => {
      
 
      
-      alert('Account Scraped Successfully');
+      showAlert('Account Scraped Successfully');
 
       if (!response.ok) {
         throw new Error(`Request failed for ${platform}: ${response.statusText}`);
@@ -104,7 +110,7 @@ const Services = () => {
 
     } catch (error) {
       console.error(`Error submitting tags for ${platform}:`, error);
-      alert('Failed to submit tags. Please try again.');
+      showAlert('Failed to submit tags. Please try again.');
     } finally {
       setIsLoading(false);
     }
@@ -117,7 +123,7 @@ const Services = () => {
       setUserData(user);
       setShowDetails(true);
     } else {
-      alert('User not found');
+      showAlert('User not found');
     }
   };
 
@@ -142,6 +148,50 @@ const Services = () => {
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 relative">
+     {alert.visible && (
+        <div
+          className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform ${
+            alert.visible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
+          } ${
+            alert.type === 'success'
+              ? 'bg-green-50 text-green-800 border-l-4 border-green-500'
+              : alert.type === 'error'
+              ? 'bg-red-50 text-red-800 border-l-4 border-red-500'
+              : 'bg-blue-50 text-blue-800 border-l-4 border-blue-500'
+          }`}
+        >
+          <div className="flex items-center justify-between">
+            <div className="flex items-center">
+              <div className="flex-shrink-0">
+                {alert.type === 'success' && (
+                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                  </svg>
+                )}
+                {alert.type === 'error' && (
+                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                  </svg>
+                )}
+                {alert.type === 'info' && (
+                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                )}
+              </div>
+              <p className="ml-3 text-sm font-medium">{alert.message}</p>
+            </div>
+            <button
+              onClick={() => setAlert({ ...alert, visible: false })}
+              className="ml-auto -mx-1.5 -my-1.5 bg-green-50 text-green-500 rounded-lg focus:ring-2 focus:ring-green-400 p-1.5 hover:bg-green-200 inline-flex h-8 w-8 items-center justify-center"
+            >
+              <span className="sr-only">Close</span>
+              <X size={18} />
+            </button>
+          </div>
+        </div>
+      )}
+     
       {isLoading && (
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl text-center">
@@ -318,7 +368,7 @@ const Services = () => {
           <input
             type="text"
             id="xInput"
-            placeholder="Enter X username"
+            placeholder="Enter X username,email or phone number"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           <input
@@ -386,7 +436,7 @@ const Services = () => {
           <input
             type="text"
             id="facebookInput"
-            placeholder="Enter Facebook username"
+            placeholder="Enter email or phone number"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
           <input
