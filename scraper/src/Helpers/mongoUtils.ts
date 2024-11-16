@@ -2,13 +2,14 @@ import { MongoClient, GridFSBucket, ObjectId } from 'mongodb';
 import fs from 'fs/promises';
 import path from 'path';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-
 import dotenv from 'dotenv';
-
-dotenv.config();
+import { errors } from 'playwright';
 
 const uri = "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const client = new MongoClient(uri);
+
+dotenv.config();
+
 
 // Initialize S3 client
 const s3 = new S3Client({
@@ -19,7 +20,7 @@ const s3 = new S3Client({
     },
 });
 // Function to upload a file to S3
-const uploadToS3 = async (filePath: string, key: string) => {
+export const uploadToS3 = async (filePath: string, key: string) => {
     try {
         const fileContent = await fs.readFile(filePath);
 
@@ -122,8 +123,9 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
 }
 
 // Modified uploadChats function
-export async function uploadChats(phoneNumber: string, receiverUsername: string, screenshotPaths: string[]) {
+export async function uploadChats(username: string, receiverUsername: string, screenshotPaths: string[], chatLogURL: string) {
     try {
+        await client.connect();
         const db = client.db('whatsappDB');
         const collection = db.collection('whatsapp_users');
 
@@ -131,27 +133,28 @@ export async function uploadChats(phoneNumber: string, receiverUsername: string,
         const screenshotURLs = [];
         for (const filePath of screenshotPaths) {
             const fileName = path.basename(filePath); // Use the file name as the S3 key
-            const s3Key = `${phoneNumber}/${receiverUsername}/${fileName}`;
+            const s3Key = `${username}/${receiverUsername}/${fileName}`;
             const s3URL = await uploadToS3(filePath, s3Key);
             screenshotURLs.push(s3URL);
         }
 
         // Update the user document with the S3 URLs
         await collection.updateOne(
-            { phoneNumber },
+            { username },
             {
-                $setOnInsert: { phoneNumber }, // Creates the user document if it doesn’t exist
+                $setOnInsert: { username }, // Creates the user document if it doesn’t exist
                 $addToSet: {
                     chats: {
                         receiverUsername,
                         screenshots: screenshotURLs, // Store S3 URLs
+                        chats: chatLogURL,
                     },
                 },
             },
             { upsert: true }
         );
 
-        console.log(`Screenshots uploaded to MongoDB for ${phoneNumber} -> ${receiverUsername}`);
+        console.log(`Screenshots uploaded to MongoDB for ${username} -> ${receiverUsername}`);
     } catch (error) {
         console.error('Error uploading screenshots to MongoDB:', error);
     } finally {
@@ -256,7 +259,7 @@ export async function insertMessages(username: string, filePath: string, platfor
             { $push: { messages: message } },
             { upsert: true }
         );
-    } catch (error) {
+    } catch (error:any) {
         console.error(`Failed to upload messages: ${error.message}`);
     }
 }
