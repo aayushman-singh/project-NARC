@@ -5,6 +5,23 @@ import { uploadChats } from '../mongoUtils';
 import { fileURLToPath } from 'url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
+const cookiesPath = path.join(__dirname, 'whatsapp_cookies.json');
+
+// Function to save cookies
+const saveCookies = async (page: Page) => {
+    const cookies = await page.context().cookies();
+    await fs.writeFile(cookiesPath, JSON.stringify(cookies, null, 2));
+    console.log('Session cookies saved.');
+};
+
+// Function to load cookies
+const loadCookies = async (page: Page) => {
+    if (await fs.stat(cookiesPath).catch(() => false)) {
+        const cookies = JSON.parse(await fs.readFile(cookiesPath, 'utf-8'));
+        await page.context().addCookies(cookies);
+        console.log('Session cookies loaded.');
+    }
+};
 
 // Reusable function for scrolling and capturing screenshots
 const scrollChatWithLogging = async (
@@ -75,7 +92,7 @@ const scrollChatWithLogging = async (
     }
 };
 
-const whatsappScraper = async (username: string) => {
+const whatsappScraper = async () => {
     let browser: Browser | null = null;
     let page: Page | null = null;
 
@@ -87,24 +104,39 @@ const whatsappScraper = async (username: string) => {
         // Go to WhatsApp Web
         await page.goto('https://web.whatsapp.com/');
 
-        // Wait for the user to scan the QR code
-        console.log('Waiting for user to scan the QR code...');
-        await page.waitForSelector('canvas[aria-label="Scan this QR code to link a device!"]', { state: 'detached' });
-        console.log('Logged in successfully!');
+        // Wait for QR code scan only if cookies are not loaded
+        if (!(await page.$('div[aria-label="Chat list"]'))) {
+            console.log('Waiting for user to scan the QR code...');
+            await page.waitForSelector('canvas[aria-label="Scan this QR code to link a device!"]', { state: 'detached' });
+            console.log('Logged in successfully!');
 
-        // Open the chat with the specified username
-        const chatSelector = `span[title="${username}"]`;
-        await page.waitForSelector(chatSelector);
-        await page.click(chatSelector);
-        console.log(`Opened chat with ${username}`);
-        await page.waitForTimeout(2000); // Wait for chat to load
+            // Save session cookies after login
+            await saveCookies(page);
+        } else {
+            console.log('Session restored successfully!');
+        }
 
-        // Define the message container selector
-        const messageContainerSelector = 'div[role="application"]';
+        // Select the main chat container once logged in
+        const chatContainerSelector = 'div[aria-label="Chat list"]';
+        await page.waitForSelector(chatContainerSelector);
 
-        // Define the output directory for screenshots
-        const outputDir = path.join(__dirname, `screenshots_${username}`);
-        await scrollChatWithLogging(username, page, messageContainerSelector, outputDir);
+        // Iterate through each chat user tile
+        const chatTiles = await page.$$(chatContainerSelector + ' div[role="listitem"]');
+        
+        for (const [index, chatTile] of chatTiles.entries()) {
+            const username = await chatTile.textContent();
+            console.log(`Processing chat ${index + 1}: ${username}`);
+
+            // Click on each chat tile to open the chat
+            await chatTile.click();
+            await page.waitForTimeout(2000); // Wait for chat to load
+
+            // Define the message container selector and output directory
+            const messageContainerSelector = 'div[role="application"]';
+            const outputDir = path.join(__dirname, `screenshots_chat_${index + 1}`);
+            await scrollChatWithLogging(username || `chat_${index + 1}`, page, messageContainerSelector, outputDir);
+        }
+        console.log('All chats processed successfully!');
     } catch (error) {
         console.error('Error in whatsappScraper:', error);
     } finally {
