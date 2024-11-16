@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import retry from 'async-retry'; 
 import whatsappScraper from '../Helpers/Whatsapp/whatsappScraper';
+import { WhatsAppUser, IWhatsAppUser } from '../models/WhatsAppUser';
 const app = express();
 const PORT = Number(process.env.PORT) || 3004; // Whatsapp Scraper Port
 
@@ -41,6 +42,21 @@ app.post('/whatsapp', async (req, res) => {
     }
 });
 
+app.get('/users/:username', async (req: Request, res: Response) => {
+    const { username } = req.params;
+  
+    try {
+      const user: IWhatsAppUser | null = await WhatsAppUser.findOne({ username });
+  
+      if (!user) {
+        return res.status(404).json({ message: 'User not found' });
+      }
+  
+      res.status(200).json(user);
+    } catch (error) {
+      res.status(500).json({ error: (error as Error).message });
+    }
+  });
 app.listen(PORT,'0.0.0.0', () => {
     console.log(`Whatsapp scraper listening on port ${PORT}`);
 });
