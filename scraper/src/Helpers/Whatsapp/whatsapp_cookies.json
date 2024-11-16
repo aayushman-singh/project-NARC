@@ -1,0 +1,12 @@
+[
+  {
+    "name": "wa_ul",
+    "value": "7c31edb8-af79-40e7-ac15-471e98deb58d",
+    "domain": ".web.whatsapp.com",
+    "path": "/",
+    "expires": 1739504284.597775,
+    "httpOnly": true,
+    "secure": true,
+    "sameSite": "None"
+  }
+]
