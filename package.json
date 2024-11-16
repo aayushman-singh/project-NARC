@@ -3,6 +3,7 @@
   "version": "1.0.0",
   "description": "Monorepo for Project NARC containing scraper, frontend, and backend",
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.693.0",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "mongodb": "^6.10.0",
