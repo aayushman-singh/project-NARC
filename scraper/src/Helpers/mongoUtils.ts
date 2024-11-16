@@ -1,9 +1,42 @@
 import { MongoClient, GridFSBucket, ObjectId } from 'mongodb';
-import fs from 'fs';
+import fs from 'fs/promises';
 import path from 'path';
+import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
+
+import dotenv from 'dotenv';
+
+dotenv.config();
 
 const uri = "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
 const client = new MongoClient(uri);
+
+// Initialize S3 client
+const s3 = new S3Client({
+    region: process.env.AWS_REGION,
+    credentials: {
+        accessKeyId: process.env.AWS_ACCESS_KEY_ID!,
+        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
+    },
+});
+// Function to upload a file to S3
+const uploadToS3 = async (filePath: string, key: string) => {
+    try {
+        const fileContent = await fs.readFile(filePath);
+
+        const command = new PutObjectCommand({
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: key,
+            Body: fileContent,
+        });
+
+        await s3.send(command);
+        console.log(`Uploaded ${key} to S3`);
+        return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    } catch (error) {
+        console.error(`Error uploading ${key} to S3:`, error);
+        throw error;
+    }
+};
 
 // Define the interface for the posts and followers document structure
 interface InstagramPost {
@@ -63,10 +96,10 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
         const collection = database.collection(`${platform}_users`);
 
         // Read the screenshot file as a binary buffer
-        const fileBuffer = fs.readFileSync(screenshotPath);
+        const fileBuffer = fs.readFile(screenshotPath);
 
         // Convert the binary buffer to a Base64 string
-        const base64String = fileBuffer.toString('base64');
+        const base64String = fileBuffer.toString();
 
         // Store the Base64 string in MongoDB under the specified field for the user
         await collection.updateOne(
@@ -88,20 +121,22 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
     }
 }
 
+// Modified uploadChats function
 export async function uploadChats(phoneNumber: string, receiverUsername: string, screenshotPaths: string[]) {
     try {
-        // Connect to MongoDB
-        await client.connect();
         const db = client.db('whatsappDB');
         const collection = db.collection('whatsapp_users');
 
-        // Convert each screenshot to a base64 string using Buffer
-        const base64Screenshots = screenshotPaths.map((screenshotPath) => {
-            const fileData = fs.readFileSync(screenshotPath); // Using synchronous read
-            return Buffer.from(fileData).toString('base64');
-        });
+        // Upload each screenshot to S3 and collect URLs
+        const screenshotURLs = [];
+        for (const filePath of screenshotPaths) {
+            const fileName = path.basename(filePath); // Use the file name as the S3 key
+            const s3Key = `${phoneNumber}/${receiverUsername}/${fileName}`;
+            const s3URL = await uploadToS3(filePath, s3Key);
+            screenshotURLs.push(s3URL);
+        }
 
-        // Update the user document with the new chat data
+        // Update the user document with the S3 URLs
         await collection.updateOne(
             { phoneNumber },
             {
@@ -109,9 +144,9 @@ export async function uploadChats(phoneNumber: string, receiverUsername: string,
                 $addToSet: {
                     chats: {
                         receiverUsername,
-                        screenshots: base64Screenshots // Store base64 encoded screenshots
-                    }
-                }
+                        screenshots: screenshotURLs, // Store S3 URLs
+                    },
+                },
             },
             { upsert: true }
         );
@@ -123,6 +158,7 @@ export async function uploadChats(phoneNumber: string, receiverUsername: string,
         await client.close();
     }
 }
+
 export async function insertFollowers(username: string, followersData: any, platform: string) {
     try {
         await client.connect();
@@ -210,7 +246,7 @@ export async function insertMessages(username: string, filePath: string, platfor
 
     try {
         // Correctly read the file content using the promise-based readFile with 'utf8' encoding
-        const fileContent = fs.readFileSync(filePath, 'utf8');
+        const fileContent = fs.readFile(filePath, 'utf8');
         
         const message = { content: fileContent, timestamp: new Date() }; // Add more fields as necessary
 
