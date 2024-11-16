@@ -18,8 +18,6 @@ backend/node_modules
 
 .vercel
 *.png
-*.txt
-*.txt
 package-lock.json
 yarn.lock
 /venv
