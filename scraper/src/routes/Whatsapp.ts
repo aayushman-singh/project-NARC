@@ -5,9 +5,7 @@ import { Request, Response } from 'express';
 import whatsappScraper from '../Helpers/Whatsapp/whatsappScraper';
 import WhatsappUser, { IWhatsappUser } from '../models/WhatsAppUser';
 import mongoose from 'mongoose';
-import dotenv from 'dotenv';
-
-dotenv.config();
+import '../../../config.js'
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3004; // Whatsapp Scraper Port
