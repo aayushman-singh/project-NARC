@@ -3,6 +3,11 @@ import cors from 'cors';
 import retry from 'async-retry'; 
 import whatsappScraper from '../Helpers/Whatsapp/whatsappScraper';
 import { WhatsAppUser, IWhatsAppUser } from '../models/WhatsAppUser';
+import { Request, Response } from 'express';
+import dotenv from 'dotenv';
+
+dotenv.config();
+
 const app = express();
 const PORT = Number(process.env.PORT) || 3004; // Whatsapp Scraper Port
 
