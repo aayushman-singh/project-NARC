@@ -19,8 +19,6 @@ async def scrape_all_chats(client, output_base_dir):
     print("Client connected!")
     result = {}
     async for dialog in client.iter_dialogs():
-       
-
         chat_name = dialog.name or f"chat_{dialog.id}"
         chat_name = re.sub(r'[<>:"/\\|?*]', '_', chat_name)  # Replace invalid characters with underscores
         output_dir = os.path.join(output_base_dir, chat_name)
