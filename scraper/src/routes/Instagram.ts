@@ -13,7 +13,7 @@ app.use(express.json());
 app.use(cors());
 
 app.post('/instagram', async (req, res) => {
-    const { startUrls, password } = req.body;
+    const { startUrls, password, limit } = req.body;
 
     // Check if startUrls is undefined or not an array
     if (!startUrls || !Array.isArray(startUrls)) {
@@ -39,7 +39,7 @@ app.post('/instagram', async (req, res) => {
         // Scraping posts with retry logic
         await retry(async () => {
             console.log('Starting post scraping...');
-            await scrapeInstagramPosts(startUrls);
+            await scrapeInstagramPosts(startUrls, limit);
             console.log('Post scraping completed');
         }, {
             retries: 3,

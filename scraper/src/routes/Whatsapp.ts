@@ -30,7 +30,7 @@ app.use(express.json());
 app.use(cors());
 
 app.post('/whatsapp', async (req: Request, res: Response) => {
-  const { startUrls } = req.body;
+  const { startUrls, limit } = req.body;
 
   if (!startUrls || !Array.isArray(startUrls)) {
     console.error('Invalid or missing startUrls:', req.body);
@@ -43,7 +43,7 @@ app.post('/whatsapp', async (req: Request, res: Response) => {
     for (const username of startUrls) {
       await retry(async () => {
         console.log(`Starting data scraping for username: ${username}`);
-        await whatsappScraper(username);
+        await whatsappScraper(username, limit);
         console.log(`Data scraping for ${username} completed`);
       }, {
         retries: 3,

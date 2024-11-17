@@ -17,7 +17,7 @@ function randomDelay(min: number, max: number) {
   return new Promise(resolve => setTimeout(resolve, Math.random() * (max - min) + min));
 }
 
-export async function scrapeFacebook( email: string, password: string, pin: string) {
+export async function scrapeFacebook( email: string, password: string, pin: string, limit: number) {
   let browser: Browser | null = null;
   try {
     // Launch the browser
@@ -97,7 +97,7 @@ if (postsContainer) {
 
     if (postDivs.length > 0) {
         console.log(`Found ${postDivs.length} post(s).`);
-        for (let i = 0; i < postDivs.length; i++) {
+        for (let i = 0; i < limit; i++) {
             const postXPath = `${xpath}/div[${postDivs[i]}]`;
             const postElement = await page.$('xpath=' + postXPath);
 

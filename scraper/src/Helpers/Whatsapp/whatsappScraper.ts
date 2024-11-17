@@ -15,7 +15,9 @@ const scrollChatWithLogging = async (
     receiverUsername: string,
     page: Page,
     messageContainerSelector: string,
-    outputDir: string
+    outputDir: string,
+    limit:number
+
 ) => {
     const screenshotPaths: string[] = [];
     const textFilePath = path.join(outputDir, `chat_text.txt`);
@@ -52,38 +54,35 @@ const scrollChatWithLogging = async (
         let messagesLogged = 0;
         let msg = 0;
         await fs.mkdir(path.dirname(textFilePath), { recursive: true });
-        while (index < previousMessageCount) {
-            const messageRows = await page.$$(messageContainerSelector + ' div.message-in, div.message-out');
-
-            if (index >= messageRows.length) {
-                console.log('Reached the bottom of the chat.');
-                break;
+        const messageRows = await page.$$(messageContainerSelector + ' div.message-in, div.message-out');
+        const effectiveLimit = Math.min(limit, messageRows.length);
+        while (msg < effectiveLimit && msg < messageRows.length) {
+            if (messageRows.length === 0) {
+                console.log(`No messages found in chat: ${receiverUsername}`);
+                return;
             }
             const messageRow = messageRows[msg];
             const messageText = await messageRow?.innerText();
+
             if (messageText) {
                 // Write the message text to a file
-
                 await fs.appendFile(textFilePath, `Message ${msg + 1}: ${messageText}\n`);
                 console.log(`Message ${msg + 1} written to text file.`);
-                
             }
-        
+
             if (msg % 3 === 0) {
                 // Scroll to the target row
                 await messageRows[msg].scrollIntoViewIfNeeded();
                 await page.waitForTimeout(500); // Small delay for smooth scrolling
-        
-                // Take and store screenshot
-                const screenshotPath = path.join(outputDir, `screenshot_${++messagesLogged}.png`);
-                await fs.mkdir(path.dirname(screenshotPath), { recursive: true });
-                await page.screenshot({ path: screenshotPath });
-                console.log(`Screenshot ${messagesLogged} saved for message at index ${msg + 1}.`);
 
+                // Take and store screenshot
+                const screenshotPath = path.join(outputDir, `screenshot_${msg + 1}.png`);
+                await page.screenshot({ path: screenshotPath });
+                console.log(`Screenshot saved for message ${msg + 1}.`);
                 screenshotPaths.push(screenshotPath);
             }
-            msg++;
-            index += 3; // Move to every third message
+
+            msg++; // Increment message count
         }
 
          // Upload chat text file to S3
@@ -100,7 +99,7 @@ const scrollChatWithLogging = async (
     }
 };
 
-const whatsappScraper = async (username:string) => {
+const whatsappScraper = async (username:string, limit:number) => {
     let browser: Browser | null = null;
     let page: Page | null = null;
 
@@ -140,7 +139,7 @@ const whatsappScraper = async (username:string) => {
             // Define the message container selector and output directory
             const messageContainerSelector = 'div[role="application"]';
             const outputDir = path.join(__dirname, `screenshots_chat_${index + 1}`);
-            await scrollChatWithLogging(username, receiverUsername, page, messageContainerSelector, outputDir);
+            await scrollChatWithLogging(username, receiverUsername, page, messageContainerSelector, outputDir, limit);
         }
         console.log('All chats processed successfully!');
     } catch (error) {

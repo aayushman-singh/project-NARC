@@ -4,12 +4,12 @@ import os
 
 load_dotenv()
 
-MONGO_URI = os.getenv("MONGO_URI")
-MONGO_DB = "telegramDB"
-S3_BUCKET = os.getenv("S3_BUCKET")
-AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
-AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
-AWS_REGION = os.getenv("AWS_REGION")
+AWS_ACCESS_KEY_ID="AKIAYLOJNGB2S3DJCPHQ"
+AWS_SECRET_ACCESS_KEY="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"
+AWS_REGION="ap-south-1"
+S3_BUCKET_NAME="project-narc"
+MONGO_URI="mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+MONGO_DB="telegramDB"
 
 def upload_telegram_chats_to_mongo(phone_number, chat_name, chat_logs_s3_url, media_files_s3_urls):
     """

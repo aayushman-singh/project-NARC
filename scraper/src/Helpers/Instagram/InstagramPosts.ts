@@ -3,7 +3,7 @@ import axios from 'axios';
 import { insertPosts } from '../mongoUtils.js';  // MongoDB utility function
 
 // Exported function for scraping Instagram posts
-export async function scrapeInstagramPosts(startUrls: string[]) {
+export async function scrapeInstagramPosts(startUrls: string[], limit: number) {
     const fullUrls = startUrls.map((username: string) => `https://www.instagram.com/${username}/`);
     const endpoint = 'https://api.apify.com/v2/acts/apify~instagram-scraper/run-sync-get-dataset-items?token=apify_api_PX0pmbuYEg3gO4cHjqIb8D8ah9MOnr2lJs5D';
     
@@ -13,7 +13,7 @@ export async function scrapeInstagramPosts(startUrls: string[]) {
         "enhanceUserSearchWithFacebookPage": false,
         "isUserReelFeedURL": false,
         "isUserTaggedFeedURL": false,
-        "resultsLimit": 3,  // Limiting results for testing
+        "resultsLimit": limit,  // Limiting results for testing
         "resultsType": "posts",
         "searchLimit": 1,
         "searchType": "hashtag"
