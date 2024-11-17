@@ -4,15 +4,17 @@ from dotenv import load_dotenv
 import os
 load_dotenv()
 
-S3_BUCKET = os.getenv("S3_BUCKET")
-AWS_ACCESS_KEY = os.getenv("AWS_ACCESS_KEY")
-AWS_SECRET_KEY = os.getenv("AWS_SECRET_KEY")
-AWS_REGION = os.getenv("AWS_REGION")
+AWS_ACCESS_KEY_ID="AKIAYLOJNGB2S3DJCPHQ"
+AWS_SECRET_ACCESS_KEY="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"
+AWS_REGION="ap-south-1"
+S3_BUCKET_NAME="project-narc"
+MONGO_URI="mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+MONGO_DB="telegramDB"
 
 s3 = boto3.client(
     "s3",
-    aws_access_key_id=AWS_ACCESS_KEY,
-    aws_secret_access_key=AWS_SECRET_KEY,
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
     region_name=AWS_REGION
 )
 
@@ -28,8 +30,8 @@ def upload_to_s3(file_path, s3_key):
         str: The S3 URL of the uploaded file.
     """
     try:
-        s3.upload_file(file_path, S3_BUCKET, s3_key)
-        s3_url = f"https://{S3_BUCKET}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+        s3.upload_file(file_path, S3_BUCKET_NAME, s3_key)
+        s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
         print(f"Uploaded {file_path} to {s3_url}")
         return s3_url
     except FileNotFoundError:

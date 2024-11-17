@@ -24,3 +24,10 @@ yarn.lock
 /.vscode
 scraper/followers_log.txt
 scraper/following_log.txt
+*.session
+*.session
+/scraper/src/Helpers/Telegram/__pycache__
+*.jpg
+/output
+/scraper/__pycache__
+session_9650593099.session

@@ -3,10 +3,8 @@ import { InstagramLogo, WhatsappLogo, FacebookLogo, TelegramLogo, TwitterLogo, F
 import followersData from '../data/followers_log';
 import followingData from '../data/following_log';
 import './style.css';
-
-
-
 import instagramData from '/script/Instagram.json';
+
 
 const Services = () => {
   const [activeSection, setActiveSection] = useState('');
@@ -112,7 +110,8 @@ const Services = () => {
     const tagInputElement = document.getElementById(`${platform}Input`);
     const passwordInputElement = document.getElementById(`${platform}Password`);
     let pin, pinElement;
-  
+    const dropdownElement = document.getElementById(`${[platform]}Dropdown`);
+
     if (platform === 'facebook') { 
       pinElement = document.getElementById(`${platform}Pin`);
       if (!pinElement) {
@@ -137,10 +136,15 @@ const Services = () => {
   
     const baseUrl = 'http://localhost'; 
     const tagInputValue = tagInputElement.value;
-    const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
+    const tagsArray = tagInputValue
+    .split(',')
+    .map(tag => tag.trim())
+    .filter(tag => tag.length > 0)
+    .map(tag => (platform === 'telegram' ? `+91${tag}` : tag));
+    const limit = dropdownElement.value;
     const password = (platform !== 'whatsapp' && platform !== 'telegram') ? passwordInputElement.value.trim() : undefined;
   
-    const payload = { startUrls: tagsArray };
+    const payload = { startUrls: tagsArray, limit: limit };
     if (platform === 'facebook') {
       payload.password = password;
       payload.pin = pin ? pin.trim() : undefined;
@@ -160,7 +164,7 @@ const Services = () => {
     const port = platformPorts[platform];
     if (!port) {
       console.error('Unsupported platform:', platform);
-      showAlert('Unsupported platform. Please choose Instagram, Facebook, or X.');
+      showAlert('Unsupported platform. Please choose Instagram, Facebook, X, Whatsapp, or Telegram');
       return;
     }
     
@@ -210,6 +214,8 @@ const Services = () => {
     }
   };
 
+    
+  
   const DetailSection = ({ title, content }) => (
     <div className="bg-gray-700 p-4 rounded-md mt-4">
       <h3 className="text-xl font-bold mb-2">{title}</h3>
@@ -217,17 +223,19 @@ const Services = () => {
     </div>
   );
 
-  const renderDropdown = () => (
+  const renderDropdown = (platform) => (
     <select
-      value={selectedNumber}
-      onChange={(e) => setSelectedNumber(parseInt(e.target.value))}
-      className="mt-4 bg-gray-800 text-white p-2 rounded-md border border-gray-600 focus:ring-2 focus:ring-pink-500 transition ease-in-out duration-200"
+      id={`${platform}Dropdown`}
+      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
     >
-      {[...Array(10).keys()].map(i => (
-      <option key={i + 1} value={i + 1}>{i + 1}</option>
-      ))}
+      <option value="10">10</option>
+      <option value="20">20</option>
+      <option value="50">50</option>
+      <option value="100">100</option>
     </select>
   );
+    
+  
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 relative">
@@ -500,7 +508,7 @@ const Services = () => {
           <input
             type="text"
             id="telegramInput"
-            placeholder="Enter Telegram username"
+            placeholder="Enter Telegram phone number"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           Max posts:

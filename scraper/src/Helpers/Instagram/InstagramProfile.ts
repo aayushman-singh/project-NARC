@@ -6,6 +6,7 @@ export async function scrapeInstagramProfiles(startUrls: string[]) {
     const endpoint = 'https://api.apify.com/v2/acts/apify~instagram-profile-scraper/run-sync-get-dataset-items?token=apify_api_PX0pmbuYEg3gO4cHjqIb8D8ah9MOnr2lJs5D';
     const data = {
         usernames: startUrls,
+       
     };
 
     try {
