@@ -1,25 +1,26 @@
 from flask import Flask, request, jsonify
 from telethon import TelegramClient
-import asyncio
 import os
+from flask_cors import CORS
+import re
 
 # Replace with your Telegram API credentials
 API_ID = '26264571'
 API_HASH = 'eb3970da203e1ab5b55081d5f1ae6311'
 
-# Initialize Flask app and Telegram client
+# Initialize Flask app
 app = Flask(__name__)
-client = TelegramClient('session_name', API_ID, API_HASH)
+CORS(app)
 
 # Telegram scraping function for all chats
-async def scrape_all_chats(phone_number, output_base_dir):
-    await client.start(phone_number)
+async def scrape_all_chats(client, output_base_dir):
     print("Client connected!")
-
     result = {}
     async for dialog in client.iter_dialogs():
+       
+
         chat_name = dialog.name or f"chat_{dialog.id}"
-        chat_name = chat_name.replace("/", "_").replace("\\", "_")  # Sanitize folder name
+        chat_name = re.sub(r'[<>:"/\\|?*]', '_', chat_name)  # Replace invalid characters with underscores
         output_dir = os.path.join(output_base_dir, chat_name)
         os.makedirs(output_dir, exist_ok=True)
 
@@ -49,24 +50,41 @@ async def scrape_all_chats(phone_number, output_base_dir):
     print("Scraping all chats completed!")
     return result
 
-# Flask route to scrape all chats
 @app.route('/telegram', methods=['POST'])
-def scrape_all_chats_route():
+async def scrape_all_chats_route():
     data = request.get_json()
-    phone_number = data.get('phone_number')  # Get phone number from the request
-    output_base_dir = data.get('output_dir', 'output')  # Default to 'output' directory
+    startUrls = data.get('startUrls')  # Get the array of phone numbers
 
-    if not phone_number:
-        return jsonify({"error": "phone_number is required"}), 400
+    if not startUrls or not isinstance(startUrls, list):
+        return jsonify({"error": "'startUrls' must be a non-empty array"}), 400
 
-    # Run the scraping function asynchronously
-    loop = asyncio.new_event_loop()
-    asyncio.set_event_loop(loop)
-    result = loop.run_until_complete(scrape_all_chats(phone_number, output_base_dir))
+    output_base_dir = 'output'  # Default to 'output' directory
+    results = {}
+
+    for phone_number in startUrls:
+        try:
+            print(f"Processing phone number: {phone_number}")
+
+            # Initialize Telegram client for each phone number
+            session_name = f'session_{phone_number}'
+            client = TelegramClient(session_name, API_ID, API_HASH)
+
+            # Start the client and run the scraping function
+            await client.start(phone_number)
+            result = await scrape_all_chats(client, output_base_dir)
+            results[phone_number] = result
+
+        except Exception as e:
+            print(f"Error processing {phone_number}: {e}")
+            results[phone_number] = {"error": str(e)}
+
+        finally:
+            # Disconnect the client after processing
+            await client.disconnect()
 
     return jsonify({
         "status": "success",
-        "chats": result
+        "chats": results
     })
 
 if __name__ == '__main__':
