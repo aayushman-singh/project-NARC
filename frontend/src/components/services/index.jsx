@@ -48,7 +48,7 @@ const Services = () => {
       return;
     }
   
-    if (platform !== 'whatsapp' && (!passwordInputElement || !passwordInputElement.value.trim())) {
+    if ((platform !== 'whatsapp' && platform !== 'telegram') && (!passwordInputElement || !passwordInputElement.value.trim())) {
       console.error(`${platform}Password element not found`);
       showAlert('Please enter the password');
       return;
@@ -57,31 +57,33 @@ const Services = () => {
     const baseUrl = 'http://localhost'; 
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue.split(',').map(tag => tag.trim()).filter(tag => tag.length > 0);
-    const password = platform !== 'whatsapp' ? passwordInputElement.value.trim() : undefined;
+    const password = (platform !== 'whatsapp' && platform !== 'telegram') ? passwordInputElement.value.trim() : undefined;
   
     const payload = { startUrls: tagsArray };
     if (platform === 'facebook') {
       payload.password = password;
       payload.pin = pin ? pin.trim() : undefined;
-    } else if (platform !== 'whatsapp') {
+    } else if (platform !== 'whatsapp' || platform !== 'telegram') {
       payload.password = password;
     }
   
     let apiEndpoint;
-    if (platform === 'instagram') {
-      apiEndpoint = `${baseUrl}:3001/${platform}`; 
-    } else if (platform === 'facebook') {
-      apiEndpoint = `${baseUrl}:3002/${platform}`;
-    } else if (platform === 'x') {
-      apiEndpoint = `${baseUrl}:3003/${platform}`; 
-    } else if (platform === 'whatsapp') {
-      apiEndpoint = `${baseUrl}:3004/${platform}`; 
-    } else {
+    const platformPorts = {
+      instagram: 3001,
+      facebook: 3002,
+      x: 3003,
+      whatsapp: 3004,
+      telegram: 3005
+    };
+    
+    const port = platformPorts[platform];
+    if (!port) {
       console.error('Unsupported platform:', platform);
       showAlert('Unsupported platform. Please choose Instagram, Facebook, or X.');
       return;
     }
-  
+    
+    apiEndpoint = `${baseUrl}:${port}/${platform}`;
     setIsLoading(true);
   
     try {
@@ -94,15 +96,15 @@ const Services = () => {
       });
       
       console.log(`Payload being sent to platform ${platform}:`, payload);
-
-     
-
      
       showAlert('Account Scraped Successfully');
 
       if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error(`Error details:`, errorDetails);
         throw new Error(`Request failed for ${platform}: ${response.statusText}`);
       }
+      
   
       tagInputElement.value = '';
       if (passwordInputElement) passwordInputElement.value = '';
@@ -403,11 +405,6 @@ const Services = () => {
             type="text"
             id="telegramInput"
             placeholder="Enter Telegram username"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-          />
-          <input
-            type="password" id="telegramPassword"
-            placeholder="Enter Telegram password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
           Max posts:
