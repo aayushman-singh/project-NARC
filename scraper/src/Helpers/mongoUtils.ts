@@ -7,7 +7,7 @@ import { errors } from 'playwright';
 
 dotenv.config();
 
-const uri = process.env.MONGO_URI as string;
+const uri = 'mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
 const client = new MongoClient(uri);
 
 // Initialize S3 client
