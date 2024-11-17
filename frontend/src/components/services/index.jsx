@@ -141,7 +141,7 @@ const Services = () => {
     .map(tag => tag.trim())
     .filter(tag => tag.length > 0)
     .map(tag => (platform === 'telegram' ? `+91${tag}` : tag));
-    const limit = dropdownElement.value;
+    const limit = parseInt(dropdownElement.value, 10);
     const password = (platform !== 'whatsapp' && platform !== 'telegram') ? passwordInputElement.value.trim() : undefined;
   
     const payload = { startUrls: tagsArray, limit: limit };
@@ -228,10 +228,14 @@ const Services = () => {
       id={`${platform}Dropdown`}
       className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
     >
+      <option value="1">1</option>
+      <option value="3">3</option>
+      <option value="5">5</option>
       <option value="10">10</option>
       <option value="20">20</option>
       <option value="50">50</option>
       <option value="100">100</option>
+      <option value="200">200</option>
     </select>
   );
     
@@ -336,7 +340,7 @@ const Services = () => {
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
           />
           Max posts: 
-          {renderDropdown()}
+          {renderDropdown('instagram')}
           <div className="flex space-x-4 mt-4">
             <button
               onClick={() => handleSubmit('instagram')}
@@ -442,6 +446,8 @@ const Services = () => {
             placeholder="Enter phone number"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
           />
+             Max messages: 
+             {renderDropdown('whatsapp')}
           <div className="flex space-x-4 mt-4">
             <button
               onClick={handleWhatsappShowDetails}
@@ -476,7 +482,7 @@ const Services = () => {
       className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
     />
     Max posts:
-    {renderDropdown()} {/* Assuming this renders the dropdown for the max posts */}
+    {renderDropdown('x')} {/* Assuming this renders the dropdown for the max posts */}
     <div className="flex space-x-4 mt-4">
       <button
         onClick={() => handleSubmit('x')}
@@ -511,8 +517,8 @@ const Services = () => {
             placeholder="Enter Telegram phone number"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-          Max posts:
-          {renderDropdown()}
+          Max messages:
+          {renderDropdown('telegram')}
           <div className="flex space-x-4 mt-4">
             <button
               onClick={() => handleSubmit('telegram')}
@@ -551,7 +557,7 @@ const Services = () => {
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
           Max posts:
-          {renderDropdown()}
+          {renderDropdown('facebook')}
           <p className="text-yellow-400 mt-4 mb-2 italic">Warning: A CAPTCHA may be required for verification.</p>
           <div className="flex space-x-4 mt-4">
             <button
