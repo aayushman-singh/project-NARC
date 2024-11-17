@@ -15,6 +15,7 @@ const Services = () => {
   const [showFollowing, setShowFollowing] = useState(false);
   const [selectedNumber, setSelectedNumber] = useState(1);
   const [alert, setAlert] = useState({ visible: false, message: '', type: 'info' });
+  const [whatsappData, setWhatsappData] = useState(null);
 
   const toggleFollowers = () => setShowFollowers(!showFollowers);
   const toggleFollowing = () => setShowFollowing(!showFollowing);
@@ -25,6 +26,43 @@ const Services = () => {
  const showAlert = (message, type = 'info') => {
     setAlert({ visible: true, message, type });
     setTimeout(() => setAlert({ visible: false, message: '', type: 'info' }), 3000);
+  };
+  const handleWhatsappShowDetails = async () => {
+    const username = document.getElementById('whatsappInput').value;
+    setIsLoading(true);
+
+    try {
+      const response = await fetch(`http://localhost:3004/whatsapp/users/${username}`); // Replace with your actual API endpoint
+      if (!response.ok) {
+        throw new Error('User not found');
+      }
+      const data = await response.json();
+      setWhatsappData(data); // Store the data for WhatsApp
+      setShowDetails(true);
+      showAlert('Data fetched successfully', 'success');
+    } catch (error) {
+      showAlert('Failed to fetch data. Please try again.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const renderWhatsappChats = (chats) => {
+    return chats.map((chat, index) => (
+      <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
+        <h3 className="text-xl font-bold mb-2">{chat.receiverUsername}</h3>
+        <div className="space-y-2">
+          <div>
+            {chat.screenshots.map((screenshot, idx) => (
+              <img key={idx} src={screenshot} alt={`Screenshot ${idx + 1}`} className="w-full rounded-md mb-2" />
+            ))}
+          </div>
+          <a href={chat.chats} className="text-blue-400 underline" target="_blank" rel="noopener noreferrer">
+            View Chat Log
+          </a>
+        </div>
+      </div>
+    ));
   };
 
   const handleSubmit = async (platform) => {
@@ -344,26 +382,33 @@ const Services = () => {
         </div>
       )}
 
-      {activeSection === 'whatsapp' && (
+{activeSection === 'whatsapp' && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-green-500">WhatsApp</h2>
           <input
             type="text"
             id="whatsappInput"
-            placeholder="Enter WhatsApp phone number or leave empty for QR"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-500"
+            placeholder="Enter phone number"
+            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
           />
-          <p className="text-yellow-400 mt-4 mb-2 italic">Note: A QR code will be provided for authentication.</p>
-          <button
-            onClick={() => handleSubmit('whatsapp')}
-            className="mt-4 bg-green-500 text-white px-6 py-2 rounded-md hover:bg-green-600 disabled:opacity-50"
-            disabled={isLoading}
-          >
-            Submit
-          </button>
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={handleWhatsappShowDetails}
+              className=" bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Show Details
+            </button>
+          </div>
+
+          {whatsappData && showDetails && (
+            <div className="mt-6">
+              <h3 className="text-xl font-bold text-white">User Chats</h3>
+              {renderWhatsappChats(whatsappData.chats)}
+            </div>
+          )}
         </div>
       )}
-
       {activeSection === 'x' && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-blue-500">X (formerly Twitter)</h2>

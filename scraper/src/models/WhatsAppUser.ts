@@ -1,4 +1,4 @@
-import mongoose, { Schema, Document } from 'mongoose';
+import mongoose, { Schema, Document, Model } from 'mongoose';
 
 interface IChat {
   receiverUsername: string;
@@ -6,20 +6,40 @@ interface IChat {
   chats: string;
 }
 
-export interface IWhatsAppUser extends Document {
+export interface IWhatsappUser extends Document {
   username: string;
   chats: IChat[];
 }
 
-const ChatSchema: Schema = new Schema({
-  receiverUsername: { type: String, required: true },
-  screenshots: { type: [String], required: true },
-  chats: { type: String, required: true },
+const chatSchema = new Schema({
+  receiverUsername: {
+    type: String,
+    required: true,
+    trim: true,
+  },
+  screenshots: [{
+    type: String,
+    required: true,
+  }],
+  chats: {
+    type: String,
+    required: true,
+  },
+}, { _id: false });
+
+const whatsappUserSchema = new Schema({
+  username: {
+    type: String,
+    required: true,
+    unique: true,
+    trim: true,
+  },
+  chats: [chatSchema],
+}, {
+  collection: 'whatsapp_users',
+  timestamps: true,
 });
 
-const WhatsAppUserSchema: Schema = new Schema({
-  username: { type: String, required: true, unique: true },
-  chats: { type: [ChatSchema], required: true },
-});
+const WhatsappUser: Model<IWhatsappUser> = mongoose.model<IWhatsappUser>('WhatsappUser', whatsappUserSchema);
 
-export const WhatsAppUser = mongoose.model<IWhatsAppUser>('WhatsAppUser', WhatsAppUserSchema);
+export default WhatsappUser;
