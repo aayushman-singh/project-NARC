@@ -4,6 +4,7 @@ import { scrapeInstagramProfiles } from '../Helpers/Instagram/InstagramProfile.j
 import { scrapeInstagramPosts } from '../Helpers/Instagram/InstagramPosts.js';
 import { InstaScraper } from '../Helpers/Instagram/InstaScraper.js';
 import retry from 'async-retry'; // For retry logic
+import '../../../config.js'
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3001; // Instagram Scraper Port

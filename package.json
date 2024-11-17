@@ -2,6 +2,7 @@
   "name": "project-narc",
   "version": "1.0.0",
   "description": "Monorepo for Project NARC containing scraper, frontend, and backend",
+  "type": "module",
   "dependencies": {
     "@aws-sdk/client-s3": "^3.693.0",
     "aws": "^0.0.3-2",

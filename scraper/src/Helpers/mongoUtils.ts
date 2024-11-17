@@ -2,12 +2,10 @@ import { MongoClient, GridFSBucket, ObjectId } from 'mongodb';
 import fs from 'fs/promises';
 import path from 'path';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import dotenv from 'dotenv';
 import { errors } from 'playwright';
+import '../../../config.js';
 
-dotenv.config();
-
-const uri = 'mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0';
+const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri);
 
 // Initialize S3 client
