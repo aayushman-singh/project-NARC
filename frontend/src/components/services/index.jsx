@@ -4,6 +4,8 @@ import followersData from '../data/followers_log';
 import followingData from '../data/following_log';
 import './style.css';
 
+
+
 import instagramData from '/script/Instagram.json';
 
 const Services = () => {
@@ -16,6 +18,7 @@ const Services = () => {
   const [selectedNumber, setSelectedNumber] = useState(1);
   const [alert, setAlert] = useState({ visible: false, message: '', type: 'info' });
   const [whatsappData, setWhatsappData] = useState(null);
+  const [xData, setXData] = useState(null); // Initialize xData
 
   const toggleFollowers = () => setShowFollowers(!showFollowers);
   const toggleFollowing = () => setShowFollowing(!showFollowing);
@@ -64,7 +67,47 @@ const Services = () => {
       </div>
     ));
   };
-
+  const handleXShowDetails = async () => {
+    const username = document.getElementById('xInput').value;
+    const password = document.getElementById('xPassword').value; // If you use password input
+    setIsLoading(true);
+  
+    try {
+      const response = await fetch(`http://localhost:3003/twitter/users/${username}`); // Replace with your actual API endpoint
+      if (!response.ok) {
+        throw new Error('User not found');
+      }
+      const data = await response.json();
+      setXData(data); // Store the data for WhatsApp
+      setShowDetails(true);
+      showAlert('Data fetched successfully', 'success');
+    } catch (error) {
+      showAlert('Failed to fetch data. Please try again.', 'error');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  const renderXTweets = (tweets) => {
+    return tweets.map((tweet, index) => (
+      <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
+        <h3 className="text-xl font-bold mb-2">
+          <a href={tweet.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">
+            {tweet.id_str}
+          </a>
+        </h3>
+        <p className="text-gray-300">{tweet.full_text}</p>
+        <div className="flex space-x-4 mt-2 text-gray-400 text-sm">
+          <span>Created at: {tweet.created_at}</span>
+          <span>Lang: {tweet.lang}</span>
+          <span>Retweets: {tweet.retweet_count}</span>
+          <span>Favorites: {tweet.favorite_count}</span>
+          <span>Replies: {tweet.reply_count}</span>
+          <span>Quotes: {tweet.quote_count}</span>
+        </div>
+      </div>
+    ));
+  };
+  
   const handleSubmit = async (platform) => {
     const tagInputElement = document.getElementById(`${platform}Input`);
     const passwordInputElement = document.getElementById(`${platform}Password`);
@@ -410,38 +453,46 @@ const Services = () => {
         </div>
       )}
       {activeSection === 'x' && (
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold text-blue-500">X (formerly Twitter)</h2>
-          <input
-            type="text"
-            id="xInput"
-            placeholder="Enter X username,email or phone number"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="password" id="xPassword"
-            placeholder="Enter X password"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          Max posts:
-          {renderDropdown()}
-          <div className="flex space-x-4 mt-4">
-            <button
-              onClick={() => handleSubmit('x')}
-              className=" bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
-              disabled={isLoading}
-            >
-              Submit
-            </button>
-            <button
-              onClick={handleShowDetails}
-              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-            >
-              Show Details
-            </button>
-          </div>
-        </div>
-      )}
+  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 className="text-2xl font-bold text-blue-500">X (formerly Twitter)</h2>
+    <input
+      type="text"
+      id="xInput"
+      placeholder="Enter X username, email, or phone number"
+      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    <input
+      type="password"
+      id="xPassword"
+      placeholder="Enter X password"
+      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+    />
+    Max posts:
+    {renderDropdown()} {/* Assuming this renders the dropdown for the max posts */}
+    <div className="flex space-x-4 mt-4">
+      <button
+        onClick={() => handleSubmit('x')}
+        className=" bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+        disabled={isLoading}
+      >
+        Submit
+      </button>
+      <button
+        onClick={handleXShowDetails}
+        className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+      >
+        Show Details
+      </button>
+    </div>
+    {showDetails && (
+      <div className="mt-6">
+        <h3 className="text-xl font-bold text-blue-400 mb-4">Tweets</h3>
+        {xData?.tweets ? renderXTweets(xData.tweets) : <p>No tweets available</p>}
+      </div>
+    )}
+  </div>
+)}
+
 
       {activeSection === 'telegram' && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
