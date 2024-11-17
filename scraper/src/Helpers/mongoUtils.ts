@@ -5,11 +5,10 @@ import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import dotenv from 'dotenv';
 import { errors } from 'playwright';
 
-const uri = "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0";
-const client = new MongoClient(uri);
-
 dotenv.config();
 
+const uri = process.env.MONGO_URI as string;
+const client = new MongoClient(uri);
 
 // Initialize S3 client
 const s3 = new S3Client({
