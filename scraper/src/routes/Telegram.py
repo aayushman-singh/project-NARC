@@ -3,11 +3,13 @@ from telethon import TelegramClient
 import os
 from flask_cors import CORS
 import re
+import requests
+from dotenv import load_dotenv
+import Helpers.Telegram.mongoUtils
 
-# Replace with your Telegram API credentials
-API_ID = '26264571'
-API_HASH = 'eb3970da203e1ab5b55081d5f1ae6311'
-
+load_dotenv()
+API_ID=os.getenv("API_KEY")
+API_HASH=os.getenv("API_HASH")
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
