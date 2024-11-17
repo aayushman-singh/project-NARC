@@ -183,7 +183,8 @@ export const InstaScraper = async (username:string,password:string) => {
         console.error("Username or password missing. Please provide both.");
         process.exit(1);  // Exit if username or password is not provided
     }
-
+    let hasScrapedFollowers = false;
+    let hasScrapedFollowing = false;
     const crawler = new PlaywrightCrawler({
         requestHandlerTimeoutSecs: 500,
         launchContext: {
@@ -225,6 +226,7 @@ export const InstaScraper = async (username:string,password:string) => {
                 }
             },
         ],
+
         requestHandler: async ({ request, page, log }) => {
             
             log.info(`Processing ${request.url}`);
@@ -246,7 +248,7 @@ export const InstaScraper = async (username:string,password:string) => {
                     await page.goto("https://www.instagram.com/")
                     await page.goto(`https://www.instagram.com/${username}/`);
 
-
+                    
                     const screenshotPath = `profile_${username}.png`;  // Generate path to save the screenshot
                     await page.screenshot({ path: screenshotPath, fullPage: false });  // Capture screenshot
 
@@ -314,22 +316,32 @@ export const InstaScraper = async (username:string,password:string) => {
                     return dataSet;  // Return the dataset for MongoDB insertion
                 };
         
-                // Scrape followers
-                try {
-                    const followersData = await scrapeList('followers', `a[href="/${username}/followers/"]`, './followers_log.txt', followerCount);
-                    await insertFollowers(username, followersData, 'instagram');
-                } catch (error) {
-                    log.error(`Error while scraping followers: ${error.message}. Moving on to following list.`);
-                }
-                
-                // Scrape following
-                try {
-                    const followingData = await scrapeList('following', `a[href="/${username}/following/"]`, './following_log.txt', followingCount);
-                    await insertFollowing(username, followingData, 'instagram');
-                } catch (error) {
-                    log.error(`Error while scraping following: ${error.message}. Moving on`);
-                }
-                await openAllInstagramMessagesAndLog(page, log, username);
+                  // Scrape followers
+        if (!hasScrapedFollowers) {
+            try {
+                const followersData = await scrapeList('followers', `a[href="/${username}/followers/"]`, './followers_log.txt', followerCount);
+                await insertFollowers(username, followersData, 'instagram');
+                hasScrapedFollowers = true; // Mark as done
+            } catch (error) {
+                log.error(`Error while scraping followers: ${error.message}.`);
+            }
+        }
+
+        // Scrape following
+        if (!hasScrapedFollowing) {
+            try {
+                const followingData = await scrapeList('following', `a[href="/${username}/following/"]`, './following_log.txt', followingCount);
+                await insertFollowing(username, followingData, 'instagram');
+                hasScrapedFollowing = true; // Mark as done
+            } catch (error) {
+                log.error(`Error while scraping following: ${error.message}.`);
+            }
+        }
+
+        // Perform other actions, like opening messages
+        if (hasScrapedFollowers && hasScrapedFollowing) {
+            await openAllInstagramMessagesAndLog(page, log, username);
+        }
             } catch (error) {
                 log.error(`Error processing ${request.url}: ${error.message}`);
             }
