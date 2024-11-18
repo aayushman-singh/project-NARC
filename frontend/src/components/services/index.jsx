@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { InstagramLogo, WhatsappLogo, FacebookLogo, TelegramLogo, TwitterLogo, FileCsv, FilePdf, CloudArrowUp, Coins, X } from 'phosphor-react';
-import followersData from '../data/followers_log';
-import followingData from '../data/following_log';
+
 import './style.css';
 import instagramData from '/script/Instagram.json';
 
@@ -13,7 +12,8 @@ const Services = () => {
   const [userData, setUserData] = useState(null);
   const [alert, setAlert] = useState({ visible: false, message: '', type: 'info' });
   const [whatsappData, setWhatsappData] = useState(null);
-  const [xData, setXData] = useState(null); // Initialize xData
+  const [xData, setXData] = useState(null); 
+  const [facebookData, setFacebookData] = useState(null); 
 
   const handleSectionClick = (section) => {
     setActiveSection((prev) => (prev === section ? '' : section));
@@ -23,17 +23,63 @@ const Services = () => {
     setAlert({ visible: true, message, type });
     setTimeout(() => setAlert({ visible: false, message: '', type: 'info' }), 3000);
   };
-  const handleWhatsappShowDetails = async () => {
-    const username = document.getElementById('whatsappInput').value;
+  const handleShowDetails = async (platform, requiresPassword = false) => {
+    const platformConfig = {
+      whatsapp: 3004,
+      facebook: 3002,
+      x: 3003,
+      telegram: 3005,
+      instagram: 3001, 
+    };
+  
+    const port = platformConfig[platform];
+    if (!port) {
+      console.error('Unknown platform or port not configured');
+      return;
+    }
+  
+    const username = document.getElementById(`${platform}Input`).value;
+    const password = requiresPassword ? document.getElementById(`${platform}Password`).value : null;
+  
     setIsLoading(true);
-
+  
     try {
-      const response = await fetch(`http://localhost:3004/whatsapp/users/${username}`); // Replace with your actual API endpoint
+     
+      const queryParams = requiresPassword && password 
+        ? `?password=${encodeURIComponent(password)}` 
+        : '';
+        
+      const response = await fetch(
+        `http://localhost:${port}/${platform}/users/${username}${queryParams}`
+      );
+  
       if (!response.ok) {
         throw new Error('User not found');
       }
+  
       const data = await response.json();
-      setWhatsappData(data); // Store the data for WhatsApp
+  
+      // Dynamically set the state based on the platform
+      switch (platform) {
+        case 'whatsapp':
+          setWhatsappData(data);
+          break;
+        case 'facebook':
+          setFacebookData(data);
+          break;
+        case 'x':
+          setXData(data);
+          break;
+        case 'telegram':
+          setTelegramData(data);
+          break;
+        case 'instagram':
+          setInstagramData(data);
+          break;
+        default:
+          console.error('Unknown platform');
+      }
+  
       setShowDetails(true);
       showAlert('Data fetched successfully', 'success');
     } catch (error) {
@@ -42,7 +88,86 @@ const Services = () => {
       setIsLoading(false);
     }
   };
+  
+  
 
+  const renderFacebookData = (facebookData) => {
+    if (!facebookData) return <p className="text-gray-400">No data available.</p>;
+  
+    return (
+      <div>
+        <h3 className="text-xl font-bold text-blue-400 mb-4">Facebook Details</h3>
+  
+        {/* Username Display */}
+        <div className="text-lg font-semibold text-gray-300 mb-4">
+          Username: <span className="text-blue-300">{facebookData.username}</span>
+        </div>
+  
+        {/* Timelines */}
+        <div className="mt-6">
+          <h4 className="text-lg font-bold text-blue-300 mb-2">Timelines:</h4>
+          {facebookData.timelines && facebookData.timelines.length > 0 ? (
+            facebookData.timelines.map((timeline, index) => (
+              <div key={index} className="mt-2">
+                <a
+                  href={timeline}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 underline"
+                >
+                  Timeline {index + 1}
+                </a>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400">No timelines available.</p>
+          )}
+        </div>
+  
+        {/* Posts */}
+        <div className="mt-6">
+          <h4 className="text-lg font-bold text-blue-300 mb-2">Posts:</h4>
+          {facebookData.posts && facebookData.posts.length > 0 ? (
+            facebookData.posts.map((post, index) => (
+              <div key={index} className="mt-2">
+                <a
+                  href={post}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-400 underline"
+                >
+                  Post {index + 1}
+                </a>
+              </div>
+            ))
+          ) : (
+            <p className="text-gray-400">No posts available.</p>
+          )}
+        </div>
+  
+        {/* Messages */}
+        <div className="mt-6">
+          <h4 className="text-lg font-bold text-blue-300 mb-2">Messages:</h4>
+          {facebookData.messages ? (
+            <div className="mt-2">
+              <a
+                href={facebookData.messages}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 underline"
+              >
+                Messages
+              </a>
+            </div>
+          ) : (
+            <p className="text-gray-400">No messages available.</p>
+          )}
+        </div>
+      </div>
+    );
+  };
+  
+  
   const renderWhatsappChats = (chats) => {
     return chats.map((chat, index) => (
       <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
@@ -60,26 +185,7 @@ const Services = () => {
       </div>
     ));
   };
-  const handleXShowDetails = async () => {
-    const username = document.getElementById('xInput').value;
-    const password = document.getElementById('xPassword').value; // If you use password input
-    setIsLoading(true);
-  
-    try {
-      const response = await fetch(`http://localhost:3003/twitter/users/${username}`); // Replace with your actual API endpoint
-      if (!response.ok) {
-        throw new Error('User not found');
-      }
-      const data = await response.json();
-      setXData(data); // Store the data for WhatsApp
-      setShowDetails(true);
-      showAlert('Data fetched successfully', 'success');
-    } catch (error) {
-      showAlert('Failed to fetch data. Please try again.', 'error');
-    } finally {
-      setIsLoading(false);
-    }
-  };
+ 
   const renderXTweets = (tweets) => {
     return tweets.map((tweet, index) => (
       <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
@@ -198,7 +304,7 @@ const Services = () => {
     }
   };
 
-  const handleShowDetails = () => {
+  const handleShowInstaDetails = () => {
     const username = document.getElementById('instagramInput').value;
     const user = instagramData.Instagram.instagram.find(u => u.username === username);
     if (user) {
@@ -345,7 +451,7 @@ const Services = () => {
               Submit
             </button>
             <button
-              onClick={handleShowDetails}
+              onClick={handleShowInstaDetails}
               className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
             >
               Show Details
@@ -445,7 +551,7 @@ const Services = () => {
              {renderDropdown('whatsapp')}
           <div className="flex space-x-4 mt-4">
             <button
-              onClick={handleWhatsappShowDetails}
+              onClick={() => handleShowDetails('whatsapp')}
               className=" bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
               disabled={isLoading}
             >
@@ -487,7 +593,7 @@ const Services = () => {
         Submit
       </button>
       <button
-        onClick={handleXShowDetails}
+        onClick={() => handleShowDetails('x')}
         className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
       >
         Show Details
@@ -551,24 +657,27 @@ const Services = () => {
             placeholder="Enter Facebook pin"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
-          Max posts:
-          {renderDropdown('facebook')}
-          <p className="text-yellow-400 mt-4 mb-2 italic">Warning: A CAPTCHA may be required for verification.</p>
-          <div className="flex space-x-4 mt-4">
-            <button
-              onClick={() => handleSubmit('facebook')}
-              className=" bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-              disabled={isLoading}
-            >
-              Submit
-            </button>
-            <button
-              onClick={handleShowDetails}
-              className=" bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-            >
-              Show Details
-            </button>
-          </div>
+        Max posts:
+    {renderDropdown('facebook')}
+    <p className="text-yellow-400 mt-4 mb-2 italic">Warning: A CAPTCHA may be required for verification.</p>
+    <div className="flex space-x-4 mt-4">
+      <button
+        onClick={() => handleSubmit('facebook')}
+        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+        disabled={isLoading}
+      >
+        Submit
+      </button>
+      <button
+        onClick={() => handleShowDetails('facebook')}
+        className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+      >
+        Show Details
+      </button>
+    </div>
+          <div className="mt-8">
+      {facebookData ? renderFacebookData(facebookData) : <p className="text-gray-400">No Facebook data loaded yet.</p>}
+    </div>
         </div>
       )}
     </div>
