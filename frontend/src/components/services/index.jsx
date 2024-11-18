@@ -11,15 +11,10 @@ const Services = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [userData, setUserData] = useState(null);
-  const [showFollowers, setShowFollowers] = useState(false);
-  const [showFollowing, setShowFollowing] = useState(false);
-  const [selectedNumber, setSelectedNumber] = useState(1);
   const [alert, setAlert] = useState({ visible: false, message: '', type: 'info' });
   const [whatsappData, setWhatsappData] = useState(null);
   const [xData, setXData] = useState(null); // Initialize xData
 
-  const toggleFollowers = () => setShowFollowers(!showFollowers);
-  const toggleFollowing = () => setShowFollowing(!showFollowing);
   const handleSectionClick = (section) => {
     setActiveSection((prev) => (prev === section ? '' : section));
   };
