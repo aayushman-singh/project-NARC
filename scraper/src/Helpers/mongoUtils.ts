@@ -97,14 +97,15 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
         const fileBuffer = fs.readFile(screenshotPath);
 
         // Convert the binary buffer to a Base64 string
-        const base64String = fileBuffer.toString();
-
+        const fileName = path.basename(screenshotPath); // Use the file name as the S3 key
+        const s3Key = `${username}/${fieldName}/${platform}/${fileName}`;
+        const s3Url = await uploadToS3(screenshotPath, s3Key)
         // Store the Base64 string in MongoDB under the specified field for the user
         await collection.updateOne(
             { username: username },  // Match document by username
             { 
                 $set: {
-                 [fieldName]: base64String 
+                 [fieldName]: s3Url 
                 } 
             },  // Store the Base64 string in the specified field
             { upsert: true }  // Insert the document if it doesn't exist
@@ -120,11 +121,11 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
 }
 
 // Modified uploadChats function
-export async function uploadChats(username: string, receiverUsername: string, screenshotPaths: string[], chatLogURL: string) {
+export async function uploadChats(username: string, receiverUsername: string, screenshotPaths: string[], chatLogURL: string, platform:string) {
     try {
         await client.connect();
-        const db = client.db('whatsappDB');
-        const collection = db.collection('whatsapp_users');
+        const db = client.db(`${platform}DB`);
+        const collection = db.collection(`${platform}_users`);
 
         // Upload each screenshot to S3 and collect URLs
         const screenshotURLs = [];
@@ -239,21 +240,20 @@ export async function insertPosts(username: string, posts: any[], platform: stri
     }
 }
 
-export async function insertMessages(username: string, filePath: string, platform: string) {
+export async function insertMessages(username: string, filePath: string,receiverUsername:string, platform: string) {
     await client.connect();
     const db = client.db(`${platform}DB`);
     const collection = db.collection<InstagramUserDocument>(`${platform}_users`);
 
-    try {
-        // Correctly read the file content using the promise-based readFile with 'utf8' encoding
-        const fileContent = fs.readFile(filePath, 'utf8');
-        
-        const message = { content: fileContent, timestamp: new Date() }; // Add more fields as necessary
-
+    try { 
+        const fileName = path.basename(filePath); // Use the file name as the S3 key
+      
+        const s3Key =  `${username}/${receiverUsername}/${fileName}`;;
+        const s3Url = uploadToS3(filePath, s3Key); 
         // Update or insert the user's messages into the 'messages' array
         await collection.updateOne(
             { username: username },
-            { $push: { messages: message } },
+            { $push: { messages: s3Url } },
             { upsert: true }
         );
     } catch (error:any) {

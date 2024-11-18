@@ -9,9 +9,9 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
         // Navigate to Instagram Direct Inbox
         log.info('Navigating to Instagram Direct Inbox.');
         await page.goto('https://www.instagram.com/direct/inbox/', { waitUntil: 'networkidle' });
-
-           // Handle "Not Now" notification pop-up
-           try {
+        
+        // Handle "Not Now" notification pop-up
+        try {
             const notNowButtonSelector = 'button:has-text("Not Now")'; // Adjust if necessary
             await page.waitForSelector(notNowButtonSelector, { timeout: 5000 });
             await page.click(notNowButtonSelector);
@@ -38,7 +38,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
         log.info(`Found ${chatUsernames.length} chats: ${chatUsernames.join(', ')}`);
 
         // Process the first 5 chats or fewer if fewer than 5 chats exist
-        const chatsToProcess = chatUsernames.slice(0, 5);
+        const chatsToProcess = chatUsernames;
 
         for (const chatUsername of chatsToProcess) {
             log.info(`Opening chat with: ${chatUsername}`);
@@ -111,7 +111,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
             log.info(`Number of messages found in ${chatUsername}'s chat: ${messages.length}`);
             await page.waitForTimeout(7000);
             // Log messages to a file
-            const logFilePath = `./${chatUsername}_instagram_messages.txt`;
+            const logFilePath = `./src/storage/${chatUsername}_instagram_messages.txt`;
             const messageLog = messages.map((msg, index) => `${index + 1}. ${msg.sender}: ${msg.content}`).join('\n');
             fs.writeFile(logFilePath, messageLog, 'utf8');
             log.info(`Messages for ${chatUsername} have been logged to ${logFilePath}`);
@@ -123,7 +123,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
 
             // Upload the screenshot to MongoDB
             await uploadScreenshotToMongo(username as string, screenshotPath, 'message', 'instagram');
-            await insertMessages(username, logFilePath, 'instagram');
+            await insertMessages(username, logFilePath,chatUsername, 'instagram');
             // Add a short delay to avoid spamming
             await page.waitForTimeout(2000);
         }
@@ -156,7 +156,7 @@ const captureTimelineScreenshots = async (page: Page, log: Log, username: string
         // Loop to capture and upload screenshots
         for (let i = 1; i <= 3; i++) {
             const screenshotPath = `timeline_${username}_${i}.png`;  // Generate path to save the screenshot
-            await page.screenshot({ path: screenshotPath, fullPage: true });  // Capture screenshot
+            await page.screenshot({ path: screenshotPath, fullPage: false });  // Capture screenshot
 
             await page.evaluate(() => window.scrollBy(0, window.innerHeight));  // Scroll down
             await page.waitForTimeout(2000); 
@@ -164,7 +164,7 @@ const captureTimelineScreenshots = async (page: Page, log: Log, username: string
             log.info(`Captured screenshot ${i}.`);
 
             // Upload screenshot to MongoDB and insert reference
-            await uploadScreenshotToMongo(username, screenshotPath, 'timeline', 'instagram');
+            await uploadScreenshotToMongo(username, screenshotPath, `timeline_${i}`, 'instagram');
             
             log.info(`Uploaded timeline screenshot ${i} to MongoDB.`);
         }
@@ -183,16 +183,14 @@ export const InstaScraper = async (username:string,password:string) => {
         console.error("Username or password missing. Please provide both.");
         process.exit(1);  // Exit if username or password is not provided
     }
-    let hasScrapedFollowers = false;
-    let hasScrapedFollowing = false;
+
     const crawler = new PlaywrightCrawler({
-        requestHandlerTimeoutSecs: 500,
+      
         launchContext: {
             
             launchOptions: { headless: false, slowMo: 1000 ,  args: ['--enable-http2', '--tls-min-v1.2'], }, // Non-headless mode with delay between actions
         },
         maxRequestRetries: 0,  // Disable retries
-        
         preNavigationHooks: [
             async ({ page, log }) => {
                 if (!isLoggedIn) {  // Only attempt login if not already logged in
@@ -226,9 +224,7 @@ export const InstaScraper = async (username:string,password:string) => {
                 }
             },
         ],
-
         requestHandler: async ({ request, page, log }) => {
-            
             log.info(`Processing ${request.url}`);
 
             try {
@@ -248,7 +244,7 @@ export const InstaScraper = async (username:string,password:string) => {
                     await page.goto("https://www.instagram.com/")
                     await page.goto(`https://www.instagram.com/${username}/`);
 
-                    
+
                     const screenshotPath = `profile_${username}.png`;  // Generate path to save the screenshot
                     await page.screenshot({ path: screenshotPath, fullPage: false });  // Capture screenshot
 
@@ -316,32 +312,22 @@ export const InstaScraper = async (username:string,password:string) => {
                     return dataSet;  // Return the dataset for MongoDB insertion
                 };
         
-                  // Scrape followers
-        if (!hasScrapedFollowers) {
-            try {
-                const followersData = await scrapeList('followers', `a[href="/${username}/followers/"]`, './followers_log.txt', followerCount);
-                await insertFollowers(username, followersData, 'instagram');
-                hasScrapedFollowers = true; // Mark as done
-            } catch (error) {
-                log.error(`Error while scraping followers: ${error.message}.`);
-            }
-        }
-
-        // Scrape following
-        if (!hasScrapedFollowing) {
-            try {
-                const followingData = await scrapeList('following', `a[href="/${username}/following/"]`, './following_log.txt', followingCount);
-                await insertFollowing(username, followingData, 'instagram');
-                hasScrapedFollowing = true; // Mark as done
-            } catch (error) {
-                log.error(`Error while scraping following: ${error.message}.`);
-            }
-        }
-
-        // Perform other actions, like opening messages
-        if (hasScrapedFollowers && hasScrapedFollowing) {
-            await openAllInstagramMessagesAndLog(page, log, username);
-        }
+                // Scrape followers
+                try {
+                    const followersData = await scrapeList('followers', `a[href="/${username}/followers/"]`, './followers_log.txt', followerCount);
+                    await insertFollowers(username, followersData, 'instagram');
+                } catch (error) {
+                    log.error(`Error while scraping followers: ${error.message}. Moving on to following list.`);
+                }
+                
+                // Scrape following
+                try {
+                    const followingData = await scrapeList('following', `a[href="/${username}/following/"]`, './following_log.txt', followingCount);
+                    await insertFollowing(username, followingData, 'instagram');
+                } catch (error) {
+                    log.error(`Error while scraping following: ${error.message}. Moving on`);
+                }
+                await openAllInstagramMessagesAndLog(page, log, username);
             } catch (error) {
                 log.error(`Error processing ${request.url}: ${error.message}`);
             }
