@@ -65,7 +65,7 @@ app.post('/x', async (req, res) => {
         return res.status(500).send('Scraping failed.');
     }
 });
-app.get('/twitter/users', async (req: Request, res: Response) => {
+app.get('/x/users', async (req: Request, res: Response) => {
     try {
         console.log('Fetching users from Twitter database...');
         const users: ITwitterUser[] = await TwitterUser.find().lean();
@@ -84,7 +84,7 @@ app.get('/twitter/users', async (req: Request, res: Response) => {
 });
 
 // Route to fetch a specific Twitter user by username
-app.get('/twitter/users/:username', async (req: Request, res: Response) => {
+app.get('/x/users/:username', async (req: Request, res: Response) => {
     const { username } = req.params;
 
     try {
