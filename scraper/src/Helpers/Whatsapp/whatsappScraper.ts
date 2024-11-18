@@ -92,7 +92,7 @@ const scrollChatWithLogging = async (
 
         // Upload screenshots and chat log URL to MongoDB
 
-        await uploadChats(username, receiverUsername, screenshotPaths, chatLogURL);
+        await uploadChats(username, receiverUsername, screenshotPaths, chatLogURL, 'whatsapp');
         console.log('Finished scrolling downward and capturing screenshots.');
     } catch (error:any) {
         console.error('Error during scrolling and screenshot capture:', error.message);
