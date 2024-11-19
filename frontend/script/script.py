@@ -1,13 +1,8 @@
 import pymongo
 import json
 import csv
-from bson.objectid import ObjectId
-import base64
-import os
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
-from reportlab.lib import colors
-from reportlab.platypus import Table, TableStyle
 
 # MongoDB Atlas connection
 def connect_to_mongodb():
@@ -19,64 +14,7 @@ def connect_to_mongodb():
         print(f"Error connecting to MongoDB: {e}")
         return None
 
-# Fetch timeline data from ObjectId and return decoded screenshots
-def fetch_timeline_screenshots(db, timeline_ids):
-    files_collection = db['instagram_user.files']
-    chunks_collection = db['instagram_user.chunks']
-    timeline_screenshots = []
-
-    for timeline in timeline_ids:
-        for key, timeline_id in timeline.items():
-            if isinstance(timeline_id, ObjectId):
-                file_doc = files_collection.find_one({"_id": timeline_id})
-                if file_doc:
-                    file_id = file_doc["_id"]
-                    chunks = chunks_collection.find({"files_id": file_id}).sort("n", 1)
-                    binary_data = b''.join([chunk['data'] for chunk in chunks])
-
-                    screenshot_filename = f"screenshot_{str(timeline_id)}.png"
-                    with open(screenshot_filename, 'wb') as screenshot_file:
-                        screenshot_file.write(binary_data)
-
-                    timeline_screenshots.append({
-                        "timeline_id": str(timeline_id),
-                        "screenshot_file": screenshot_filename
-                    })
-                else:
-                    timeline_screenshots.append({
-                        "timeline_id": str(timeline_id),
-                        "screenshot": "Screenshot not found"
-                    })
-            elif isinstance(timeline_id, str):
-                try:
-                    decoded_data = base64.b64decode(timeline_id)
-                    screenshot_filename = f"screenshot_decoded_{key}.png"
-                    with open(screenshot_filename, 'wb') as screenshot_file:
-                        screenshot_file.write(decoded_data)
-
-                    timeline_screenshots.append({
-                        "timeline_id": key,
-                        "screenshot_file": screenshot_filename
-                    })
-                except Exception as e:
-                    timeline_screenshots.append({
-                        "timeline_id": key,
-                        "screenshot": f"Invalid base64 format. Error: {e}"
-                    })
-            elif isinstance(timeline_id, int):
-                timeline_screenshots.append({
-                    "timeline_id": key,
-                    "screenshot": "Cannot decode integer type. No valid image found."
-                })
-            else:
-                timeline_screenshots.append({
-                    "timeline_id": key,
-                    "screenshot": "Unsupported type. Cannot process."
-                })
-
-    return timeline_screenshots
-
-def extract_posts_profile_timeline(account, db):
+def extract_posts_profile(account):
     posts_data = []
 
     if "posts" in account:
@@ -103,10 +41,7 @@ def extract_posts_profile_timeline(account, db):
             "friend_list": profile.get("friend_list", "unavailable")
         }
 
-    timeline_ids = account.get("timeline", [])
-    timeline_screenshots = fetch_timeline_screenshots(db, timeline_ids)
-
-    return posts_data, profile_data, timeline_screenshots
+    return posts_data, profile_data
 
 # New function to export data to CSV
 def export_to_csv(data, filename="Instagram.csv"):
@@ -152,11 +87,11 @@ def export_to_pdf(data, filename="Instagram.pdf"):
         text_object.textLine("Posts:")
         
         for post in account["posts"]:
-            text_object.textLine(f"    Post ID: {post.get('post_id', 'Unknown')}")
-            text_object.textLine(f"    Content: {post.get('content', 'No content available')}")
-            text_object.textLine(f"    Caption: {post.get('caption', 'not available')}")
-            text_object.textLine(f"    Likes: {post.get('likes', 0)}")
-            text_object.textLine(f"    Comments: {post.get('comments', 0)}")
+            text_object.textLine(f"Post ID: {post.get('post_id', 'Unknown')}")
+            text_object.textLine(f"Content: {post.get('content', 'No content available')}")
+            text_object.textLine(f"Caption: {post.get('caption', 'not available')}")
+            text_object.textLine(f"Likes: {post.get('likes', 0)}")
+            text_object.textLine(f"Comments: {post.get('comments', 0)}")
             text_object.textLine("-" * 50)
         
         text_object.textLine("=" * 100)
@@ -184,10 +119,9 @@ def collect_social_media_data():
             "username": account.get("username", "Unknown"),
         }
 
-        posts_data, profile_data, timeline_screenshots = extract_posts_profile_timeline(account, db)
+        posts_data, profile_data = extract_posts_profile(account)
         account_info["posts"] = posts_data
         account_info.update(profile_data)
-        account_info["timeline_screenshots"] = timeline_screenshots
 
         social_media_summary[platform_name].append(account_info)
 
@@ -220,4 +154,3 @@ def fetch_data(db):
 if __name__ == "__main__":
     social_media_data = collect_social_media_data()
     print("Data collected and saved to 'Instagram.json', 'Instagram.csv', and 'Instagram.pdf'")
-
