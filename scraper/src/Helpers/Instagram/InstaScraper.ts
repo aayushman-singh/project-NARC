@@ -1,9 +1,27 @@
 import { Log, PlaywrightCrawler } from 'crawlee';
-import { insertFollowers, insertFollowing, uploadScreenshotToMongo, insertMessages  } from '../mongoUtils.js'; // Use ESM import
+import { insertFollowers, insertFollowing, uploadScreenshotToMongo, insertMessages, uploadChats, uploadToS3  } from '../mongoUtils.js'; // Use ESM import
 import { Page } from 'playwright';
 import { promises as fs, PathLike } from 'fs';
-
 import path from 'path'; // To handle file paths
+
+const saveSession = async (page, filePath: string) => {
+    const storageState = await page.context().storageState();
+    await fs.writeFile(filePath, JSON.stringify(storageState));
+    console.log('Session data saved.');
+};
+
+const loadSession = async (browserContext, filePath: string) => {
+    try {
+        const storageState = JSON.parse(await fs.readFile(filePath, 'utf8'));
+        await browserContext.addInitScript(() => {
+            window.localStorage.setItem(storageState.key, storageState.value);
+        });
+        console.log('Session data loaded.');
+    } catch (error) {
+        console.warn('No session data found. Starting fresh.');
+    }
+};
+
 const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: string) => {
     try {
         // Navigate to Instagram Direct Inbox
@@ -42,7 +60,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
 
         for (const chatUsername of chatsToProcess) {
             log.info(`Opening chat with: ${chatUsername}`);
-
+            let screenshotPaths:string[] = [];
             // Click on the user's chat to open the conversation by searching for the username
             const chatClicked = await page.evaluate((usernameToClick) => {
                 const chatItems = document.querySelectorAll('div[role="listitem"]');
@@ -76,56 +94,105 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
                 await page.waitForTimeout(500);
                 newHeight = await page.evaluate(() => document.querySelector('div[role="grid"]')?.scrollHeight || 0);
             }
+              // Function to scroll through messages dynamically
+        const scrollChat = async () => {
+            let previousMessageCount = 0;
+            let messageCount = 0;
+            let iteration = 1;
 
-            // Extract chat messages
-            const messages = await page.evaluate(() => {
-                const messageRows = document.querySelectorAll('div[role="row"]');
-                return Array.from(messageRows).map(row => {
-                    const senderElement = row.querySelector('h5 span.xzpqnlu, h4 span.xzpqnlu');
-                    const textContentElement = row.querySelector('div[dir="auto"]');
-                    const mediaContentElement = row.querySelector('video, img');
-
-                    let sender = 'Unknown';
-                    let content = '';
-
-                    if (textContentElement) {
-                        content = `Text: ${textContentElement.textContent?.trim()}`;
-                    }
-
-                    if (mediaContentElement) {
-                        if (mediaContentElement.tagName.toLowerCase() === 'video') {
-                            content = 'Reel: [Video Content]';
-                        } else if (mediaContentElement.tagName.toLowerCase() === 'img') {
-                            content = 'Image: [Image Content]';
+            while (true) {
+                const messages = await page.evaluate(() => {
+                    const messageRows = document.querySelectorAll('div[role="row"]');
+                    return Array.from(messageRows).map(row => {
+                        const senderElement = row.querySelector('h5 span.xzpqnlu, h4 span.xzpqnlu');
+                        const textContentElement = row.querySelector('div[dir="auto"]');
+                        const mediaContentElement = row.querySelector('video, img');
+    
+                        let sender = 'Unknown';
+                        let content = '';
+    
+                        if (textContentElement) {
+                            content = `Text: ${textContentElement.textContent?.trim()}`;
                         }
+    
+                        if (mediaContentElement) {
+                            if (mediaContentElement.tagName.toLowerCase() === 'video') {
+                                content = 'Reel: [Video Content]';
+                            } else if (mediaContentElement.tagName.toLowerCase() === 'img') {
+                                content = 'Image: [Image Content]';
+                            }
+                        }
+    
+                        if (senderElement) {
+                            sender = senderElement.textContent?.trim() || 'Unknown';
+                        }
+    
+                        return { sender, content };
+                    }).filter(message => message.content !== '');
+                });
+                messageCount = messages.length;
+
+                console.log(`Iteration ${iteration}: Found ${messageCount} messages.`);
+
+                if (messageCount === previousMessageCount) {
+                    console.log('No new messages loaded. Stopping scrolling.');
+                    break;
+                }
+                const limit = 50;
+
+                for (let i = previousMessageCount; i < Math.min(messageCount, limit); i++) {
+                    // Scroll to the message
+                    await page.evaluate(index => {
+                        const messages = document.querySelectorAll('div[role="row"]');
+                        if (messages[index]) {
+                            messages[index].scrollIntoView({ behavior: 'smooth', block: 'center' });
+                        }
+                    }, i);
+
+                    // Take a screenshot every 3 messages
+                    if ((i + 1) % 3 === 0 || i === messageCount - 1) {
+                        const screenshotPath = path.resolve(`./message_screenshot_${i + 1}.png`);
+                        await page.screenshot({ path: screenshotPath, fullPage: false });
+                        console.log(`Screenshot taken for message ${i + 1}: ${screenshotPath}`);
+                        screenshotPaths.push(screenshotPath);
                     }
+                    
+                    // Wait a bit for new content to load
+                    await page.waitForTimeout(1000);
+                }
 
-                    if (senderElement) {
-                        sender = senderElement.textContent?.trim() || 'Unknown';
-                    }
+                previousMessageCount = messageCount;
+                iteration++;
 
-                    return { sender, content };
-                }).filter(message => message.content !== '');
-            });
+                log.info(`Number of messages found in ${chatUsername}'s chat: ${messages.length}`);
+                await page.waitForTimeout(7000);
+                // Log messages to a file
+                const logFilePath = `./src/storage/${chatUsername}_instagram_messages.txt`;
+                const messageLog = messages.map((msg, index) => `${index + 1}. ${msg.sender}: ${msg.content}`).join('\n');
+                await fs.mkdir(path.dirname(logFilePath), { recursive: true }); // Ensure the directory exists
+                await fs.writeFile(logFilePath, messageLog, 'utf8');
+                log.info(`Messages for ${chatUsername} have been logged to ${logFilePath}`);
+    
+                // Take a screenshot of the chat
+                const screenshotPath = path.resolve(`./${chatUsername}_instagram_screenshot.png`);
+                
+                
+                log.info(`Screenshot of ${chatUsername}'s chat saved to ${screenshotPath}`);
+                const chatLogKey = `${username}/${chatUsername}/chat_log.txt`;
+                const chatLogURL = await uploadToS3(logFilePath, chatLogKey);
+                console.log(`Chat log uploaded to S3: ${chatLogURL}`);
+                // Upload the screenshot to MongoDB
+                await uploadChats(username, chatUsername, screenshotPaths, chatLogURL, 'instagram')
+                screenshotPaths = [];
+                await page.waitForTimeout(2000);
+            }
 
-            log.info(`Number of messages found in ${chatUsername}'s chat: ${messages.length}`);
-            await page.waitForTimeout(7000);
-            // Log messages to a file
-            const logFilePath = `./src/storage/${chatUsername}_instagram_messages.txt`;
-            const messageLog = messages.map((msg, index) => `${index + 1}. ${msg.sender}: ${msg.content}`).join('\n');
-            fs.writeFile(logFilePath, messageLog, 'utf8');
-            log.info(`Messages for ${chatUsername} have been logged to ${logFilePath}`);
+            console.log('Scrolling completed.');
+        };
 
-            // Take a screenshot of the chat
-            const screenshotPath = path.resolve(`./${chatUsername}_instagram_screenshot.png`);
-            await page.screenshot({ path: screenshotPath, fullPage: false });
-            log.info(`Screenshot of ${chatUsername}'s chat saved to ${screenshotPath}`);
-
-            // Upload the screenshot to MongoDB
-            await uploadScreenshotToMongo(username as string, screenshotPath, 'message', 'instagram');
-            await insertMessages(username, logFilePath,chatUsername, 'instagram');
-            // Add a short delay to avoid spamming
-            await page.waitForTimeout(2000);
+        // Call the scroll function
+        await scrollChat();
+           
         }
 
     } catch (error) {
@@ -187,12 +254,17 @@ export const InstaScraper = async (username:string,password:string) => {
     const crawler = new PlaywrightCrawler({
       
         launchContext: {
-            
+          
             launchOptions: { headless: false, slowMo: 1000 ,  args: ['--enable-http2', '--tls-min-v1.2'], }, // Non-headless mode with delay between actions
         },
+        requestHandlerTimeoutSecs: 500,
         maxRequestRetries: 0,  // Disable retries
         preNavigationHooks: [
             async ({ page, log }) => {
+                const sessionFilePath = './session.json';
+                if (!isLoggedIn) {
+                    await loadSession(page.context(), sessionFilePath);
+                }
                 if (!isLoggedIn) {  // Only attempt login if not already logged in
                     log.info('Performing login...');
                     try {
@@ -212,7 +284,7 @@ export const InstaScraper = async (username:string,password:string) => {
                         ]);
                         log.info('Logged in successfully.');
                         isLoggedIn = true;  // Mark as logged in
-
+                        await saveSession(page, sessionFilePath);
                         // Capture screenshots of the timeline before starting scraping
                         await captureTimelineScreenshots(page, log, username);
 
@@ -225,6 +297,7 @@ export const InstaScraper = async (username:string,password:string) => {
             },
         ],
         requestHandler: async ({ request, page, log }) => {
+           
             log.info(`Processing ${request.url}`);
 
             try {
@@ -241,7 +314,7 @@ export const InstaScraper = async (username:string,password:string) => {
                 // Function to scrape followers or following
                 const scrapeList = async (listType: string, selector: string, logFilePath: PathLike | fs.FileHandle, maxItems: number) => {
                     log.info(`Starting to scrape ${listType}...`);
-                    await page.goto("https://www.instagram.com/")
+                   
                     await page.goto(`https://www.instagram.com/${username}/`);
 
 
