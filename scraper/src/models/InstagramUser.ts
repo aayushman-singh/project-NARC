@@ -132,16 +132,23 @@ const instagramUserSchema: Schema = new Schema({
       required: true,
     }
   }],
-  messages: [{
-    content: {
-      type: String,
-      required: true,
+  chats: [
+    {
+      receiverUsername: {
+        type: String,
+        required: true,
+      },
+      screenshots: {
+        type: [String], // Array of strings for screenshot URLs
+        required: true,
+      },
+      chats: {
+        type: String, // Single URL string for the chat content
+        required: true,
+      },
     },
-    timestamp: {
-      type: Date,
-      required: true,
-    }
-  }],
+  ],
+  
   isVerified: {
     type: Boolean,
     default: false,
