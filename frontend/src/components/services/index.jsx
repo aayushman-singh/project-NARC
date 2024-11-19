@@ -147,23 +147,59 @@ const Services = () => {
         </div>
   
         {/* Messages */}
-        <div className="mt-6">
-          <h4 className="text-lg font-bold text-blue-300 mb-2">Messages:</h4>
-          {facebookData.messages ? (
-            <div className="mt-2">
+        <div className="mt-10">
+  <h4 className="text-2xl font-bold text-pink-500 mb-6">Messages</h4>
+  <div className="space-y-6">
+    {Array.isArray(instagramData.messages) && instagramData.messages.length > 0 ? (
+      instagramData.messages.map((message, index) => (
+        <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-md">
+          {/* Display receiver username */}
+          <p className="text-white text-sm font-semibold">Receiver: {message.receiverUsername}</p>
+
+          {/* Display screenshots */}
+          <div className="mt-4">
+            <p className="text-gray-400 text-sm">Screenshots:</p>
+            {Array.isArray(message.screenshots) ? (
+              message.screenshots.map((screenshot, i) => (
+                <a
+                  key={i}
+                  href={screenshot}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="text-blue-500 underline text-sm"
+                >
+                  Screenshot {i + 1}
+                </a>
+              ))
+            ) : (
+              <p className="text-gray-500 text-xs">No screenshots available</p>
+            )}
+          </div>
+
+          {/* Display chat link */}
+          <div className="mt-4">
+            <p className="text-gray-400 text-sm">Chat:</p>
+            {message.chats ? (
               <a
-                href={facebookData.messages}
+                href={message.chats}
                 target="_blank"
                 rel="noopener noreferrer"
-                className="text-blue-400 underline"
+                className="text-blue-500 underline text-sm"
               >
-                Messages
+                View Chat
               </a>
-            </div>
-          ) : (
-            <p className="text-gray-400">No messages available.</p>
-          )}
+            ) : (
+              <p className="text-gray-500 text-xs">No chat available</p>
+            )}
+          </div>
         </div>
+      ))
+    ) : (
+      <p className="text-gray-400">No messages available.</p>
+    )}
+  </div>
+</div>
+
       </div>
     );
   };
@@ -307,18 +343,71 @@ const Services = () => {
             </div>
           )}
         </div>
-        <div className="mt-10">
-        <h4 className="text-2xl font-bold text-pink-500 mb-6">Messages</h4>
-        <div className="space-y-6">
-          {instagramData.messages.map((message, index) => (
-            <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-md">
-              <p className="text-white text-sm line-clamp-2">{JSON.stringify(message.caption)}</p>
-
-              <p className="text-pink-400 text-xs mt-2">{new Date(message.timestamp).toLocaleString()}</p>
+    <div className="mt-10">
+  <h4 className="text-2xl font-bold text-pink-500 mb-6">Chats</h4>
+  <div className="space-y-6">
+    {instagramData?.chats?.length > 0 ? (
+      instagramData.chats.map((chat, index) => (
+        <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-md">
+          <p className="text-white text-sm">
+            <span className="font-bold">Receiver: </span>
+            {chat.receiverUsername}
+          </p>
+          <div className="mt-2">
+            <span className="text-pink-400 text-sm">Chat URL: </span>
+            <a
+              href={chat.chats}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 underline"
+            >
+              Open Chat
+            </a>
+          </div>
+          {chat.screenshots?.length > 0 && (
+            <div className="mt-4">
+              <p className="text-pink-400 text-sm mb-2">Screenshots:</p>
+              <div className="grid grid-cols-2 gap-4">
+                {chat.screenshots.map((screenshot, i) => (
+                  <div key={i} className="space-y-2">
+                    <a
+                      href={screenshot}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-blue-400 underline"
+                    >
+                      <img
+                        src={screenshot}
+                        alt={`Screenshot ${i + 1}`}
+                        className="rounded-lg shadow-md w-full h-auto"
+                      />
+                    </a>
+                    <p className="text-white text-xs break-words">
+                      <span className="font-bold">Link: </span>
+                      <a
+                        href={screenshot}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-400 underline"
+                      >
+                        {screenshot}
+                      </a>
+                    </p>
+                  </div>
+                ))}
+              </div>
             </div>
-          ))}
+          )}
         </div>
-      </div>
+      ))
+    ) : (
+      <p className="text-gray-400">No chats available.</p>
+    )}
+  </div>
+</div>
+
+
+
         
       </div>
     )
