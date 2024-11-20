@@ -33,3 +33,5 @@ scraper/following_log.txt
 session_9650593099.session
 /output
 /output/Loot Deals KS Women
+output/Telegram/chat_log.txt
+*.session
