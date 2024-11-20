@@ -542,7 +542,8 @@ const Services = () => {
     const limit = parseInt(dropdownElement.value, 10);
     const password = (platform !== 'whatsapp' && platform !== 'telegram') ? passwordInputElement.value.trim() : undefined;
     const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-    const userId = userInfo ? userInfo._id : null; 
+    
+    const userId = userInfo ? userInfo._id : ""; 
 
     const payload = { userId: userId,startUrls: tagsArray, limit: limit };
     if (platform === 'facebook') {
