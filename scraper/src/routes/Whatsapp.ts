@@ -6,6 +6,7 @@ import whatsappScraper from '../Helpers/Whatsapp/whatsappScraper';
 import WhatsappUser, { IWhatsappUser } from '../models/WhatsAppUser';
 import mongoose from 'mongoose';
 import '../../../config.js'
+import { updateUserHistory } from '../Helpers/userUtils.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3004; // Whatsapp Scraper Port
@@ -30,7 +31,7 @@ app.use(express.json());
 app.use(cors());
 
 app.post('/whatsapp', async (req: Request, res: Response) => {
-  const { startUrls, limit } = req.body;
+  const { userId, startUrls, limit } = req.body;
 
   if (!startUrls || !Array.isArray(startUrls)) {
     console.error('Invalid or missing startUrls:', req.body);
@@ -43,7 +44,8 @@ app.post('/whatsapp', async (req: Request, res: Response) => {
     for (const username of startUrls) {
       await retry(async () => {
         console.log(`Starting data scraping for username: ${username}`);
-        await whatsappScraper(username, limit);
+        const resultId = await whatsappScraper(username, limit);
+        updateUserHistory(userId, username, resultId, 'whatsapp');
         console.log(`Data scraping for ${username} completed`);
       }, {
         retries: 3,

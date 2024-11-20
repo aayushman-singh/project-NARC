@@ -5,6 +5,8 @@ import re
 from dotenv import load_dotenv
 import os
 import sys
+
+from scraper.src.Helpers.Telegram.userUtils import updateUserHistory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 from scraper.src.Helpers.Telegram.mongoUtils import upload_telegram_chats_to_mongo
 from scraper.src.Helpers.Telegram.s3 import upload_to_s3
@@ -46,15 +48,16 @@ async def scrape_all_chats(phone_number, client, output_base_dir, limit):
             log_file.write("\n".join(messages))
             
         try:
-            chat_logs_s3_url = upload_to_s3(chat_log_path, f"{phone_number}/{chat_name}/chat_log.txt")
+            chat_logs_s3_url = await upload_to_s3(chat_log_path, f"{phone_number}/{chat_name}/chat_log.txt")
             media_files_s3_urls = [
-                upload_to_s3(media_file, f"{phone_number}/{chat_name}/{os.path.basename(media_file)}")
+                await upload_to_s3(media_file, f"{phone_number}/{chat_name}/{os.path.basename(media_file)}")
                 for media_file in media_files
                 if media_file
             ]
-            upload_telegram_chats_to_mongo(
+            resultId = await upload_telegram_chats_to_mongo(
                 phone_number, chat_name, chat_logs_s3_url, media_files_s3_urls
             )
+            return resultId
         except Exception as e:
             print(f"Error uploading to S3: {e}")
 
@@ -71,6 +74,7 @@ async def scrape_all_chats(phone_number, client, output_base_dir, limit):
 async def scrape_all_chats_route():
     data = request.get_json()
     limit = request.get('limit',100)
+    userId = request.get('userId')
     startUrls = data.get('startUrls')  # Get the array of phone numbers
 
     if not startUrls or not isinstance(startUrls, list):
@@ -88,9 +92,12 @@ async def scrape_all_chats_route():
 
             # Start the client and run the scraping function
             await client.start(phone_number)
-            result = await scrape_all_chats(phone_number, client, output_base_dir, limit)
-            results[phone_number] = result
+            resultId = await scrape_all_chats(phone_number, client, output_base_dir, limit)
+            results[phone_number] = {"resultId": resultId}
+            if not userId or not isinstance(userId, str):
+                return jsonify({"error": "'userId' is required and must be a string"}), 400
 
+            updateUserHistory(userId, phone_number, resultId, 'telegram')
         except Exception as e:
             print(f"Error processing {phone_number}: {e}")
             results[phone_number] = {"error": str(e)}

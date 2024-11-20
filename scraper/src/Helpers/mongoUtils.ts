@@ -6,7 +6,7 @@ import { errors } from 'playwright';
 import '../../../config.js';
 
 const uri = process.env.MONGO_URI;
-const client = new MongoClient(uri);
+const client = new MongoClient(uri as string);
 
 // Initialize S3 client
 const s3 = new S3Client({
@@ -92,26 +92,28 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
         await client.connect();
         const database = client.db(`${platform}DB`);
         const collection = database.collection(`${platform}_users`);
-
-        // Read the screenshot file as a binary buffer
-        const fileBuffer = fs.readFile(screenshotPath);
-
-        // Convert the binary buffer to a Base64 string
+        
         const fileName = path.basename(screenshotPath); // Use the file name as the S3 key
         const s3Key = `${username}/${fieldName}/${platform}/${fileName}`;
         const s3Url = await uploadToS3(screenshotPath, s3Key)
-        // Store the Base64 string in MongoDB under the specified field for the user
-        await collection.updateOne(
+       
+        const result = await collection.findOneAndUpdate(
             { username: username },  // Match document by username
             { 
                 $set: {
                  [fieldName]: s3Url 
                 } 
             },  // Store the Base64 string in the specified field
-            { upsert: true }  // Insert the document if it doesn't exist
+            { 
+                upsert: true,
+                returnDocument: 'after' 
+             }  
+            
         );
 
         console.log(`${fieldName} screenshot uploaded and stored in Base64 format successfully for ${username}.`);
+        return result.value._id;
+
     } catch (error) {
         console.error(`Error uploading screenshot for ${username}:`, error);
     } finally {

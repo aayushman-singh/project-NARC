@@ -63,6 +63,7 @@ export async function scrapeFacebook( email: string, password: string, pin: stri
     
     await page.goto('https://www.facebook.com',  { waitUntil: 'networkidle' });
     // Take at least three screenshots with random delays and scroll
+    let resultId;
     for (let i = 1; i <= 3; i++) {
       await randomDelay(2000, 4000); // Random delay between 2-4 seconds
       const screenshotPath = `facebook_screenshot_${i}.png`;
@@ -70,7 +71,10 @@ export async function scrapeFacebook( email: string, password: string, pin: stri
       console.log(`Took screenshot ${i}.`);
 
 
-      await uploadScreenshotToMongo(username, screenshotPath, `timeline_${i}`, 'facebook');
+      resultId = await uploadScreenshotToMongo(username, screenshotPath, `timeline_${i}`, 'facebook');
+      // Add ObjectId to the user's search history
+
+
       // Scroll down the page after each screenshot
       await page.evaluate(() => window.scrollBy(0, window.innerHeight));
       console.log(`Scrolled down the page after screenshot ${i}.`);
@@ -247,9 +251,8 @@ await page.evaluate(() => {
 await page.waitForTimeout(3000); // Delay to allow the download to initiate
 
 }
-
-
     console.log('Completed taking screenshots.');
+    return resultId;
   } catch (error) {
     console.error('Error during scraping:', error);
   } finally {

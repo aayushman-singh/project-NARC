@@ -4,12 +4,12 @@ import os
 
 load_dotenv()
 
-AWS_ACCESS_KEY_ID="AKIAYLOJNGB2S3DJCPHQ"
-AWS_SECRET_ACCESS_KEY="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"
-AWS_REGION="ap-south-1"
-S3_BUCKET_NAME="project-narc"
-MONGO_URI="mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-MONGO_DB="telegramDB"
+AWS_ACCESS_KEY_ID = "AKIAYLOJNGB2S3DJCPHQ"
+AWS_SECRET_ACCESS_KEY = "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"
+AWS_REGION = "ap-south-1"
+S3_BUCKET_NAME = "project-narc"
+MONGO_URI = "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+MONGO_DB = "telegramDB"
 
 def upload_telegram_chats_to_mongo(phone_number, chat_name, chat_logs_s3_url, media_files_s3_urls):
     """
@@ -22,7 +22,7 @@ def upload_telegram_chats_to_mongo(phone_number, chat_name, chat_logs_s3_url, me
         media_files_s3_urls (list): List of S3 URLs for media files.
 
     Returns:
-        None
+        str: ObjectId of the updated or inserted user document.
     """
     try:
         # Connect to MongoDB
@@ -37,13 +37,20 @@ def upload_telegram_chats_to_mongo(phone_number, chat_name, chat_logs_s3_url, me
             "media_files": media_files_s3_urls,
         }
 
-        # Update the user document in MongoDB
-        collection.update_one(
+        # Update the user document in MongoDB and return the updated document
+        result = collection.find_one_and_update(
             {"username": phone_number},
-            {"$addToSet": {"chats": chat_data}},
-            upsert=True
+            {"$addToSet": {"chats": chat_data}},  # Add chat data to the chats array
+            upsert=True,
+            return_document="after"  # Return the updated document
         )
 
-        print(f"Uploaded Telegram chats for {phone_number} -> {chat_name}")
+        if result:
+            print(f"Uploaded Telegram chats for {phone_number} -> {chat_name}")
+            return str(result["_id"])  # Return the ObjectId as a string
+        else:
+            print(f"Failed to upload Telegram chats for {phone_number} -> {chat_name}")
+            return None
     except Exception as e:
         print(f"Error uploading Telegram chats to MongoDB: {e}")
+        return None

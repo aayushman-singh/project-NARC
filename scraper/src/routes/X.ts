@@ -10,6 +10,7 @@ import dotenv from 'dotenv';
 dotenv.config();
 const app = express();
 import mongoose from 'mongoose';
+import { updateUserHistory } from '../Helpers/userUtils';
 const port = Number(process.env.PORT) || 3003; // Use Vercel's port or fallback to 3003
 const connectDB = async () => {
     const uri = process.env.MONGODB_URI;
@@ -38,7 +39,7 @@ app.use(express.json());
 
 // Define a POST route to trigger the scraping
 app.post('/x', async (req, res) => {
-    const { startUrls, password } = req.body;
+    const { userId, startUrls, password } = req.body;
 
     // Check if startUrls is undefined or not an array
     if (!startUrls || !Array.isArray(startUrls)) {
@@ -49,7 +50,9 @@ app.post('/x', async (req, res) => {
     try {
         console.log('Starting X profile scraper...');
         for (const username of startUrls) {
-            await scrapeX(username, password);
+            const resultId = await scrapeX(username, password);
+            updateUserHistory(userId, startUrls, resultId, 'x');
+
         }
 
         console.log('Profile scraping completed successfully.');
