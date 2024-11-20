@@ -1,14 +1,12 @@
-const express = require("express");
-
-const app = express();
-const dotenv = require("dotenv");
-const cors = require("cors");
-const userRoutes = require('./routes/userRoutes');
-
-const connectDB = require('./config/db');
-
+import express from 'express';
+import dotenv from 'dotenv';
+import cors from 'cors';
+import userRoutes from './routes/userRoutes.js';
+import connectDB from './config/db.js';
 
 dotenv.config();
+
+const app = express();
 
 connectDB();
 app.use(cors());
@@ -24,4 +22,4 @@ if (process.env.NODE_ENV !== 'production') {
 }
 
 // For Vercel deployment
-module.exports = app;
+export default app;
