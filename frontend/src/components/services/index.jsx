@@ -12,7 +12,7 @@ const Services = () => {
   const [instagramData, setInstagramData] = useState(null);
   const [telegramData, setTelegramData] = useState(null);
   const [telegramChats, setTelegramChats] = useState([]);
-  
+  const [expandedChats, setExpandedChats] = useState({})
   const [alert, setAlert] = useState({ visible: false, message: '', type: 'info' });
   const [whatsappData, setWhatsappData] = useState(null);
   const [xData, setXData] = useState(null); 
@@ -422,18 +422,66 @@ const Services = () => {
       <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
         <h3 className="text-xl font-bold mb-2">{chat.receiverUsername}</h3>
         <div className="space-y-2">
-          <div>
-            {chat.screenshots.map((screenshot, idx) => (
-              <img key={idx} src={screenshot} alt={`Screenshot ${idx + 1}`} className="w-full rounded-md mb-2" />
-            ))}
-          </div>
-          <a href={chat.chats} className="text-blue-400 underline" target="_blank" rel="noopener noreferrer">
+          {/* Media Section Dropdown */}
+          {chat.screenshots && chat.screenshots.length > 0 && (
+            <div>
+              <button
+                className="flex items-center text-blue-500 hover:text-blue-700 mb-2"
+                onClick={() => {
+                  // Toggle media visibility
+                  const mediaSection = document.getElementById(`media-section-${index}`);
+                  mediaSection.classList.toggle('hidden');
+                }}
+              >
+                {/* Chevron Icon and "Media" Text */}
+                <span className="mr-2 text-lg font-semibold">Media</span>
+                <svg
+                  xmlns="http://www.w3.org/2000/svg"
+                  className="h-5 w-5 transform transition-transform duration-300"
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth={2}
+                    d="M19 9l-7 7-7-7"
+                  />
+                </svg>
+              </button>
+  
+              {/* Media Files Section */}
+              <div
+                id={`media-section-${index}`}
+                className="hidden transition-all duration-300 ease-in-out overflow-hidden space-y-2"
+              >
+                {chat.screenshots.map((screenshot, idx) => (
+                  <img
+                    key={idx}
+                    src={screenshot}
+                    alt={`Screenshot ${idx + 1}`}
+                    className="w-full rounded-md mb-2"
+                  />
+                ))}
+              </div>
+            </div>
+          )}
+  
+          {/* Chat Log Link */}
+          <a
+            href={chat.chats}
+            className="text-blue-400 underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
             View Chat Log
           </a>
         </div>
       </div>
     ));
   };
+  
   const renderTelegramChats = (chats) => {
     return chats.map((chat, index) => (
       <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
