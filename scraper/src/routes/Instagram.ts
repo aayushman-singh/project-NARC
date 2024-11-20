@@ -1,14 +1,14 @@
 import express from 'express';
 import cors from 'cors';
-import { scrapeInstagramProfiles } from '../Helpers/Instagram/InstagramProfile.js';
-import { scrapeInstagramPosts } from '../Helpers/Instagram/InstagramPosts.js';
-import { InstaScraper } from '../Helpers/Instagram/InstaScraper.js';
-import InstagramUser ,{IInstagramUser} from '../models/InstagramUser.js'
+import { scrapeInstagramProfiles } from '../Helpers/Instagram/InstagramProfile';
+import { scrapeInstagramPosts } from '../Helpers/Instagram/InstagramPosts';
+import { InstaScraper } from '../Helpers/Instagram/InstaScraper';
+import InstagramUser ,{IInstagramUser} from '../models/InstagramUser'
 import retry from 'async-retry'; // For retry logic
 import '../../../config.js'
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { updateUserHistory } from '../Helpers/userUtils.js';
+import { updateUserHistory } from '../Helpers/mongoUtils';
 const app = express();
 const PORT = Number(process.env.PORT) || 3001; // Instagram Scraper Port
 const connectDB = async () => {

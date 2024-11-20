@@ -109,7 +109,7 @@ async def scrape_all_chats_route():
             # Initialize Telegram client for each phone number
             session_name = f'session_{phone_number}'
             client = TelegramClient(session_name, API_ID, API_HASH)
-            await client.connect()
+            await client.start(phone_number)
             # Start the client and run the scraping function
             sessionId = await scrape_all_chats(phone_number, client, 'output', limit)
             results[phone_number] = sessionId

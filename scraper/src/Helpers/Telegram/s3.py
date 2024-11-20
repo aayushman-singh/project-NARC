@@ -1,7 +1,8 @@
 import boto3
 from botocore.exceptions import NoCredentialsError
 from dotenv import load_dotenv
-import os
+from urllib.parse import quote
+
 load_dotenv()
 
 AWS_ACCESS_KEY_ID="AKIAYLOJNGB2S3DJCPHQ"
@@ -30,8 +31,11 @@ async def upload_to_s3(file_path, s3_key):
         str: The S3 URL of the uploaded file.
     """
     try:
+       
         s3.upload_file(file_path, S3_BUCKET_NAME, s3_key)
-        s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{s3_key}"
+        encoded_s3_key = quote(s3_key, safe="/")
+        s3_url = f"https://{S3_BUCKET_NAME}.s3.{AWS_REGION}.amazonaws.com/{encoded_s3_key}"
+        
         print(f"Uploaded {file_path} to {s3_url}")
         return s3_url
     except FileNotFoundError:
