@@ -85,8 +85,8 @@ async def scrape_all_chats(phone_number, client, output_base_dir, limit):
 @app.route('/telegram', methods=['POST'])
 async def scrape_all_chats_route():
     data = request.get_json()
-    limit = request.get('limit',100)
-    userId = request.get('userId')
+    limit = data.get('limit',100)
+    userId = data.get('userId')
     startUrls = data.get('startUrls')  # Get the array of phone numbers
 
     if not startUrls or not isinstance(startUrls, list):
