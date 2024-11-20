@@ -1,6 +1,8 @@
-from pymongo import MongoClient
+from datetime import datetime
+from pymongo import MongoClient, ReturnDocument
 from dotenv import load_dotenv
 import os
+from bson import ObjectId
 
 load_dotenv()
 
@@ -11,7 +13,7 @@ S3_BUCKET_NAME = "project-narc"
 MONGO_URI = "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
 MONGO_DB = "telegramDB"
 
-def upload_telegram_chats_to_mongo(phone_number, chat_name, chat_logs_s3_url, media_files_s3_urls):
+async def upload_telegram_chats_to_mongo(phone_number, chat_name, chat_logs_s3_url, media_files_s3_urls):
     """
     Uploads Telegram chat logs and media file metadata to MongoDB.
 
@@ -42,7 +44,7 @@ def upload_telegram_chats_to_mongo(phone_number, chat_name, chat_logs_s3_url, me
             {"username": phone_number},
             {"$addToSet": {"chats": chat_data}},  # Add chat data to the chats array
             upsert=True,
-            return_document="after"  # Return the updated document
+            return_document=ReturnDocument.AFTER  # Return the updated document
         )
 
         if result:
@@ -54,3 +56,35 @@ def upload_telegram_chats_to_mongo(phone_number, chat_name, chat_logs_s3_url, me
     except Exception as e:
         print(f"Error uploading Telegram chats to MongoDB: {e}")
         return None
+
+
+async def updateUserHistory(user_id, phone_number, result_id, platform):
+    try:
+        client = MongoClient(MONGO_URI)
+        db = client.get_database("test")
+        users_collection = db["users"]  
+        
+        # Convert `user_id` to ObjectId
+        object_id = ObjectId(user_id)
+        session_id = ObjectId(result_id)
+        users_collection.find_one_and_update(
+            {"_id": object_id},
+            {
+                "$addToSet": {
+                    "searchHistory": {
+                        "resultId": session_id,
+                        "platform": platform,
+                        "identifier": phone_number,
+                        "timestamp": datetime.utcnow()
+                    }
+                
+                }
+                
+            },
+            upsert=False
+        )
+        print(f"Search history updated for user {user_id}")
+    except Exception as e:
+        print(f"Error updating user search history: {e}")
+    finally:
+        client.close()

@@ -589,8 +589,11 @@ const Services = () => {
     .map(tag => (platform === 'telegram' ? `+91${tag}` : tag));
     const limit = parseInt(dropdownElement.value, 10);
     const password = (platform !== 'whatsapp' && platform !== 'telegram') ? passwordInputElement.value.trim() : undefined;
-  
-    const payload = { startUrls: tagsArray, limit: limit };
+    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    
+    const userId = userInfo ? userInfo._id : ""; 
+
+    const payload = { userId: userId,startUrls: tagsArray, limit: limit };
     if (platform === 'facebook') {
       payload.password = password;
       payload.pin = pin ? pin.trim() : undefined;

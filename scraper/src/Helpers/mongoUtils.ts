@@ -4,6 +4,8 @@ import path from 'path';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { errors } from 'playwright';
 import '../../../config.js';
+import User from '../../../backend/models/userModel.js'
+import mongoose from 'mongoose';
 
 const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri as string);
@@ -16,6 +18,40 @@ const s3 = new S3Client({
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
     },
 });
+
+export const updateUserHistory = async (userId, phoneNumber, resultId, platform) => {
+    try {
+        await client.connect();
+        const database = client.db(`test`);
+        const collection = database.collection(`users`);
+        // Convert `userId` to ObjectId
+
+        const objectId = mongoose.Types.ObjectId(userId);
+
+        const user = await User.findById(objectId);
+
+        if (user) {
+            // Push the session ID into the search history
+            user.searchHistory.push({
+                resultId,
+                platform,
+                identifier: phoneNumber,
+                timestamp: new Date()
+            });
+
+            await user.save();
+            console.log('Updated user search history successfully.');
+        } else {
+            console.error('User not found.');
+            throw new Error('User not found');
+        }
+    } catch (error) {
+        console.error('Error updating user search history:', error);
+        throw error;
+    }
+};
+
+
 // Function to upload a file to S3
 export const uploadToS3 = async (filePath: string, key: string) => {
     try {

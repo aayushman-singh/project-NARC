@@ -18,7 +18,7 @@ s3 = boto3.client(
     region_name=AWS_REGION
 )
 
-def upload_to_s3(file_path, s3_key):
+async def upload_to_s3(file_path, s3_key):
     """
     Uploads a file to an S3 bucket.
 
