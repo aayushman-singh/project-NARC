@@ -3,6 +3,7 @@ import cors from 'cors';
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { scrapeFacebook } from '../Helpers/Facebook/FacebookTimeline.js';
+import { updateUserHistory } from '../Helpers/userUtils.js';
 import FacebookUser ,{IFacebookUser} from '../models/FacebookUser.js';
 import '../../../config.js'
 
@@ -10,7 +11,7 @@ const app = express();
 const PORT = Number(process.env.PORT) || 3002; 
 const connectDB = async () => {
     try {
-      await mongoose.connect('mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/facebookDB?retryWrites=true&w=majority', {
+      await mongoose.connect(process.env.MONGO_URI as string, {
         useNewUrlParser: true,
         useUnifiedTopology: true,
       } as mongoose.ConnectOptions);
@@ -26,7 +27,7 @@ app.use(express.json());
 app.use(cors());
 
 app.post('/facebook', async (req, res) => {
-    const { startUrls, password, pin, limit } = req.body;
+    const { userId, startUrls, password, pin, limit } = req.body;
 
     // Check if startUrls is undefined or not an array
     if (!startUrls || !Array.isArray(startUrls)) {
@@ -38,7 +39,9 @@ app.post('/facebook', async (req, res) => {
 
         console.log('Scraping facebook...');
         for (const username of startUrls) {
-            await scrapeFacebook(username, password, pin, limit);
+            const resultId = await scrapeFacebook(username, password, pin, limit);
+            updateUserHistory(userId,startUrls, resultId, 'facebook');
+
         }
 
 

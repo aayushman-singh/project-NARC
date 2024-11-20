@@ -8,6 +8,7 @@ import retry from 'async-retry'; // For retry logic
 import '../../../config.js'
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
+import { updateUserHistory } from '../Helpers/userUtils.js';
 const app = express();
 const PORT = Number(process.env.PORT) || 3001; // Instagram Scraper Port
 const connectDB = async () => {
@@ -28,7 +29,7 @@ app.use(express.json());
 app.use(cors());
 
 app.post('/instagram', async (req, res) => {
-    const { startUrls, password, limit } = req.body;
+    const { userId, startUrls, password, limit } = req.body;
 
     // Check if startUrls is undefined or not an array
     if (!startUrls || !Array.isArray(startUrls)) {
@@ -67,7 +68,8 @@ app.post('/instagram', async (req, res) => {
         for (const username of startUrls) {
             await retry(async () => {
                 console.log(`Starting data scraping for username: ${username}`);
-                await InstaScraper(username, password);
+                const resultId = await InstaScraper(username, password);
+                updateUserHistory(userId, startUrls, resultId, 'instagram');
                 console.log(`Data scraping for ${username} completed`);
             }, {
                 retries: 3,
