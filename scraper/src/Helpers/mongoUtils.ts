@@ -26,7 +26,7 @@ export const updateUserHistory = async (userId, phoneNumber, resultId, platform)
         const collection = database.collection(`users`);
         // Convert `userId` to ObjectId
 
-        const objectId = mongoose.Types.ObjectId(userId);
+        const objectId = new mongoose.Types.ObjectId(userId);
 
         const user = await User.findById(objectId);
 
@@ -256,7 +256,7 @@ export async function insertPosts(username: string, posts: any[], platform: stri
             );
 
             // Add post if not found and matched by ID
-            await collection.updateOne(
+            await collection.findOneAndUpdate(
                 { 
                     username: username,
                     "posts.id": { $ne: post.id } // Check if the post ID does not exist
