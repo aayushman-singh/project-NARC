@@ -10,6 +10,9 @@ const Services = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [instagramData, setInstagramData] = useState(null);
+  const [telegramData, setTelegramData] = useState(null);
+  const [telegramChats, setTelegramChats] = useState([]);
+  
   const [alert, setAlert] = useState({ visible: false, message: '', type: 'info' });
   const [whatsappData, setWhatsappData] = useState(null);
   const [xData, setXData] = useState(null); 
@@ -91,7 +94,8 @@ const Services = () => {
   };
   
   
-
+ 
+  
   const renderFacebookData = (facebookData) => {
     if (!facebookData) return <p className="text-gray-400">No data available.</p>;
   
@@ -430,7 +434,55 @@ const Services = () => {
       </div>
     ));
   };
- 
+  const renderTelegramChats = (chats) => {
+    return chats.map((chat, index) => (
+      <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
+        <h3 className="text-xl font-bold mb-2">{chat.receiverUsername}</h3>
+        <div className="space-y-2">
+          <div>
+            {/* Media Section Dropdown */}
+            {chat.media_files && chat.media_files.length > 0 && (
+              <div>
+                <button
+                  className="flex items-center text-blue-500 hover:text-blue-700 mb-2"
+                  onClick={() => {
+                    // Toggle media visibility
+                    const mediaSection = document.getElementById(`media-section-${index}`);
+                    mediaSection.classList.toggle('hidden');
+                  }}
+                >
+                  {/* Chevron Icon and "Media" Text */}
+                  <span className="mr-2 text-lg font-semibold">Media</span>
+                  <ChevronDown className="h-5 w-5" />
+                </button>
+  
+                {/* Media Files Section */}
+                <div id={`media-section-${index}`} className="hidden space-y-2">
+                  {chat.media_files.map((mediaFile, idx) => (
+                    <img
+                      key={idx}
+                      src={mediaFile}
+                      alt={`Media File ${idx + 1}`}
+                      className="w-full rounded-md mb-2"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+          <a
+            href={chat.logs}
+            className="text-blue-400 underline"
+            target="_blank"
+            rel="noopener noreferrer"
+          >
+            View Chat Log
+          </a>
+        </div>
+      </div>
+    ));
+  };
+  
   const renderXTweets = (tweets) => {
     return tweets.map((tweet, index) => (
       <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
@@ -800,6 +852,7 @@ const Services = () => {
             id="telegramInput"
             placeholder="Enter Telegram phone number"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+           
           />
           Max messages:
           {renderDropdown('telegram')}
@@ -812,12 +865,18 @@ const Services = () => {
               Submit
             </button>
             <button
-              onClick={handleShowDetails}
+              onClick={() => handleShowDetails('telegram')}
               className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
             >
               Show Details
             </button>
           </div>
+          {telegramData && showDetails && (
+             <div className="mt-6">
+             <h3 className="text-xl font-semibold text-blue-300 mb-4">Chats</h3>
+             {renderTelegramChats(telegramData.chats)}
+           </div>
+          )}
         </div>
       )}
 

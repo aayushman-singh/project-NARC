@@ -5,7 +5,8 @@ import re
 from dotenv import load_dotenv
 import os
 import sys
-
+from pymongo import MongoClient
+sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 from scraper.src.Helpers.Telegram.userUtils import updateUserHistory
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 from scraper.src.Helpers.Telegram.mongoUtils import upload_telegram_chats_to_mongo
@@ -15,7 +16,18 @@ from scraper.src.Helpers.Telegram.s3 import upload_to_s3
 load_dotenv()
 API_ID = '26264571'
 API_HASH = 'eb3970da203e1ab5b55081d5f1ae6311'
+def connect_db():
+    try:
+        client = MongoClient('mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/telegramDB?retryWrites=true&w=majority')
+        db = client.get_database('telegramDB')  # Replace with your database name
+        print("MongoDB connected successfully")
+        return db
+    except Exception as e:
+        print(f"MongoDB connection error: {e}")
+        sys.exit(1)
 
+# Initialize MongoDB
+db = connect_db()
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
@@ -110,6 +122,34 @@ async def scrape_all_chats_route():
         "status": "success",
         "chats": results
     })
+@app.route('/telegram/users', methods=['GET'])
+def get_telegram_users():
+    try:
+        print("Fetching all users from database...")
+        users = list(db.telegram_users.find({}, {"_id": 0}))  # Exclude MongoDB `_id` field
+        if not users:
+            print("No users found in the database")
+            return jsonify({"message": "No users found"}), 404
+        print(f"Found {len(users)} users")
+        return jsonify(users), 200
+    except Exception as e:
+        print(f"Error fetching users: {e}")
+        return jsonify({"error": str(e)}), 500
+
+
+@app.route('/telegram/users/<username>', methods=['GET'])
+def get_telegram_user(username):
+    try:
+        print(f"Fetching user with username: {username}")
+        user = db.telegram_users.find_one({"username": username}, {"_id": 0})  # Exclude `_id`
+        if not user:
+            print(f"User not found: {username}")
+            return jsonify({"message": "User not found"}), 404
+        print(f"User found: {username}")
+        return jsonify(user), 200
+    except Exception as e:
+        print(f"Error fetching user: {e}")
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3005)
