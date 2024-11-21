@@ -1,6 +1,6 @@
-const User = require('../models/userModel')
-const asyncHandler = require('express-async-handler');
-const generateToken = require('../utils/generateToken');
+import User from '../models/userModel.js';
+import asyncHandler from 'express-async-handler';
+import generateToken from '../utils/generateToken.js';
 
 const registerUser = asyncHandler(async(req,res) => {
     const {name , email , password , pic} = req.body;
@@ -55,4 +55,5 @@ else{
     throw new Error("invalid username or password")
 }
 })
-module.exports = {registerUser, authUser};
+
+export { User, asyncHandler, generateToken, authUser, registerUser };
