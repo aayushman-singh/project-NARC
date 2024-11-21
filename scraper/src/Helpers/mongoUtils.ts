@@ -4,7 +4,7 @@ import path from 'path';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { errors } from 'playwright';
 import '../../../config.js';
-import User from '../../../backend/models/userModel.js'
+import User from '../../../backend/models/userModel'
 import mongoose from 'mongoose';
 
 const uri = process.env.MONGO_URI;
@@ -22,12 +22,9 @@ const s3 = new S3Client({
 export const updateUserHistory = async (userId, phoneNumber, resultId, platform) => {
     try {
         await client.connect();
-        const database = client.db(`test`);
-        const collection = database.collection(`users`);
+        const database = client.db('test').collection('users');
         // Convert `userId` to ObjectId
-
         const objectId = new mongoose.Types.ObjectId(userId);
-
         const user = await User.findById(objectId);
 
         if (user) {
