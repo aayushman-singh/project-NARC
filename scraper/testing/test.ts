@@ -5,7 +5,7 @@ import dotenv from 'dotenv';
 dotenv.config()
 
 const runTest = async () => {
-    const userId = '67302c2238df8212b070f87b'; // Replace with a valid user ID from your database
+    const userId = '673f3c7a82b1bf86ed245993'; // Replace with a valid user ID from your database
     const phoneNumber = '+1234567890';
     const resultId = '63e000000000000000000000'; // Mock result ID (ObjectId as a string)
     const platform = 'instagram';
