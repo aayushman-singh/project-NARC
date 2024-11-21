@@ -260,7 +260,7 @@ export async function insertPosts(username: string, posts: any[], platform: stri
             );
 
             // Add post if not found and matched by ID
-            await collection.findOneAndUpdate(
+            await collection.updateOne(
                 { 
                     username: username,
                     "posts.id": { $ne: post.id } // Check if the post ID does not exist

@@ -69,7 +69,7 @@ app.post('/instagram', async (req, res) => {
             await retry(async () => {
                 console.log(`Starting data scraping for username: ${username}`);
                 const resultId = await InstaScraper(username, password);
-                updateUserHistory(userId, startUrls, resultId, 'instagram');
+                await updateUserHistory(userId, startUrls, resultId, 'instagram');
                 console.log(`Data scraping for ${username} completed`);
             }, {
                 retries: 3,
