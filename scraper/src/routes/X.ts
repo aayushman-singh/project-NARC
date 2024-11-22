@@ -6,11 +6,12 @@ import { Request, Response } from 'express';
 import TwitterUser from '../models/TwitterUser';
 import { ITwitterUser } from '../models/TwitterUser';
 import dotenv from 'dotenv';
+import mongoose from 'mongoose';
+import { updateUserHistory } from '../Helpers/mongoUtils';
 
 dotenv.config();
 const app = express();
-import mongoose from 'mongoose';
-import { updateUserHistory } from '../Helpers/userUtils';
+
 const port = Number(process.env.PORT) || 3003; // Use Vercel's port or fallback to 3003
 const connectDB = async () => {
     const uri = process.env.MONGODB_URI;
