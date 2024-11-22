@@ -1,33 +1,142 @@
-<h1>SMART INDIA HACKATHON 2024</h1><br>
-PROBLEM NUMBER - SIH1674 <br>
-PROBLEM STATEMENT - Software solutions to identify users behind Telegram, WhatsApp and Instagram based drug trafficking. <br><br>
-DESCRIPTION -<br> Use of encrypted messaging/social media apps like Telegram, WhatsApp and Instagram for drug trafficking are on the rise.Channels operating on Telegram and WhatsApp and Instagram handles are blatantly being misused by drug traffickers for offering various narcotic drugs and Psychotropic substances for sale. Description: WhatsApp and Telegram channels and Instagram handles are created by drug traffickers to offer various drugs for sale to their subscribers. Customized Telegram bots are also created by some of the drug traffickers to sell drugs. It is most worrisome that the majority of the drugs which are being offered on sale through Telegram, WhatsApp and Instagram are dangerous synthetic drugs like MDMA, LSD, Mephedrone etc. The above three apps are also used by drug traffickers for drug communication.<br><br>
-SOLUTION - <br> Identifying users behind drug trafficking on messaging platforms like Telegram, WhatsApp, and Instagram involves a complex mix of software solutions, data analysis, and legal considerations. Here's a high-level overview of the software solutions and methodologies that can be employed: <br>
+
+# Tattletale 
+
+
+
+Tattletale is a social media feed parser designed to assist investigators by automating the process of capturing and documenting relevant information from platforms like Instagram, Twitter, WhatsApp, and Telegram. By minimizing human error, it ensures accurate evidence collection and simplifies the review process.
+
+
+
+
+
+
+
+
+## Features
+
+- Automated Data Extraction: Scrapes data such as posts, messages, and contact lists from platforms like Instagram, Twitter, WhatsApp, and Telegram.
+- Cross-Platform Compatibility: Available as a web app and a standalone tool for Windows and Android devices.
+- Advanced Search and Filtering: Enables investigators to quickly find specific data points with OSINT (Open Source Intelligence) integration.
+- Secure Data Handling: Data is encrypted and can be uploaded to Google Drive or Blockchain for secure storage.
+- AI/ML Integration: Assists in analyzing and visualizing data for actionable insights
+## flowchart
 <img src="./Readme Section Flowchart.png" alt="Flowchart"/>
-+ DATA COLLECTION AND MONITORING .
-<br>● Social Media Monitoring Tools: Utilize tools to monitor public and semi-public data on social media platforms. These tools can track keywords, hashtags, and mentions related to drug trafficking.<br> 
-● Chat Analysis: For encrypted messaging platforms like Telegram and WhatsApp, solutions need to work with available metadata or collaborate with service providers for lawful intercepts. 
-<br><br>+ TEXT AND CONTENT ANALYSIS
-<br>● Natural Language Processing (NLP): Employ NLP algorithms to analyse text for keywords, slang, and patterns indicative of drug-related discussions. This includes sentiment analysis, topic modelling, and entity recognition. 
-<br>● Image Recognition: Use image recognition technologies to identify and analyse drug-related imagery. Deep learning models can classify and detect specific types of drugs or paraphernalia in images shared on platforms like Instagram. 
-<br><br>+ BEHAVIOURIAL ANALYSIS
-<br>● Network Analysis: Map out user connections and interactions to identify patterns of communication that might indicate trafficking networks. Social network analysis tools can help visualise relationships and detect anomalies. 
-<br>● Anomaly Detection: Implement machine learning models to detect unusual behaviour patterns or spikes in activity that could suggest illicit activities. 
-<br><br>+ METADATA ANALYSIS
-<br>● Metadata Extraction: Analyse metadata from messages, such as timestamps, IP addresses (if available), and device information. This can provide insights into the frequency and location of interactions. 
-<br>● Geolocation Data: Use geolocation data from social media posts or metadata to track the physical locations of users involved in trafficking. 
-<br><br>+ COLLABORATION AND INTEGRATION
-<br>● Law Enforcement Collaboration: Work with law enforcement agencies and legal entities to access encrypted data or obtain necessary warrants. Coordination with platforms can be crucial for accessing detailed user data. 
-<br>● Integration with Crime Databases: Cross-reference data with existing crime databases to identify known offenders or patterns related to drug trafficking. 
-<br><br>+ PRIVACY AND ETHICAL CONSIDERATIONS
-<br>● Compliance with Laws: Ensure that all data collection and analysis comply with privacy laws and regulations. Respect user privacy while performing investigations. 
-<br>● Ethical Guidelines: Follow ethical guidelines to avoid misuse of data and ensure that the methods used do not infringe on rights beyond the scope of the investigation. 
-<br><br>+ REPORTING AND ACTION
-<br>● Incident Reporting: Develop systems to report findings to relevant authorities or agencies for further investigation and action. 
-<br>● Real-Time Alerts: Implement real-time alert systems for suspicious activities to allow prompt response from law enforcement. 
-<br><br>+ FUTURE ENHANCEMENTS
-<br>● Advanced AI Models: Continuously improve AI and machine learning models for better accuracy and efficiency in detecting drug-related activities. 
-<br>● Cross-Platform Integration: Develop solutions that can integrate data across multiple platforms for a more comprehensive analysis. 
-<br>By combining these software solutions and methodologies, authorities and researchers can enhance their ability to identify and combat drug trafficking on messaging platforms.
-<br><br>
-TECH STACK USED -
+
+## Tech Stack
+
+**Backend:** [Node](https://nodejs.org/en), [Python 3.10.15](https://www.python.org/downloads/release/python-31015/), [Express](https://expressjs.com/), [MongoDB](https://www.mongodb.com/try), [Puppeteer](https://pptr.dev/), [Mongoose](https://mongoosejs.com/docs/), [bcrypt](https://www.npmjs.com/package/bcrypt), [JWT](hatgpt.com)
+
+**Frontend:** [React](https://react.dev/), [Flutter](https://flutter.dev/?gad_source=1), [Tailwind](https://tailwindcss.com/)
+
+**Web Scraper** [Typescript](https://www.typescriptlang.org/), [Crawlee](https://crawlee.dev/), [Playwright](https://playwright.dev/)
+## Installation
+
+
+Setup and Installation
+Prerequisites
+Before you begin, ensure you have the following installed:
+
+- Node.js: Version 22.11.0. You can download it from the official website: Node.js.
+
+npm: The Node Package Manager (npm) comes bundled with Node.js. Make sure it's updated by running:    
+```bash
+  npm install -g npm@latest
+```
+- Python: Version 3.10.15
+Download and install Python 3.10.15 from the official Python website.
+During installation, ensure the "Add Python to PATH" option is selected.
+
+pip: Python Package Installer 
+
+pip is the default package manager for Python and comes bundled with Python. Ensure it’s updated to the latest version by running:
+
+```bash
+python -m pip install --upgrade pip 
+```
+
+Virtual Environment (Optional but Recommended)
+It’s a good practice to create a virtual environment to manage dependencies. Run the following commands:
+
+1.  Create a virtual environment:
+```bash
+python -m venv venv  
+
+```
+2.  Activate the virtual environment:
+```bash
+.\venv\Scripts\activate  
+```
+- Installing Dependencies
+Run the following command to install the required dependencies listed in the requirements.txt file:
+
+```bash
+pip install -r requirements.txt  
+  
+```
+
+
+
+## Usage
+
+Step 1: Clone the Repository
+First, clone the repository to your local machine:
+```bash
+  git clone https://github.com/aayushman-singh/project-NARC.git
+```
+Go to the project directory
+
+```bash
+  cd project-NARC
+```
+
+Install dependencies
+
+```bash
+  npm install
+```
+
+Start the server
+
+```bash
+  npm run start:all
+```
+
+## Scripts
+
+You can start individual services using the following commands:
+
+- Python script server:
+```bash
+  npm run start:script  
+
+```
+- Authentication server:
+```bash
+  npm run start:auth  
+
+```
+- Maigret service:
+```bash
+  npm run start:maigret  
+
+```
+- Instagram scraper:
+```bash
+  npm run start:instagram  
+
+```
+- X scraper:
+```bash
+  npm run start:x  
+
+```
+- Facebook scraper:
+```bash
+  npm run start:facebook
+
+```
+- Facebook scraper:
+```bash
+  npm run start:frontend
+
+```
