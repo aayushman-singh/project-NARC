@@ -1,23 +1,23 @@
 import { Log, PlaywrightCrawler } from 'crawlee';
 import { insertFollowers, insertFollowing, uploadScreenshotToMongo, insertMessages, uploadChats, uploadToS3  } from '../mongoUtils.js'; // Use ESM import
-import { Page } from 'playwright';
+import { BrowserContext, Page } from 'playwright';
 import { promises as fs, PathLike } from 'fs';
 import path from 'path'; // To handle file paths
 
-const saveSession = async (page, filePath: string) => {
+const saveSession = async (page:Page, filePath: string) => {
     const storageState = await page.context().storageState();
     await fs.writeFile(filePath, JSON.stringify(storageState));
     console.log('Session data saved.');
 };
 
-const loadSession = async (browserContext, filePath: string) => {
+const loadSession = async (browserContext:BrowserContext, filePath: string) => {
     try {
         const storageState = JSON.parse(await fs.readFile(filePath, 'utf8'));
         await browserContext.addInitScript(() => {
             window.localStorage.setItem(storageState.key, storageState.value);
         });
         console.log('Session data loaded.');
-    } catch (error) {
+    } catch (error:any) {
         console.warn('No session data found. Starting fresh.');
     }
 };
@@ -34,7 +34,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
             await page.waitForSelector(notNowButtonSelector, { timeout: 5000 });
             await page.click(notNowButtonSelector);
             log.info('Notification pop-up dismissed successfully.');
-        } catch (error) {
+        } catch (error:any) {
             log.info('Notification pop-up did not appear or was already dismissed.');
         }
 
@@ -195,7 +195,7 @@ const openAllInstagramMessagesAndLog = async (page: Page, log: Log, username: st
            
         }
 
-    } catch (error) {
+    } catch (error:any) {
         log.error(`Error while processing Instagram messages: ${error.message}`);
     }
 };
@@ -216,7 +216,7 @@ const captureTimelineScreenshots = async (page: Page, log: Log, username: string
             await page.waitForSelector(notNowButtonSelector, { timeout: 5000 });
             await page.click(notNowButtonSelector);
             log.info('Notification pop-up dismissed successfully.');
-        } catch (error) {
+        } catch (error:any) {
             log.info('Notification pop-up did not appear or was already dismissed.');
         }
 
@@ -237,7 +237,7 @@ const captureTimelineScreenshots = async (page: Page, log: Log, username: string
         }
         
         log.info('All screenshots inserted into MongoDB.');
-    } catch (error) {
+    } catch (error:any) {
         log.error(`Failed to capture screenshots: ${error.message}`);
     }
 };
@@ -288,7 +288,7 @@ export const InstaScraper = async (username:string,password:string) => {
                         // Capture screenshots of the timeline before starting scraping
                         await captureTimelineScreenshots(page, log, username);
 
-                    } catch (error) {
+                    } catch (error:any) {
                         log.error('Login failed or not required: ' + error.message);
                     }
                 } else {
@@ -299,7 +299,7 @@ export const InstaScraper = async (username:string,password:string) => {
         requestHandler: async ({ request, page, log }) => {
            
             log.info(`Processing ${request.url}`);
-
+            let resultId;
             try {
                 // Navigate to the profile page
                 await page.goto(`https://www.instagram.com/${username}/`);
@@ -311,17 +311,16 @@ export const InstaScraper = async (username:string,password:string) => {
 
                 log.info(`Follower count: ${followerCount}, Following count: ${followingCount}`);
 
+                const screenshotPath = `profile_${username}.png`;  // Generate path to save the screenshot
+                await page.screenshot({ path: screenshotPath, fullPage: false });  // Capture screenshot
+
+                resultId = await uploadScreenshotToMongo(username, screenshotPath, 'profilePage', 'instagram')
                 // Function to scrape followers or following
                 const scrapeList = async (listType: string, selector: string, logFilePath: PathLike | fs.FileHandle, maxItems: number) => {
                     log.info(`Starting to scrape ${listType}...`);
                    
                     await page.goto(`https://www.instagram.com/${username}/`);
 
-
-                    const screenshotPath = `profile_${username}.png`;  // Generate path to save the screenshot
-                    await page.screenshot({ path: screenshotPath, fullPage: false });  // Capture screenshot
-
-                    uploadScreenshotToMongo(username, screenshotPath, 'profilePage', 'instagram')
                     await page.waitForSelector(selector, { timeout: 100000 });
                     await page.click(selector);
                     log.info(`Clicked on ${listType} link.`);
@@ -389,7 +388,7 @@ export const InstaScraper = async (username:string,password:string) => {
                 try {
                     const followersData = await scrapeList('followers', `a[href="/${username}/followers/"]`, './followers_log.txt', followerCount);
                     await insertFollowers(username, followersData, 'instagram');
-                } catch (error) {
+                } catch (error:any) {
                     log.error(`Error while scraping followers: ${error.message}. Moving on to following list.`);
                 }
                 
@@ -397,14 +396,17 @@ export const InstaScraper = async (username:string,password:string) => {
                 try {
                     const followingData = await scrapeList('following', `a[href="/${username}/following/"]`, './following_log.txt', followingCount);
                     await insertFollowing(username, followingData, 'instagram');
-                } catch (error) {
+                } catch (error:any) {
                     log.error(`Error while scraping following: ${error.message}. Moving on`);
                 }
                 await openAllInstagramMessagesAndLog(page, log, username);
-            } catch (error) {
+                return resultId;
+            } catch (error:any) {
                 log.error(`Error processing ${request.url}: ${error.message}`);
+                return null;
             }
         },
+
         failedRequestHandler: async ({ request, log }) => {
             log.error(`Failed to process ${request.url}. Moving on to the next task.`);
         },

@@ -136,7 +136,7 @@ if (postsContainer) {
 {
 page.goto('https://facebook.com/messages', { timeout:8000 });
 
-
+await page.waitForTimeout(5000);
 const pinSelector = '#mw-numeric-code-input-prevent-composer-focus-steal';
 const pinCode = pin; // Replace with your actual PIN
 

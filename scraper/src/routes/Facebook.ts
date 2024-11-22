@@ -3,7 +3,7 @@ import cors from 'cors';
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 import { scrapeFacebook } from '../Helpers/Facebook/FacebookTimeline.js';
-import { updateUserHistory } from '../Helpers/userUtils.js';
+import { updateUserHistory } from '../Helpers/mongoUtils.js';
 import FacebookUser ,{IFacebookUser} from '../models/FacebookUser.js';
 import '../../../config.js'
 

@@ -143,7 +143,7 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
                 $set: {
                  [fieldName]: s3Url 
                 } 
-            },  // Store the Base64 string in the specified field
+            },  
             { 
                 upsert: true,
                 returnDocument: 'after' 
@@ -151,7 +151,7 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
             
         );
 
-        console.log(`${fieldName} screenshot uploaded and stored in Base64 format successfully for ${username}.`);
+        console.log(`${fieldName} screenshot uploaded successfully for ${username}.`);
         return result.value._id;
 
     } catch (error) {
@@ -245,42 +245,37 @@ export async function insertFollowing(username: string, followingData: any, plat
 }
 
 export async function insertPosts(username: string, posts: any[], platform: string): Promise<void> {
+    if (!posts || posts.length === 0) {
+        console.log(`No posts to insert for user: ${username}`);
+        return;
+    }
+
     try {
         await client.connect();
         const db = client.db(`${platform}DB`); // Platform specific database
         const collection = db.collection<InstagramUserDocument>(`${platform}_users`); // Platform specific collection
 
-        for (const post of posts) {
-            await collection.updateOne(
-                { username: username },  // Match document by username
-                { 
-                    $push: { posts: { $each: posts } }  // Append each post in the array
-                },
-                { upsert: true }  // Create the document if it doesn't exist
-            );
+        // Perform a single update to push all posts into the user's posts array
+        const result = await collection.findOneAndUpdate(
+            { username: username },  // Match document by username
+            { 
+                $addToSet: { posts: { $each: posts } }  // Append posts uniquely
+            },
+            { upsert: true, returnDocument: 'after' }  // Create the document if it doesn't exist
+        );
 
-            // Add post if not found and matched by ID
-            await collection.updateOne(
-                { 
-                    username: username,
-                    "posts.id": { $ne: post.id } // Check if the post ID does not exist
-                },
-                { 
-                    $push: { posts: post } // Add the new post to the array
-                },
-                { 
-                    upsert: true // Ensure document exists
-                }
-            );
+        if (result.value) {
+            console.log(`Posts successfully updated/inserted for user: ${username}`);
+        } else {
+            console.warn(`User document for ${username} was upserted, but no value was returned.`);
         }
-
-        console.log(`Posts successfully updated/inserted for user: ${username}`);
     } catch (error) {
         console.error(`Failed to update/insert posts for user ${username}:`, error);
     } finally {
         await client.close();
     }
 }
+
 
 export async function insertMessages(username: string, filePath: string,receiverUsername:string, platform: string) {
     await client.connect();
