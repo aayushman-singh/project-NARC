@@ -1,7 +1,7 @@
 import { chromium, Browser, Page } from 'playwright';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import { uploadScreenshotToMongo } from '../mongoUtils';
+import { insertFollowers, insertFollowing, uploadScreenshotToMongo } from '../mongoUtils';
 import fs from 'fs';
 
 // Use the stealth plugin to avoid detection
@@ -90,68 +90,120 @@ export async function scrapeX(EMAIL:string, PASSWORD:string) {
     }
 
     console.log('Timeline scraping completed. Now navigating to profile, followers, and following pages.');
- 
     
-    // Visit followers page
-    const followersUrl = `${profileUrl}/followers`;
-    await page.goto(followersUrl, { waitUntil: 'networkidle' });
-    console.log(`Navigated to followers: ${followersUrl}`);
-
-    // Scroll to the bottom of the followers list and take screenshots with random delays
-    let previousHeight = 0;
-    let currentHeight = await page.evaluate(() => document.body.scrollHeight);
-
-    while (currentHeight !== previousHeight) {
-      previousHeight = currentHeight;
-
-      // Scroll down the page
-      await page.evaluate(() => window.scrollBy(0, window.innerHeight));
-      console.log('Scrolled down followers page.');
-
-      // Wait for content to load
-      await randomDelay(3000, 5000); // Random delay between 3-5 seconds
-
-      // Take a screenshot after each scroll
-      await page.screenshot({ path: `${USERNAME}_followers_${Date.now()}.png`, fullPage: false });
-      console.log('Took followers page screenshot.');
-
-      // Update current height to check if we reached the bottom
-      currentHeight = await page.evaluate(() => document.body.scrollHeight);
-    }
-
-    // Visit following page
-    const followingUrl = `${profileUrl}/following`;
-    await page.goto(followingUrl, { waitUntil: 'networkidle' });
-    console.log(`Navigated to following: ${followingUrl}`);
-
-    // Scroll to the bottom of the following list and take screenshots with random delays
-    previousHeight = 0;
-    currentHeight = await page.evaluate(() => document.body.scrollHeight);
-
-    while (currentHeight !== previousHeight) {
-      previousHeight = currentHeight;
-
-
-      // Wait for content to load
-      await randomDelay(1000, 3000); // Random delay between 3-5 seconds
-
-      // Take a screenshot after each scroll
-      await page.screenshot({ path: `${USERNAME}_following_${Date.now()}.png`, fullPage: false });
-      console.log('Took following page screenshot.');
+    const scrapeList = async (
+      page: any,
+      listType: string,
+      selector: string,
+      logFilePath: string,
+      username: string,
       
-      
-      // Wait for content to load
-      await randomDelay(1000, 3000); // Random delay between 3-5 seconds
+      insertMethod: Function
+  ) => {
+      console.log(`Starting to scrape ${listType} for ${username}...`);
+  
+      try {
 
-      // Scroll down the page
-      await page.evaluate(() => window.scrollBy(0, window.innerHeight));
-      console.log('Scrolled down following page.');
+          await page.goto(`https://x.com/${username}${selector}`);
 
-      // Update current height to check if we reached the bottom
-      currentHeight = await page.evaluate(() => document.body.scrollHeight);
-    }
-
-    console.log('Completed scraping profile, followers, and following.');
+          await page.waitForTimeout(5000)
+          console.log(`Navigated to ${listType} page.`);
+  
+          let scrollAttempts = 0;
+          const maxScrollAttempts = 15;
+          const dataSet: { username: string | null; profilePic: string | null }[] = [];
+  
+          while (scrollAttempts < maxScrollAttempts) {
+              // Scrape data
+              const data = await page.evaluate(() => {
+                  const userCells = document.querySelectorAll('button[data-testid="UserCell"]');
+                  const scrapedData = [];
+                  userCells.forEach((button) => {
+                      try {
+                          const profileLink = button.querySelector('a[href^="/"]');
+                          const username = profileLink?.getAttribute('href')?.replace('/', '');
+                          const profilePic = button.querySelector('img')?.getAttribute('src');
+                          if (username && profilePic) {
+                              scrapedData.push({ username, profilePic });
+                          }
+                      } catch (error) {
+                          console.error(`Error processing a button: ${error.message}`);
+                      }
+                  });
+                  return scrapedData;
+              });
+  
+              // Add unique entries and stop if max limit is reached
+              let newItemsAdded = false;
+              for (const item of data) {
+                  if (!dataSet.some((existing) => existing.username === item.username)) {
+                      dataSet.push(item);
+                      newItemsAdded = true;
+                      console.log(`${listType}: Username: ${item.username}, Profile Pic: ${item.profilePic}`);
+                  }
+              }
+  
+              // Scroll down
+              await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+              console.log(`Scrolled down ${listType} page.`);
+  
+              // Wait for content to load
+              await new Promise((resolve) => setTimeout(resolve, 3000));
+  
+              if (!newItemsAdded) {
+                  scrollAttempts++;
+                  console.log(`No new ${listType} loaded. Scroll attempt: ${scrollAttempts}`);
+              } else {
+                  scrollAttempts = 0; // Reset scroll attempts if new items are added
+              }
+  
+              if (scrollAttempts >= 3) {
+                  console.log(`No new ${listType} after several attempts. Stopping scroll.`);
+                  break;
+              }
+          }
+  
+          // Save to log file
+          const logData = dataSet.map((item) => `Username: ${item.username}, Profile Pic: ${item.profilePic}`).join('\n');
+          await fs.writeFile(logFilePath, logData, { flag: 'w' });
+          console.log(`Total ${listType} extracted and logged.`);
+  
+          // Upload data to MongoDB
+          await insertMethod(username, dataSet, 'twitter');
+          console.log(`${listType} data uploaded to MongoDB successfully.`);
+      } catch (error) {
+          console.error(`Error scraping ${listType} for ${username}:`, error);
+      }
+  };
+  
+  const scrapeXProfile = async (page: any, username: string) => {
+      console.log(`Starting scraping for user: ${username}`);
+  
+      // Scrape followers
+      await scrapeList(
+          page,
+          'followers',
+          '/followers',
+          `./${username}_followers_log.txt`,
+          username,
+          
+          insertFollowers
+      );
+  
+      // Scrape following
+      await scrapeList(
+          page,
+          'following',
+          '/following',
+          `./${username}_following_log.txt`,
+          username,
+          
+          insertFollowing
+      );
+  
+      console.log(`Completed scraping followers and following for user: ${username}`);
+  };
+  await scrapeXProfile(page, USERNAME);
 
     await page.goto(`https://x.com/${USERNAME}`);
     const screenshotPath = 'profile_page.png';

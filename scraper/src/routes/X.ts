@@ -52,7 +52,7 @@ app.post('/x', async (req, res) => {
         console.log('Starting X profile scraper...');
         for (const username of startUrls) {
             const resultId = await scrapeX(username, password);
-            updateUserHistory(userId, startUrls, resultId, 'x');
+            updateUserHistory(userId, startUrls, resultId, 'twitter');
 
         }
 
