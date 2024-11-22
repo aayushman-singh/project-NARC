@@ -4,8 +4,6 @@ import path from 'path';
 import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
 import { errors } from 'playwright';
 import '../../../config.js';
-import User from '../../../backend/models/userModel'
-import mongoose from 'mongoose';
 
 const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri as string);
@@ -152,7 +150,7 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
         );
 
         console.log(`${fieldName} screenshot uploaded successfully for ${username}.`);
-        return result.value._id;
+        
 
     } catch (error) {
         console.error(`Error uploading screenshot for ${username}:`, error);

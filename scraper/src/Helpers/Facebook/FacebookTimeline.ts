@@ -1,7 +1,7 @@
 import { chromium, Browser, Page } from 'playwright';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import { uploadScreenshotToMongo } from '../mongoUtils';
+import { insertPosts, uploadScreenshotToMongo } from '../mongoUtils';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import path, {dirname} from 'path';
@@ -100,34 +100,49 @@ if (postsContainer) {
     }, postsContainer);
 
     if (postDivs.length > 0) {
-        console.log(`Found ${postDivs.length} post(s).`);
-        for (let i = 0; i < limit; i++) {
-            const postXPath = `${xpath}/div[${postDivs[i]}]`;
-            const postElement = await page.$('xpath=' + postXPath);
-
-            if (postElement) {
-                // Scroll to the post and wait for it to load
-                await page.evaluate(el => el.scrollIntoView(), postElement);
-                await page.waitForTimeout(500); // Wait for smooth scrolling and rendering
-
-                // Take a screenshot of the post
-                const screenshotPath = path.join(__dirname, `post_${i + 1}.png`);
-                await postElement.screenshot({ path: screenshotPath });
-                console.log(`Screenshot for post ${i + 1} taken.`);
-
-                // Upload the screenshot to MongoDB
-                await uploadScreenshotToMongo(username, screenshotPath, `post_${i + 1}`,'facebook');
-                console.log(`Screenshot for post ${i + 1} uploaded to MongoDB.`);
-
-                // Delete the screenshot file after uploading if needed
-                fs.unlinkSync(screenshotPath);
-            } else {
-                console.log(`Post ${i + 1} not found.`);
-            }
-        }
-    } else {
-        console.log('No posts found within the container.');
-    }
+      console.log(`Found ${postDivs.length} post(s).`);
+      
+      const scrapedPosts = [];
+  
+      for (let i = 0; i < Math.min(limit, postDivs.length); i++) {
+          const postXPath = `${xpath}/div[${postDivs[i]}]`;
+          const postElement = await page.$('xpath=' + postXPath);
+  
+          if (postElement) {
+              // Scroll to the post and wait for it to load
+              await page.evaluate(el => el.scrollIntoView(), postElement);
+              await page.waitForTimeout(500); // Wait for smooth scrolling and rendering
+  
+              // Take a screenshot of the post
+              const screenshotPath = path.join(__dirname, `post_${i + 1}.png`);
+              await postElement.screenshot({ path: screenshotPath });
+              console.log(`Screenshot for post ${i + 1} taken.`);
+  
+              // Add the post data to the scrapedPosts array
+              scrapedPosts.push({
+                  screenshotPath, // Path to the screenshot
+                  timestamp: new Date().toISOString(), // Add a timestamp for the post
+                  postIndex: i + 1 // Add an index or any other metadata
+              });
+  
+              // Optionally, remove the screenshot file after processing
+              fs.unlinkSync(screenshotPath);
+          } else {
+              console.log(`Post ${i + 1} not found.`);
+          }
+      }
+  
+      // Insert the posts into MongoDB
+      if (scrapedPosts.length > 0) {
+          await insertPosts(username, scrapedPosts, 'facebook');
+          console.log(`All scraped posts uploaded to MongoDB for user: ${username}`);
+      } else {
+          console.log('No valid posts to upload.');
+      }
+  } else {
+      console.log('No posts found within the container.');
+  }
+  
 } else {
     console.log('Posts container not found.');
 }
