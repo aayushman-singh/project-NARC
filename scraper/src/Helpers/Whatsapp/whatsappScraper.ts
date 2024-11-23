@@ -119,10 +119,11 @@ const whatsappScraper = async (username:string, limit:number) => {
         } else {
             console.log('Session restored successfully!');
         }
-
+        
         // Select the main chat container once logged in
         const chatContainerSelector = 'div[aria-label="Chat list"]';
-        await page.waitForSelector(chatContainerSelector);
+        await page.waitForSelector(chatContainerSelector, { timeout: 60000, visible: true });
+
         await page.waitForTimeout(2500);
         // Iterate through each chat user tile
         const chatTiles = await page.$$(chatContainerSelector + ' div[role="listitem"]');
