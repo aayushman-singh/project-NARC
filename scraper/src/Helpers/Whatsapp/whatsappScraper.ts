@@ -32,7 +32,7 @@ const scrollChatWithLogging = async (
             const messageRows = await page.$$(messageContainerSelector + ' div.message-in, div.message-out');
             newMessageCount = messageRows.length;
 
-            if (newMessageCount > previousMessageCount) {
+            if (newMessageCount > previousMessageCount && newMessageCount<limit) {
                 console.log(`Loaded ${newMessageCount - previousMessageCount} new messages.`);
                 previousMessageCount = newMessageCount;
                 attempt = 0; // Reset attempts if new messages are found
