@@ -13,6 +13,7 @@ const Services = () => {
   const [telegramData, setTelegramData] = useState(null);
   const [telegramChats, setTelegramChats] = useState([]);
   const [expandedChats, setExpandedChats] = useState({})
+
   const [alert, setAlert] = useState({ visible: false, message: '', type: 'info' });
   const [whatsappData, setWhatsappData] = useState(null);
   const [xData, setXData] = useState(null); 
@@ -835,7 +836,15 @@ const Services = () => {
           />
              Max messages: 
              {renderDropdown('whatsapp')}
-          <div className="flex space-x-4 mt-4">
+             <div className="flex space-x-4 mt-4">
+             <button
+        onClick={() => handleSubmit('whatsapp')}
+        className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+        disabled={isLoading}
+      >
+        Submit
+      </button>
+     
             <button
               onClick={() => handleShowDetails('whatsapp')}
               className=" bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"

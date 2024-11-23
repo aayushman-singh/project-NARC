@@ -6,7 +6,7 @@ import whatsappScraper from '../Helpers/Whatsapp/whatsappScraper';
 import WhatsappUser, { IWhatsappUser } from '../models/WhatsAppUser';
 import mongoose from 'mongoose';
 import '../../../config.js'
-import { updateUserHistory } from '../Helpers/userUtils.js';
+import { updateUserHistory } from '../Helpers/mongoUtils.js';
 
 const app = express();
 const PORT = Number(process.env.PORT) || 3004; // Whatsapp Scraper Port
