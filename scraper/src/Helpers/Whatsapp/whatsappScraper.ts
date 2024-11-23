@@ -124,7 +124,7 @@ const whatsappScraper = async (username:string, limit:number) => {
         
         // Select the main chat container once logged in
         const chatContainerSelector = 'div[aria-label="Chat list"]';
-        await page.waitForSelector(chatContainerSelector, { timeout: 60000, visible: true });
+        await page.waitForSelector(chatContainerSelector, { timeout: 60000});
 
         await page.waitForTimeout(2500);
         // Iterate through each chat user tile
