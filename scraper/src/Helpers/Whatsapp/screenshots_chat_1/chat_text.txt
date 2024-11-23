@@ -34,3 +34,125 @@ Message 4: 33 kB
 Message 5: BilledStatements_3588_19-10-24_22.56.pdf
 4 pages•PDF•84 kB
 10:56 pm
+Message 1: Acct Statement_XX0752_02102024.pdf
+16 pages•PDF•65 kB
+3:39 pm
+Message 2: 27 kB
+1:09 pm
+Message 3: 36 kB
+2:57 pm
+Message 4: 33 kB
+2:37 pm
+Message 5: BilledStatements_3588_19-10-24_22.56.pdf
+4 pages•PDF•84 kB
+10:56 pm
+Message 6: BilledStatements_3588_19-10-24_22.57.pdf
+4 pages•PDF•87 kB
+10:57 pm
+Message 7: qacademy.pdf
+1 page•PDF•368 kB
+12:01 pm
+Message 8: import React, { useEffect, useState } from 'react';
+
+import axios from 'axios';
+
+import './Watchlist.css'; // Add CSS for styling
+
+
+
+const Watchlist = () => {
+
+  const [watchlist, setWatchlist] = useState([
+
+    { name: 'Ethereum', symbol: 'eth', type: 'token' },
+
+    { name: 'Reliance Industries', symbol: 'RELIANCE', type: 'stock', exchange: 'NSE' }
+
+  ]);
+
+  
+
+  const [prices, setPrices] = useState({});
+
+
+
+  // Fetch data for each watchlist item
+
+  useEffect(() => {
+
+    const fetchPrices = async () => {
+
+      const priceData = {};
+
+      for (const item of watchlist) {
+
+        try {
+
+          if (item.type === 'token') {
+
+            // Fetch token price using Moralis API
+
+            const tokenResponse = await axios.get(https://deep-index.moralis.io/api/v2/erc20/${item.…Read more
+11:13 am
+Message 9: .watchlist-grid {
+
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+  gap: 20px;
+
+  padding: 20px;
+
+}
+
+
+
+.watchlist-tile {
+
+  background-color: #f4f4f9;
+
+  border-radius: 10px;
+
+  padding: 20px;
+
+  text-align: center;
+
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  transition: transform 0.2s ease-in-out;
+
+}
+
+
+
+.watchlist-tile:hover {
+
+  transform: scale(1.05);
+
+}
+
+
+
+.watchlist-tile h3 {
+
+  font-size: 1.2em;
+
+  margin-bottom: 10px;
+
+  color: #333;
+
+}
+
+
+
+.watchlist-tile p {
+
+  font-size: 1em;
+
+  color: #555;
+
+}
+11:13 am
+Message 10: https://www.loom.com/share/6993d782908944f598ceb5f6b345893a?sid=c12dec29-2928-4abc-89ae-e7521bd96329
+10:45 am
