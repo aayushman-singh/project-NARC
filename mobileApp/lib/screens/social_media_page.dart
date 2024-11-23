@@ -1,11 +1,11 @@
 import 'package:flutter/material.dart';
 
-class Services extends StatefulWidget {
+class SocialMediaPage extends StatefulWidget {
   @override
-  _ServicesState createState() => _ServicesState();
+  _SocialMediaPageState createState() => _SocialMediaPageState();
 }
 
-class _ServicesState extends State<Services> {
+class _SocialMediaPageState extends State<SocialMediaPage> {
   String activeSection = '';
   bool isLoading = false;
 
@@ -32,16 +32,16 @@ class _ServicesState extends State<Services> {
 
     try {
       // Simulate API calls (replace with actual implementation)
-      await Future.delayed(Duration(seconds: 2));
+      await Future.delayed(const Duration(seconds: 2));
       print('Payload being sent: $payload');
 
       ScaffoldMessenger.of(context)
-          .showSnackBar(SnackBar(content: Text('User Submitted Successfully')));
+          .showSnackBar(const SnackBar(content: Text('User Submitted Successfully')));
       tagController.clear();
     } catch (error) {
       print('Error submitting tags: $error');
       ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(content: Text('Failed to submit tags. Please try again.')));
+          const SnackBar(content: Text('Failed to submit tags. Please try again.')));
     } finally {
       setState(() {
         isLoading = false;
@@ -58,7 +58,7 @@ class _ServicesState extends State<Services> {
           if (isLoading)
             Container(
               color: Colors.black.withOpacity(0.5),
-              child: Center(
+              child: const Center(
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
@@ -74,7 +74,7 @@ class _ServicesState extends State<Services> {
             padding: const EdgeInsets.all(16.0),
             child: Column(
               children: [
-                Text(
+                const Text(
                   'Social Media Investigation Tool',
                   style: TextStyle(
                       fontSize: 24,
@@ -82,7 +82,7 @@ class _ServicesState extends State<Services> {
                       color: Colors.white),
                   textAlign: TextAlign.center,
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
@@ -108,7 +108,7 @@ class _ServicesState extends State<Services> {
                     }),
                   ],
                 ),
-                SizedBox(height: 20),
+                const SizedBox(height: 20),
                 if (activeSection == 'instagram')
                   _buildServiceForm('Instagram', Colors.pink, 'instagram'),
                 if (activeSection == 'whatsapp')
@@ -146,13 +146,13 @@ class _ServicesState extends State<Services> {
     final TextEditingController tagController = TextEditingController();
 
     return Container(
-      padding: EdgeInsets.all(16),
+      padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
           color: Colors.grey[800], borderRadius: BorderRadius.circular(12)),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Text('$platform',
+          Text(platform,
               style: TextStyle(
                   fontSize: 18, fontWeight: FontWeight.bold, color: color)),
           TextField(
@@ -165,11 +165,11 @@ class _ServicesState extends State<Services> {
                   OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
             ),
           ),
-          SizedBox(height: 10),
+          const SizedBox(height: 10),
           ElevatedButton(
             onPressed: () => handleSubmit(platformKey),
             style: ElevatedButton.styleFrom(backgroundColor: color),
-            child: Text('Submit'),
+            child: const Text('Submit'),
           ),
         ],
       ),

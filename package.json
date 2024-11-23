@@ -33,6 +33,7 @@
     "backend"
   ],
   "scripts": {
+    "start:mobile": "cd mobileApp && flutter run",
     "start:script": "python frontend/script/server.py",
     "start:telegram": "python scraper/src/routes/telegram.py",
     "start:auth": "npx tsx backend/server",
