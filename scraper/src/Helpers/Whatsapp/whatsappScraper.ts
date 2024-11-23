@@ -108,7 +108,9 @@ const whatsappScraper = async (username:string, limit:number) => {
         const browser = await chromium.launchPersistentContext('./user-data', { headless: false });
         page = await browser.newPage();
 
-        await page.goto('https://web.whatsapp.com/');
+        await page.goto('https://web.whatsapp.com/', { waitUntil: 'networkidle' });
+        await page.waitForTimeout(60000); // Add a 10-second delay
+
         
         // Wait for QR code scan only if cookies are not loaded
         if (!(await page.$('div[aria-label="Chat list"]'))) {
