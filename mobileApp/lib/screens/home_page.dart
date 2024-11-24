@@ -70,7 +70,7 @@ class HomePage extends StatelessWidget {
             ),
             const SizedBox(height: 20),
             Container(
-              width: screenSize.width*0.9,
+              width: screenSize.width * 0.9,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                 children: [
@@ -78,24 +78,26 @@ class HomePage extends StatelessWidget {
                     title: 'Social Media Investigation Tools',
                     description:
                         'Access our cutting-edge tools designed specifically for investigating social media platforms.',
-                    link: () => navigateTo(context, Routes.socialMedia), // Pass a closure
+                    link: () => navigateTo(
+                        context, Routes.socialMedia), // Pass a closure
                   ),
                   InfoCard(
                     title: 'OSINT Tools',
                     description:
                         'Utilize Open Source Intelligence (OSINT) tools to gather and analyze publicly available information.',
-                    link: () => navigateTo(context, Routes.osint), // Pass a closure
+                    link: () =>
+                        navigateTo(context, Routes.osint), // Pass a closure
                   ),
                   InfoCard(
                     title: 'Profile Analysis',
                     description:
                         'Analyze social media profiles with advanced tools. Gain insights into user activity, engagement, and follower growth.',
-                    link: () => navigateTo(context, Routes.analysis), // Pass a closure
+                    link: () =>
+                        navigateTo(context, Routes.analysis), // Pass a closure
                   ),
                 ],
               ),
             ),
-
           ],
         ),
       ),
@@ -106,7 +108,7 @@ class HomePage extends StatelessWidget {
 class InfoCard extends StatelessWidget {
   final String title;
   final String description;
-  final void Function() link; 
+  final void Function() link;
 
   InfoCard(
       {Key? key,
@@ -124,14 +126,15 @@ class InfoCard extends StatelessWidget {
       child: Card(
         elevation: 5,
         child: SizedBox(
-          width: screenSize.width*0.2,
-          height: screenSize.height*0.7,
+          width: screenSize.width * 0.2,
+          height: screenSize.height * 0.7,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
               Text(
                 title,
-                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                style:
+                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
               ),
               Text(
                 description,
@@ -139,7 +142,8 @@ class InfoCard extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  link;
+                  print('clicked');
+                  link();
                 },
                 child: const Text('Navigate'),
               ),
