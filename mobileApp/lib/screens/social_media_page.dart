@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 
 class SocialMediaPage extends StatefulWidget {
+  const SocialMediaPage({super.key});
+
   @override
   _SocialMediaPageState createState() => _SocialMediaPageState();
 }
