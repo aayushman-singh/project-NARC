@@ -1,55 +1,55 @@
-import React, { useState } from 'react'
-import { Search } from 'lucide-react'
+import React, { useState } from "react";
+import { Search } from "lucide-react";
 
 const SearchPage = () => {
-  const [username, setUsername] = useState('')
-  const [urls, setUrls] = useState(null)
-  const [loading, setLoading] = useState(false)
-  const [error, setError] = useState(null)
+  const [username, setUsername] = useState("");
+  const [urls, setUrls] = useState(null);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
   const handleSearch = async (e) => {
-    e.preventDefault()
-    setLoading(true)
-    setError(null)
-    setUrls(null)
-  
+    e.preventDefault();
+    setLoading(true);
+    setError(null);
+    setUrls(null);
+
     try {
-      const response = await fetch('http://localhost:5000/api/search', {
-        method: 'POST',
+      const response = await fetch("http://localhost:5000/api/search", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ username }),
-      })
-  
+      });
+
       if (!response.ok) {
-        throw new Error(`Failed to fetch results: ${response.statusText}`)
+        throw new Error(`Failed to fetch results: ${response.statusText}`);
       }
-  
-      const data = await response.json()
-      console.log(data) // Log the response to see where URLs might be
-  
+
+      const data = await response.json();
+      console.log(data); // Log the response to see where URLs might be
+
       // Check if URLs are in a specific field or array in data
-      let extractedUrls = []
-  
+      let extractedUrls = [];
+
       if (Array.isArray(data.urls)) {
         // If URLs are in an array, use them directly
-        extractedUrls = data.urls
-      } else if (typeof data.rawOutput === 'string') {
+        extractedUrls = data.urls;
+      } else if (typeof data.rawOutput === "string") {
         // Fallback to extracting from rawOutput if it exists
-        const urlRegex = /(https?:\/\/[^\s]+)/g
-        extractedUrls = data.rawOutput.match(urlRegex) || []
+        const urlRegex = /(https?:\/\/[^\s]+)/g;
+        extractedUrls = data.rawOutput.match(urlRegex) || [];
       } else {
-        throw new Error('No URLs found for the given username.')
+        throw new Error("No URLs found for the given username.");
       }
-  
-      setUrls(extractedUrls)
+
+      setUrls(extractedUrls);
     } catch (err) {
-      setError(err.message)
+      setError(err.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 to-gray-800 text-white p-8 flex flex-col items-center justify-center">
@@ -77,7 +77,7 @@ const SearchPage = () => {
           className="w-full bg-gradient-to-r from-blue-500 to-purple-600 text-white px-6 py-3 rounded-md hover:from-blue-600 hover:to-purple-700 disabled:opacity-50 transition duration-300 ease-in-out transform hover:-translate-y-1 hover:shadow-lg"
           disabled={loading}
         >
-          {loading ? 'Searching...' : 'Search'}
+          {loading ? "Searching..." : "Search"}
         </button>
       </form>
 
@@ -94,7 +94,9 @@ const SearchPage = () => {
         )}
         {urls && urls.length > 0 && (
           <div className="bg-gray-800 p-6 rounded-lg shadow-lg mt-4 border border-gray-700">
-            <h3 className="text-2xl font-bold mb-6 text-blue-400">Results for {username}:</h3>
+            <h3 className="text-2xl font-bold mb-6 text-blue-400">
+              Results for {username}:
+            </h3>
             <ul className="space-y-4">
               {urls.map((url, index) => (
                 <li
@@ -124,7 +126,7 @@ const SearchPage = () => {
         )}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default SearchPage
+export default SearchPage;

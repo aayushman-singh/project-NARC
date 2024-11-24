@@ -48,21 +48,20 @@ function App() {
     {
       path: "/profileAnalysis",
       element: <DataAnalysisPage />,
-    }
+    },
   ];
 
   let routesElement = useRoutes(routesArray);
 
   return (
-<>
-
+    <>
       {/* <CursorFollower/> */}
       <Header />
       {/* Full screen height minus header with flex column */}
       <div className="w-full flex-grow flex flex-col pt-16 bg-gray-700">
         {routesElement}
       </div>
-      </> 
+    </>
   );
 }
 

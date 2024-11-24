@@ -1,32 +1,50 @@
-import React, { useState, useEffect } from 'react';
-import { InstagramLogo, WhatsappLogo, FacebookLogo, TelegramLogo, TwitterLogo, FileCsv, FilePdf, CloudArrowUp, Coins, X } from 'phosphor-react';
-import { ChevronDown, ChevronUp } from 'lucide-react'
-import './style.css';
-import WhatsAppChats from './Whatsapp';
-import TelegramChats from './Telegram';
-import RenderInstagramData from './Instagram';
+import React, { useState, useEffect } from "react";
+import {
+  InstagramLogo,
+  WhatsappLogo,
+  FacebookLogo,
+  TelegramLogo,
+  TwitterLogo,
+  FileCsv,
+  FilePdf,
+  CloudArrowUp,
+  Coins,
+  X,
+} from "phosphor-react";
+import { ChevronDown, ChevronUp } from "lucide-react";
+import "./style.css";
+import WhatsAppChats from "./Whatsapp";
+import TelegramChats from "./Telegram";
+import RenderInstagramData from "./Instagram";
 const Services = () => {
-  const [activeSection, setActiveSection] = useState('');
+  const [activeSection, setActiveSection] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [instagramData, setInstagramData] = useState(null);
   const [telegramData, setTelegramData] = useState(null);
   const [telegramChats, setTelegramChats] = useState([]);
-  const [expandedChats, setExpandedChats] = useState({})
+  const [expandedChats, setExpandedChats] = useState({});
 
-  const [alert, setAlert] = useState({ visible: false, message: '', type: 'info' });
+  const [alert, setAlert] = useState({
+    visible: false,
+    message: "",
+    type: "info",
+  });
   const [whatsappData, setWhatsappData] = useState(null);
   const [xData, setXData] = useState(null);
   const [facebookData, setFacebookData] = useState(null);
-  const [showFollowers, setShowFollowers] = useState(false)
-  const [showFollowing, setShowFollowing] = useState(false)
+  const [showFollowers, setShowFollowers] = useState(false);
+  const [showFollowing, setShowFollowing] = useState(false);
   const handleSectionClick = (section) => {
-    setActiveSection((prev) => (prev === section ? '' : section));
+    setActiveSection((prev) => (prev === section ? "" : section));
   };
 
-  const showAlert = (message, type = 'info') => {
+  const showAlert = (message, type = "info") => {
     setAlert({ visible: true, message, type });
-    setTimeout(() => setAlert({ visible: false, message: '', type: 'info' }), 3000);
+    setTimeout(
+      () => setAlert({ visible: false, message: "", type: "info" }),
+      3000,
+    );
   };
   const handleShowDetails = async (platform, requiresPassword = false) => {
     const platformConfig = {
@@ -39,74 +57,77 @@ const Services = () => {
 
     const port = platformConfig[platform];
     if (!port) {
-      console.error('Unknown platform or port not configured');
+      console.error("Unknown platform or port not configured");
       return;
     }
 
     const username = document.getElementById(`${platform}Input`).value;
-    const password = requiresPassword ? document.getElementById(`${platform}Password`).value : null;
+    const password = requiresPassword
+      ? document.getElementById(`${platform}Password`).value
+      : null;
 
     setIsLoading(true);
 
     try {
-
-      const queryParams = requiresPassword && password
-        ? `?password=${encodeURIComponent(password)}`
-        : '';
+      const queryParams =
+        requiresPassword && password
+          ? `?password=${encodeURIComponent(password)}`
+          : "";
 
       const response = await fetch(
-        `http://localhost:${port}/${platform}/users/${username}${queryParams}`
+        `http://localhost:${port}/${platform}/users/${username}${queryParams}`,
       );
 
       if (!response.ok) {
-        throw new Error('User not found');
+        throw new Error("User not found");
       }
 
       const data = await response.json();
 
       // Dynamically set the state based on the platform
       switch (platform) {
-        case 'whatsapp':
+        case "whatsapp":
           setWhatsappData(data);
           break;
-        case 'facebook':
+        case "facebook":
           setFacebookData(data);
           break;
-        case 'x':
+        case "x":
           setXData(data);
           break;
-        case 'telegram':
+        case "telegram":
           setTelegramData(data);
           break;
-        case 'instagram':
+        case "instagram":
           setInstagramData(data);
           break;
         default:
-          console.error('Unknown platform');
+          console.error("Unknown platform");
       }
 
       setShowDetails(true);
-      showAlert('Data fetched successfully', 'success');
+      showAlert("Data fetched successfully", "success");
     } catch (error) {
-      showAlert('Failed to fetch data. Please try again.', 'error');
+      showAlert("Failed to fetch data. Please try again.", "error");
     } finally {
       setIsLoading(false);
     }
   };
 
-
-
-
   const renderFacebookData = (facebookData) => {
-    if (!facebookData) return <p className="text-gray-400">No data available.</p>;
+    if (!facebookData)
+      return <p className="text-gray-400">No data available.</p>;
 
     return (
       <div>
-        <h3 className="text-xl font-bold text-blue-400 mb-4">Facebook Details</h3>
+        <h3 className="text-xl font-bold text-blue-400 mb-4">
+          Facebook Details
+        </h3>
 
         {/* Username Display */}
         <div className="text-lg font-semibold text-gray-300 mb-4">
-          Username: <span className="text-blue-300">{facebookData.username}</span>
+          Username:{" "}
+          <span className="text-blue-300">{facebookData.username}</span>
         </div>
 
         {/* Timelines */}
@@ -155,11 +176,17 @@ const Services = () => {
         <div className="mt-10">
           <h4 className="text-2xl font-bold text-pink-500 mb-6">Messages</h4>
           <div className="space-y-6">
-            {Array.isArray(instagramData.messages) && instagramData.messages.length > 0 ? (
+            {Array.isArray(instagramData.messages) &&
+            instagramData.messages.length > 0 ? (
               instagramData.messages.map((message, index) => (
-                <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-md">
+                <div
+                  key={index}
+                  className="bg-gray-800 p-4 rounded-lg shadow-md"
+                >
                   {/* Display receiver username */}
-                  <p className="text-white text-sm font-semibold">Receiver: {message.receiverUsername}</p>
+                  <p className="text-white text-sm font-semibold">
+                    Receiver: {message.receiverUsername}
+                  </p>
 
                   {/* Display screenshots */}
                   <div className="mt-4">
@@ -177,7 +204,9 @@ const Services = () => {
                         </a>
                       ))
                     ) : (
-                      <p className="text-gray-500 text-xs">No screenshots available</p>
+                      <p className="text-gray-500 text-xs">
+                        No screenshots available
+                      </p>
                     )}
                   </div>
 
@@ -204,17 +233,20 @@ const Services = () => {
             )}
           </div>
         </div>
-
       </div>
     );
   };
- 
 
   const renderXTweets = (tweets) => {
     return tweets.map((tweet, index) => (
       <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
         <h3 className="text-xl font-bold mb-2">
-          <a href={tweet.url} target="_blank" rel="noopener noreferrer" className="text-blue-400 underline">
+          <a
+            href={tweet.url}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 underline"
+          >
             {tweet.id_str}
           </a>
         </h3>
@@ -237,11 +269,11 @@ const Services = () => {
     let pin, pinElement;
     const dropdownElement = document.getElementById(`${[platform]}Dropdown`);
 
-    if (platform === 'facebook') {
+    if (platform === "facebook") {
       pinElement = document.getElementById(`${platform}Pin`);
       if (!pinElement) {
         console.error(`${platform}Pin element not found`);
-        alert('Please enter the PIN for Facebook');
+        alert("Please enter the PIN for Facebook");
         return;
       }
       pin = pinElement.value;
@@ -249,34 +281,41 @@ const Services = () => {
 
     if (!tagInputElement) {
       console.error(`${platform}Input element not found`);
-      showAlert('Please enter tags');
+      showAlert("Please enter tags");
       return;
     }
 
-    if ((platform !== 'whatsapp' && platform !== 'telegram') && (!passwordInputElement || !passwordInputElement.value.trim())) {
+    if (
+      platform !== "whatsapp" &&
+      platform !== "telegram" &&
+      (!passwordInputElement || !passwordInputElement.value.trim())
+    ) {
       console.error(`${platform}Password element not found`);
-      showAlert('Please enter the password');
+      showAlert("Please enter the password");
       return;
     }
 
-    const baseUrl = 'http://localhost';
+    const baseUrl = "http://localhost";
     const tagInputValue = tagInputElement.value;
     const tagsArray = tagInputValue
-      .split(',')
-      .map(tag => tag.trim())
-      .filter(tag => tag.length > 0)
-      .map(tag => (platform === 'telegram' ? `+91${tag}` : tag));
+      .split(",")
+      .map((tag) => tag.trim())
+      .filter((tag) => tag.length > 0)
+      .map((tag) => (platform === "telegram" ? `+91${tag}` : tag));
     const limit = parseInt(dropdownElement.value, 10);
-    const password = (platform !== 'whatsapp' && platform !== 'telegram') ? passwordInputElement.value.trim() : undefined;
-    const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+    const password =
+      platform !== "whatsapp" && platform !== "telegram"
+        ? passwordInputElement.value.trim()
+        : undefined;
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
 
     const userId = userInfo ? userInfo._id : "";
 
     const payload = { userId: userId, startUrls: tagsArray, limit: limit };
-    if (platform === 'facebook') {
+    if (platform === "facebook") {
       payload.password = password;
       payload.pin = pin ? pin.trim() : undefined;
-    } else if (platform !== 'whatsapp' || platform !== 'telegram') {
+    } else if (platform !== "whatsapp" || platform !== "telegram") {
       payload.password = password;
     }
 
@@ -286,13 +325,15 @@ const Services = () => {
       facebook: 3002,
       x: 3003,
       whatsapp: 3004,
-      telegram: 3005
+      telegram: 3005,
     };
 
     const port = platformPorts[platform];
     if (!port) {
-      console.error('Unsupported platform:', platform);
-      showAlert('Unsupported platform. Please choose Instagram, Facebook, X, Whatsapp, or Telegram');
+      console.error("Unsupported platform:", platform);
+      showAlert(
+        "Unsupported platform. Please choose Instagram, Facebook, X, Whatsapp, or Telegram",
+      );
       return;
     }
 
@@ -301,39 +342,35 @@ const Services = () => {
 
     try {
       const response = await fetch(apiEndpoint, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json'
+          "Content-Type": "application/json",
         },
-        body: JSON.stringify(payload)
+        body: JSON.stringify(payload),
       });
 
       console.log(`Payload being sent to platform ${platform}:`, payload);
 
-      showAlert('Account Scraped Successfully');
+      showAlert("Account Scraped Successfully");
 
       if (!response.ok) {
         const errorDetails = await response.json();
         console.error(`Error details:`, errorDetails);
-        throw new Error(`Request failed for ${platform}: ${response.statusText}`);
+        throw new Error(
+          `Request failed for ${platform}: ${response.statusText}`,
+        );
       }
 
-
-      tagInputElement.value = '';
-      if (passwordInputElement) passwordInputElement.value = '';
-      if (pinElement) pinElement.value = '';
-
+      tagInputElement.value = "";
+      if (passwordInputElement) passwordInputElement.value = "";
+      if (pinElement) pinElement.value = "";
     } catch (error) {
       console.error(`Error submitting tags for ${platform}:`, error);
-      showAlert('Failed to submit tags. Please try again.');
+      showAlert("Failed to submit tags. Please try again.");
     } finally {
       setIsLoading(false);
     }
   };
-
-
-
-
 
   const DetailSection = ({ title, content }) => (
     <div className="bg-gray-700 p-4 rounded-md mt-4">
@@ -358,36 +395,62 @@ const Services = () => {
     </select>
   );
 
-
-
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 relative">
       {alert.visible && (
         <div
-          className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform ${alert.visible ? 'translate-x-0 opacity-100' : 'translate-x-full opacity-0'
-            } ${alert.type === 'success'
-              ? 'bg-green-50 text-green-800 border-l-4 border-green-500'
-              : alert.type === 'error'
-                ? 'bg-red-50 text-red-800 border-l-4 border-red-500'
-                : 'bg-blue-50 text-blue-800 border-l-4 border-blue-500'
-            }`}
+          className={`fixed top-4 right-4 z-50 p-4 rounded-lg shadow-lg transition-all duration-300 ease-in-out transform ${
+            alert.visible
+              ? "translate-x-0 opacity-100"
+              : "translate-x-full opacity-0"
+          } ${
+            alert.type === "success"
+              ? "bg-green-50 text-green-800 border-l-4 border-green-500"
+              : alert.type === "error"
+                ? "bg-red-50 text-red-800 border-l-4 border-red-500"
+                : "bg-blue-50 text-blue-800 border-l-4 border-blue-500"
+          }`}
         >
           <div className="flex items-center justify-between">
             <div className="flex items-center">
               <div className="flex-shrink-0">
-                {alert.type === 'success' && (
-                  <svg className="h-5 w-5 text-green-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+                {alert.type === "success" && (
+                  <svg
+                    className="h-5 w-5 text-green-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 )}
-                {alert.type === 'error' && (
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clipRule="evenodd" />
+                {alert.type === "error" && (
+                  <svg
+                    className="h-5 w-5 text-red-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 )}
-                {alert.type === 'info' && (
-                  <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                {alert.type === "info" && (
+                  <svg
+                    className="h-5 w-5 text-blue-400"
+                    viewBox="0 0 20 20"
+                    fill="currentColor"
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z"
+                      clipRule="evenodd"
+                    />
                   </svg>
                 )}
               </div>
@@ -408,40 +471,94 @@ const Services = () => {
         <div className="fixed inset-0 bg-gray-900 bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded-lg shadow-xl text-center">
             <div className="animate-spin rounded-full h-16 w-16 border-t-2 border-b-2 border-blue-500 mx-auto mb-4"></div>
-            <p className="text-gray-700 font-semibold">Processing your request...</p>
+            <p className="text-gray-700 font-semibold">
+              Processing your request...
+            </p>
           </div>
         </div>
       )}
-      <h1 className="text-3xl font-bold mb-8 text-center">Social Media Investigation Tool</h1>
+      <h1 className="text-3xl font-bold mb-8 text-center">
+        Social Media Investigation Tool
+      </h1>
 
       <div className="flex justify-center space-x-8 mb-8">
-        <button onClick={() => handleSectionClick('instagram')} className="flex items-center space-x-2">
-          <InstagramLogo size={32} color={activeSection === 'instagram' ? '#E1306C' : '#ccc'} />
-          <span className={`text-lg ${activeSection === 'instagram' ? 'text-pink-500' : 'text-gray-400'}`}>Instagram</span>
+        <button
+          onClick={() => handleSectionClick("instagram")}
+          className="flex items-center space-x-2"
+        >
+          <InstagramLogo
+            size={32}
+            color={activeSection === "instagram" ? "#E1306C" : "#ccc"}
+          />
+          <span
+            className={`text-lg ${activeSection === "instagram" ? "text-pink-500" : "text-gray-400"}`}
+          >
+            Instagram
+          </span>
         </button>
 
-        <button onClick={() => handleSectionClick('facebook')} className="flex items-center space-x-2">
-          <FacebookLogo size={32} color={activeSection === 'facebook' ? '#3b5998' : '#ccc'} />
-          <span className={`text-lg ${activeSection === 'facebook' ? 'text-blue-600' : 'text-gray-400'}`}>Facebook</span>
+        <button
+          onClick={() => handleSectionClick("facebook")}
+          className="flex items-center space-x-2"
+        >
+          <FacebookLogo
+            size={32}
+            color={activeSection === "facebook" ? "#3b5998" : "#ccc"}
+          />
+          <span
+            className={`text-lg ${activeSection === "facebook" ? "text-blue-600" : "text-gray-400"}`}
+          >
+            Facebook
+          </span>
         </button>
 
-        <button onClick={() => handleSectionClick('x')} className="flex items-center space-x-2">
-          <TwitterLogo size={32} color={activeSection === 'x' ? '#1DA1F2' : '#ccc'} />
-          <span className={`text-lg ${activeSection === 'x' ? 'text-blue-500' : 'text-gray-400'}`}>X</span>
+        <button
+          onClick={() => handleSectionClick("x")}
+          className="flex items-center space-x-2"
+        >
+          <TwitterLogo
+            size={32}
+            color={activeSection === "x" ? "#1DA1F2" : "#ccc"}
+          />
+          <span
+            className={`text-lg ${activeSection === "x" ? "text-blue-500" : "text-gray-400"}`}
+          >
+            X
+          </span>
         </button>
 
-        <button onClick={() => handleSectionClick('telegram')} className="flex items-center space-x-2">
-          <TelegramLogo size={32} color={activeSection === 'telegram' ? '#0088cc' : '#ccc'} />
-          <span className={`text-lg ${activeSection === 'telegram' ? 'text-blue-400' : 'text-gray-400'}`}>Telegram</span>
+        <button
+          onClick={() => handleSectionClick("telegram")}
+          className="flex items-center space-x-2"
+        >
+          <TelegramLogo
+            size={32}
+            color={activeSection === "telegram" ? "#0088cc" : "#ccc"}
+          />
+          <span
+            className={`text-lg ${activeSection === "telegram" ? "text-blue-400" : "text-gray-400"}`}
+          >
+            Telegram
+          </span>
         </button>
 
-        <button onClick={() => handleSectionClick('whatsapp')} className="flex items-center space-x-2">
-          <WhatsappLogo size={32} color={activeSection === 'whatsapp' ? '#25D366' : '#ccc'} />
-          <span className={`text-lg ${activeSection === 'whatsapp' ? 'text-green-500' : 'text-gray-400'}`}>WhatsApp</span>
+        <button
+          onClick={() => handleSectionClick("whatsapp")}
+          className="flex items-center space-x-2"
+        >
+          <WhatsappLogo
+            size={32}
+            color={activeSection === "whatsapp" ? "#25D366" : "#ccc"}
+          />
+          <span
+            className={`text-lg ${activeSection === "whatsapp" ? "text-green-500" : "text-gray-400"}`}
+          >
+            WhatsApp
+          </span>
         </button>
       </div>
 
-      {activeSection === 'instagram' && (
+      {activeSection === "instagram" && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-pink-500">Instagram</h2>
           <input
@@ -457,23 +574,22 @@ const Services = () => {
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
           />
           Max posts:
-          {renderDropdown('instagram')}
+          {renderDropdown("instagram")}
           <div className="flex space-x-4 mt-4">
             <button
-              onClick={() => handleSubmit('instagram')}
+              onClick={() => handleSubmit("instagram")}
               className="bg-pink-500 text-white px-6 py-2 rounded-md hover:bg-pink-600 disabled:opacity-50"
               disabled={isLoading}
             >
               Submit
             </button>
             <button
-              onClick={() => handleShowDetails('instagram')}
+              onClick={() => handleShowDetails("instagram")}
               className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
             >
               Show Details
             </button>
           </div>
-
           {showDetails && instagramData && (
             <div className="mt-8">
               <RenderInstagramData instagramData={instagramData} />
@@ -493,7 +609,9 @@ const Services = () => {
                 </button>
                 <button className="flex items-center space-x-2 bg-yellow-200 text-yellow-700 px-4 py-2 rounded-md hover:bg-yellow-300 transition-colors">
                   <Coins size={24} weight="bold" />
-                  <span className="text-md font-semibold">Export to Blockchain</span>
+                  <span className="text-md font-semibold">
+                    Export to Blockchain
+                  </span>
                 </button>
               </div>
             </div>
@@ -501,7 +619,7 @@ const Services = () => {
         </div>
       )}
 
-      {activeSection === 'whatsapp' && (
+      {activeSection === "whatsapp" && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-green-500">WhatsApp</h2>
           <input
@@ -511,10 +629,10 @@ const Services = () => {
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
           />
           Max messages:
-          {renderDropdown('whatsapp')}
+          {renderDropdown("whatsapp")}
           <div className="flex space-x-4 mt-4">
             <button
-              onClick={() => handleSubmit('whatsapp')}
+              onClick={() => handleSubmit("whatsapp")}
               className="bg-green-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
               disabled={isLoading}
             >
@@ -522,14 +640,13 @@ const Services = () => {
             </button>
 
             <button
-              onClick={() => handleShowDetails('whatsapp')}
+              onClick={() => handleShowDetails("whatsapp")}
               className=" bg-green-600 text-white px-6 py-2 rounded-md hover:bg-green-700 disabled:opacity-50"
               disabled={isLoading}
             >
               Show Details
             </button>
           </div>
-
           {whatsappData && showDetails && (
             <div className="mt-6">
               <h3 className="text-xl font-bold text-white">User Chats</h3>
@@ -538,9 +655,11 @@ const Services = () => {
           )}
         </div>
       )}
-      {activeSection === 'x' && (
+      {activeSection === "x" && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold text-blue-500">X (formerly Twitter)</h2>
+          <h2 className="text-2xl font-bold text-blue-500">
+            X (formerly Twitter)
+          </h2>
           <input
             type="text"
             id="xInput"
@@ -554,17 +673,18 @@ const Services = () => {
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
           Max posts:
-          {renderDropdown('x')} {/* Assuming this renders the dropdown for the max posts */}
+          {renderDropdown("x")}{" "}
+          {/* Assuming this renders the dropdown for the max posts */}
           <div className="flex space-x-4 mt-4">
             <button
-              onClick={() => handleSubmit('x')}
+              onClick={() => handleSubmit("x")}
               className=" bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
               disabled={isLoading}
             >
               Submit
             </button>
             <button
-              onClick={() => handleShowDetails('x')}
+              onClick={() => handleShowDetails("x")}
               className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
             >
               Show Details
@@ -573,14 +693,17 @@ const Services = () => {
           {showDetails && (
             <div className="mt-6">
               <h3 className="text-xl font-bold text-blue-400 mb-4">Tweets</h3>
-              {xData?.tweets ? renderXTweets(xData.tweets) : <p>No tweets available</p>}
+              {xData?.tweets ? (
+                renderXTweets(xData.tweets)
+              ) : (
+                <p>No tweets available</p>
+              )}
             </div>
           )}
         </div>
       )}
 
-
-      {activeSection === 'telegram' && (
+      {activeSection === "telegram" && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-blue-400">Telegram</h2>
           <input
@@ -588,20 +711,19 @@ const Services = () => {
             id="telegramInput"
             placeholder="Enter Telegram phone number"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-
           />
           Max messages:
-          {renderDropdown('telegram')}
+          {renderDropdown("telegram")}
           <div className="flex space-x-4 mt-4">
             <button
-              onClick={() => handleSubmit('telegram')}
+              onClick={() => handleSubmit("telegram")}
               className=" bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
               disabled={isLoading}
             >
               Submit
             </button>
             <button
-              onClick={() => handleShowDetails('telegram')}
+              onClick={() => handleShowDetails("telegram")}
               className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
             >
               Show Details
@@ -609,14 +731,16 @@ const Services = () => {
           </div>
           {telegramData && showDetails && (
             <div className="mt-6">
-              <h3 className="text-xl font-semibold text-blue-300 mb-4">Chats</h3>
+              <h3 className="text-xl font-semibold text-blue-300 mb-4">
+                Chats
+              </h3>
               <TelegramChats chats={telegramData.chats} />
             </div>
           )}
         </div>
       )}
 
-      {activeSection === 'facebook' && (
+      {activeSection === "facebook" && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-blue-600">Facebook</h2>
           <input
@@ -626,35 +750,43 @@ const Services = () => {
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
           <input
-            type="password" id="facebookPassword"
+            type="password"
+            id="facebookPassword"
             placeholder="Enter Facebook password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
           <input
-            type="pin" id="facebookPin"
+            type="pin"
+            id="facebookPin"
             placeholder="Enter Facebook pin"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
           />
           Max posts:
-          {renderDropdown('facebook')}
-          <p className="text-yellow-400 mt-4 mb-2 italic">Warning: A CAPTCHA may be required for verification.</p>
+          {renderDropdown("facebook")}
+          <p className="text-yellow-400 mt-4 mb-2 italic">
+            Warning: A CAPTCHA may be required for verification.
+          </p>
           <div className="flex space-x-4 mt-4">
             <button
-              onClick={() => handleSubmit('facebook')}
+              onClick={() => handleSubmit("facebook")}
               className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
               disabled={isLoading}
             >
               Submit
             </button>
             <button
-              onClick={() => handleShowDetails('facebook')}
+              onClick={() => handleShowDetails("facebook")}
               className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
             >
               Show Details
             </button>
           </div>
           <div className="mt-8">
-            {facebookData ? renderFacebookData(facebookData) : <p className="text-gray-400">No Facebook data loaded yet.</p>}
+            {facebookData ? (
+              renderFacebookData(facebookData)
+            ) : (
+              <p className="text-gray-400">No Facebook data loaded yet.</p>
+            )}
           </div>
         </div>
       )}
@@ -662,4 +794,4 @@ const Services = () => {
   );
 };
 
-export default Services;  
+export default Services;
