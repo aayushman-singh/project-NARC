@@ -36,7 +36,7 @@ const ServicesMain = () => {
         <h1 className="text-7xl  font-bold text-center bg-clip-text text-transparent text-white mb-12">
           Choose Your Investigation Path
         </h1>
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-4 gap-8 max-w-6xl mx-auto">
           <GlassCard
             title="Social Media Investigation Tools"
             description="Access our cutting-edge tools designed specifically for investigating social media platforms. "
@@ -55,6 +55,13 @@ const ServicesMain = () => {
             buttonText="Start Profile Analysis"
             buttonLink="/profileAnalysis"
           />
+          <GlassCard
+            title="Data Exploration"
+            description="Explore user profiles and posts through comprehensive data collection. Gain a deeper understanding of user interactions and content trends."
+            buttonText="Explore Past Data"
+            buttonLink="/pastdata"
+          />
+
         </div>
       </div>
     </div>
