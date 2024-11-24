@@ -4,16 +4,16 @@ import 'package:tattletale/utils/routes.dart';
 
 
 class OnboardingPage extends StatelessWidget {
-  const OnboardingPage({Key? key}) : super(key: key);
+  const OnboardingPage({super.key});
 
   @override
   Widget build(BuildContext context) {
-    return OnboardingScreen();
+    return const OnboardingScreen();
   }
 }
 
 class OnboardingScreen extends StatefulWidget {
-  const OnboardingScreen({Key? key}) : super(key: key);
+  const OnboardingScreen({super.key});
 
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
@@ -156,7 +156,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
         if (isFirst)
           Column(
             children: [
-              Container(
+              SizedBox(
                 height: 150,
                 width: 150,
                 child: Image.asset('assets/logo.png'),
@@ -205,14 +205,14 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   onTap: () {
                     navigateTo(context, Routes.home);
                   },
-                  child: Column(
+                  child: const Column(
                     children: [
-                      const Icon(
+                      Icon(
                         Icons.arrow_right,
                         size: 200,
                         color: Colors.blue,
                       ),
-                      const SizedBox(height: 10),
+                      SizedBox(height: 10),
                      
                     ],
                   ),

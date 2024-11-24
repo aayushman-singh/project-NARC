@@ -69,7 +69,7 @@ class HomePage extends StatelessWidget {
               style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
             ),
             const SizedBox(height: 20),
-            Container(
+            SizedBox(
               width: screenSize.width * 0.9,
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceEvenly,
@@ -111,11 +111,10 @@ class InfoCard extends StatelessWidget {
   final void Function() link;
 
   InfoCard(
-      {Key? key,
+      {super.key,
       required this.title,
       required this.description,
-      required this.link})
-      : super(key: key);
+      required this.link});
 
   @override
   Widget build(BuildContext context) {
@@ -142,7 +141,9 @@ class InfoCard extends StatelessWidget {
               ),
               ElevatedButton(
                 onPressed: () {
-                  print('clicked');
+                  if (kDebugMode) {
+                    print('clicked');
+                  }
                   link();
                 },
                 child: const Text('Navigate'),
