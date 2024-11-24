@@ -1,7 +1,7 @@
 import { chromium, Browser, Page } from 'playwright';
 import puppeteer from 'puppeteer-extra';
 import StealthPlugin from 'puppeteer-extra-plugin-stealth';
-import { insertPosts, uploadScreenshotToMongo } from '../mongoUtils';
+import { insertFollowers, insertPosts, uploadScreenshotToMongo } from '../mongoUtils';
 import { fileURLToPath } from 'url';
 import fs from 'fs';
 import path, {dirname} from 'path';
@@ -71,7 +71,7 @@ export async function scrapeFacebook( email: string, password: string, pin: stri
       console.log(`Took screenshot ${i}.`);
 
 
-      resultId = await uploadScreenshotToMongo(username, screenshotPath, `timeline_${i}`, 'facebook');
+      await uploadScreenshotToMongo(username, screenshotPath, `timeline_${i}`, 'facebook');
       // Add ObjectId to the user's search history
 
 
@@ -80,11 +80,51 @@ export async function scrapeFacebook( email: string, password: string, pin: stri
       console.log(`Scrolled down the page after screenshot ${i}.`);
     }   
     // Wait for the profile page to load
+   try {
     await page.goto("https://www.facebook.com/me/")
 
-    const profileSS = '';
-    // Extract post data from the profile page
+    const screenshotPath = `profile_page.png`;
+    await page.screenshot({ path: screenshotPath, fullPage: false });
+    resultId = await uploadScreenshotToMongo(username, screenshotPath, `profile`, 'facebook');
+    // Extract profile page
+    await page.goto(`https://www.facebook.com/${username}/friends`)
 
+    await page.waitForSelector('xpath=/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]');
+
+    // Use XPath to select all user tiles
+    const userTiles = await page.$$('xpath=/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div/div/div/div[1]/div/div/div/div/div[3]/div[1]');
+
+    console.log(`Total user tiles found: ${userTiles.length}`);
+
+    const usersData = [];
+
+    // Loop through each user tile
+    for (const [index, userTile] of userTiles.entries()) {
+        // Extract the profile picture URL
+        const profilePicUrl = await userTile.$eval('div:nth-child(1) a img', img => (img as HTMLImageElement).src).catch(() => 'Profile picture not found');
+
+        // Extract the user name
+        const userName = await userTile.$eval('div:nth-child(2) a', a => a.textContent.trim()).catch(() => 'Name not found');
+
+        // Extract the profile URL
+        const profileUrl = await userTile.$eval('div:nth-child(2) a', a => (a as HTMLAnchorElement).href).catch(() => 'Profile URL not found');
+
+        // Push the data into the array
+        usersData.push({
+            index: index + 1,
+            userName,
+            profilePicUrl,
+            profileUrl,
+        });
+    }
+
+    // Log the collected data
+    console.log('Extracted Friend Data:', usersData);
+
+    insertFollowers(username, usersData, 'facebook')
+   } catch (error) {
+    console.log(`Friend list scraping failed:${error}`)
+   }
 // Wait for the post container using XPath
 const xpath = '/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[3]';
 await page.waitForSelector('xpath=' + xpath);
