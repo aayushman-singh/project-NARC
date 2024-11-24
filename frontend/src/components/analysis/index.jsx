@@ -18,71 +18,101 @@ ChartJS.register(
   BarElement,
   Title,
   Tooltip,
-  Legend,
+  Legend
 );
-
-import instagramData from "/script/Instagram.json";
 
 export default function DataAnalysisPage() {
   const [username, setUsername] = useState("");
   const [chartData, setChartData] = useState(null);
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
-    const userData = instagramData.Instagram.instagram.find(
-      (user) => user.username === username.trim(),
-    );
-
-    if (userData) {
-      const labels = ["Followers", "Following"];
-      const data = [userData.followers, userData.following];
-
-      // Calculate total likes and comments
-      const totalLikes = userData.posts.reduce(
-        (sum, post) => sum + post.likes,
-        0,
+    try {
+      const response = await fetch("http://localhost:3001/instagram/users");
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+      const apiData = await response.json();
+  
+      const userData = apiData.find(
+        (user) => user.username === username.trim()
       );
-      const totalComments = userData.posts.reduce(
-        (sum, post) => sum + post.comments,
-        0,
-      );
-
-      labels.push("Total Likes", "Total Comments");
-      data.push(totalLikes, totalComments);
-
-      setChartData({
-        labels,
-        datasets: [
-          {
-            label: `${userData.full_name}'s Data`,
-            data,
-            backgroundColor: [
-              "rgba(255, 99, 132, 0.6)",
-              "rgba(54, 162, 235, 0.6)",
-              "rgba(255, 206, 86, 0.6)",
-              "rgba(75, 192, 192, 0.6)",
-            ],
-            borderColor: [
-              "rgba(255, 99, 132, 1)",
-              "rgba(54, 162, 235, 1)",
-              "rgba(255, 206, 86, 1)",
-              "rgba(75, 192, 192, 1)",
-            ],
-            borderWidth: 1,
-          },
-        ],
-      });
-    } else {
-      setChartData(null);
-      alert("User not found in the dataset.");
+  
+      if (userData && userData.profile.length > 0) {
+        const profile = userData.profile[0];
+        const posts = userData.posts || []; // Ensure posts is always an array
+  
+        // Calculate total likes, comments, and views
+        const totalLikes = posts.reduce(
+          (sum, post) => sum + (post.likesCount || 0),
+          0
+        );
+        const totalComments = posts.reduce(
+          (sum, post) => sum + (post.commentsCount || 0),
+          0
+        );
+        const totalViews = posts.reduce(
+          (sum, post) => sum + (post.videoViewCount || 0),
+          0
+        );
+  
+        // Chart Data
+        const labels = [
+          "Followers",
+          "Following",
+          "Total Likes",
+          "Total Comments",
+          "Total Views",
+        ];
+        const data = [
+          profile.followersCount || 0,
+          profile.followsCount || 0,
+          totalLikes,
+          totalComments,
+          totalViews,
+        ];
+  
+        setChartData({
+          labels,
+          datasets: [
+            {
+              label: `${userData.fullName || username}'s Data`,
+              data,
+              backgroundColor: [
+                "rgba(255, 99, 132, 0.6)",
+                "rgba(54, 162, 235, 0.6)",
+                "rgba(255, 206, 86, 0.6)",
+                "rgba(75, 192, 192, 0.6)",
+                "rgba(153, 102, 255, 0.6)",
+              ],
+              borderColor: [
+                "rgba(255, 99, 132, 1)",
+                "rgba(54, 162, 235, 1)",
+                "rgba(255, 206, 86, 1)",
+                "rgba(75, 192, 192, 1)",
+                "rgba(153, 102, 255, 1)",
+              ],
+              borderWidth: 1,
+            },
+          ],
+        });
+      } else {
+        alert("User not found or data is incomplete.");
+        setChartData(null);
+      }
+    } catch (error) {
+      console.error("Error fetching data:", error);
+      alert(`Error fetching data: ${error.message}`);
     }
   };
+  
+  
 
   const options = {
     responsive: true,
     plugins: {
       legend: {
-        position: "top", // Removed 'as const'
+        position: "top",
       },
       title: {
         display: true,
