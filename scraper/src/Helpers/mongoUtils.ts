@@ -1,9 +1,9 @@
-import { MongoClient, GridFSBucket, ObjectId } from 'mongodb';
-import fs from 'fs/promises';
-import path from 'path';
-import { S3Client, PutObjectCommand } from '@aws-sdk/client-s3';
-import { errors } from 'playwright';
-import '../../../config.js';
+import { MongoClient, GridFSBucket, ObjectId } from "mongodb";
+import fs from "fs/promises";
+import path from "path";
+import { S3Client, PutObjectCommand } from "@aws-sdk/client-s3";
+import { errors } from "playwright";
+import "../../../config.js";
 
 const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri as string);
@@ -17,11 +17,16 @@ const s3 = new S3Client({
     },
 });
 
-export const updateUserHistory = async (userId, phoneNumber, resultId, platform) => {
+export const updateUserHistory = async (
+    userId,
+    phoneNumber,
+    resultId,
+    platform,
+) => {
     const client = new MongoClient(process.env.MONGO_URI as string);
     try {
         await client.connect();
-        const database = client.db('test').collection('users');
+        const database = client.db("test").collection("users");
 
         // Convert `userId` to ObjectId
         const objectId = new ObjectId(userId);
@@ -38,16 +43,16 @@ export const updateUserHistory = async (userId, phoneNumber, resultId, platform)
                     },
                 },
             },
-            { upsert: false } // Ensure the document exists or is created
+            { upsert: false }, // Ensure the document exists or is created
         );
 
         if (updateResult.matchedCount > 0 || updateResult.upsertedCount > 0) {
-            console.log('Updated user search history successfully.');
+            console.log("Updated user search history successfully.");
         } else {
-            console.error('User not found.');
+            console.error("User not found.");
         }
     } catch (error) {
-        console.error('Error updating user search history:', error);
+        console.error("Error updating user search history:", error);
         throw error;
     } finally {
         await client.close();
@@ -124,34 +129,38 @@ interface InstagramUserDocument extends Document {
 }
 
 // Function to read the file, convert to base64, and store it in MongoDB
-export async function uploadScreenshotToMongo(username: string, screenshotPath: string, fieldName: string, platform: string) {
+export async function uploadScreenshotToMongo(
+    username: string,
+    screenshotPath: string,
+    fieldName: string,
+    platform: string,
+) {
     try {
         // Connect to MongoDB
         await client.connect();
         const database = client.db(`${platform}DB`);
         const collection = database.collection(`${platform}_users`);
-        
+
         const fileName = path.basename(screenshotPath); // Use the file name as the S3 key
         const s3Key = `${username}/${fieldName}/${platform}/${fileName}`;
-        const s3Url = await uploadToS3(screenshotPath, s3Key)
-       
+        const s3Url = await uploadToS3(screenshotPath, s3Key);
+
         const result = await collection.findOneAndUpdate(
-            { username: username },  // Match document by username
-            { 
+            { username: username }, // Match document by username
+            {
                 $set: {
-                 [fieldName]: s3Url 
-                } 
-            },  
-            { 
+                    [fieldName]: s3Url,
+                },
+            },
+            {
                 upsert: true,
-                returnDocument: 'after' 
-             }  
-            
+                returnDocument: "after",
+            },
         );
 
-        console.log(`${fieldName} screenshot uploaded successfully for ${username}.`);
-        
-
+        console.log(
+            `${fieldName} screenshot uploaded successfully for ${username}.`,
+        );
     } catch (error) {
         console.error(`Error uploading screenshot for ${username}:`, error);
     } finally {
@@ -161,7 +170,13 @@ export async function uploadScreenshotToMongo(username: string, screenshotPath: 
 }
 
 // Modified uploadChats function
-export async function uploadChats(username: string, receiverUsername: string, screenshotPaths: string[], chatLogURL: string, platform:string) {
+export async function uploadChats(
+    username: string,
+    receiverUsername: string,
+    screenshotPaths: string[],
+    chatLogURL: string,
+    platform: string,
+) {
     try {
         await client.connect();
         const db = client.db(`${platform}DB`);
@@ -189,39 +204,59 @@ export async function uploadChats(username: string, receiverUsername: string, sc
                     },
                 },
             },
-            { upsert: true }
+            { upsert: true },
         );
 
-        console.log(`Screenshots uploaded to MongoDB for ${username} -> ${receiverUsername}`);
+        console.log(
+            `Screenshots uploaded to MongoDB for ${username} -> ${receiverUsername}`,
+        );
     } catch (error) {
-        console.error('Error uploading screenshots to MongoDB:', error);
+        console.error("Error uploading screenshots to MongoDB:", error);
     } finally {
         await client.close();
     }
 }
 
-export async function insertFollowers(username: string, followersData: any, platform: string) {
+export async function insertFollowers(
+    username: string,
+    followersData: any,
+    platform: string,
+) {
     try {
         await client.connect();
         const database = client.db(`${platform}DB`);
         const collection = database.collection(`${platform}_users`);
-
+        const fieldKey = platform === "facebook" ? "friends" : "followers";
+        const updateObject = { [fieldKey]: followersData };
         // Insert or update the document under the username
         await collection.updateOne(
             { username: username },
-            { $set: { followers: followersData } },
-            { upsert: true }
+            {
+                $set: {
+                    updateObject,
+                },
+            },
+            { upsert: true },
         );
 
-        console.log(`Successfully inserted following data for ${username} into ${platform}DB.`);
+        console.log(
+            `Successfully inserted following data for ${username} into ${platform}DB.`,
+        );
     } catch (error) {
-        console.error(`Error inserting following data into ${platform}DB:`, error);
+        console.error(
+            `Error inserting following data into ${platform}DB:`,
+            error,
+        );
     } finally {
         await client.close();
     }
 }
 
-export async function insertFollowing(username: string, followingData: any, platform: string) {
+export async function insertFollowing(
+    username: string,
+    followingData: any,
+    platform: string,
+) {
     try {
         await client.connect();
         const database = client.db(`${platform}DB`);
@@ -231,18 +266,27 @@ export async function insertFollowing(username: string, followingData: any, plat
         await collection.updateOne(
             { username: username },
             { $set: { following: followingData } },
-            { upsert: true }
+            { upsert: true },
         );
 
-        console.log(`Successfully inserted following data for ${username} into ${platform}DB.`);
+        console.log(
+            `Successfully inserted following data for ${username} into ${platform}DB.`,
+        );
     } catch (error) {
-        console.error(`Error inserting following data into ${platform}DB:`, error);
+        console.error(
+            `Error inserting following data into ${platform}DB:`,
+            error,
+        );
     } finally {
         await client.close();
     }
 }
 
-export async function insertPosts(username: string, posts: any[], platform: string): Promise<void> {
+export async function insertPosts(
+    username: string,
+    posts: any[],
+    platform: string,
+): Promise<void> {
     if (!posts || posts.length === 0) {
         console.log(`No posts to insert for user: ${username}`);
         return;
@@ -251,71 +295,98 @@ export async function insertPosts(username: string, posts: any[], platform: stri
     try {
         await client.connect();
         const db = client.db(`${platform}DB`); // Platform specific database
-        const collection = db.collection<InstagramUserDocument>(`${platform}_users`); // Platform specific collection
+        const collection = db.collection<InstagramUserDocument>(
+            `${platform}_users`,
+        ); // Platform specific collection
 
         // Perform a single update to push all posts into the user's posts array
         const result = await collection.findOneAndUpdate(
-            { username: username },  // Match document by username
-            { 
-                $addToSet: { posts: { $each: posts } }  // Append posts uniquely
+            { username: username }, // Match document by username
+            {
+                $addToSet: { posts: { $each: posts } }, // Append posts uniquely
             },
-            { upsert: true, returnDocument: 'after' }  // Create the document if it doesn't exist
+            { upsert: true, returnDocument: "after" }, // Create the document if it doesn't exist
         );
 
         if (result.value) {
-            console.log(`Posts successfully updated/inserted for user: ${username}`);
+            console.log(
+                `Posts successfully updated/inserted for user: ${username}`,
+            );
         } else {
-            console.warn(`User document for ${username} was upserted, but no value was returned.`);
+            console.warn(
+                `User document for ${username} was upserted, but no value was returned.`,
+            );
         }
     } catch (error) {
-        console.error(`Failed to update/insert posts for user ${username}:`, error);
+        console.error(
+            `Failed to update/insert posts for user ${username}:`,
+            error,
+        );
     } finally {
         await client.close();
     }
 }
 
-
-export async function insertMessages(username: string, filePath: string,receiverUsername:string, platform: string) {
+export async function insertMessages(
+    username: string,
+    filePath: string,
+    receiverUsername: string,
+    platform: string,
+) {
     await client.connect();
     const db = client.db(`${platform}DB`);
-    const collection = db.collection<InstagramUserDocument>(`${platform}_users`);
+    const collection = db.collection<InstagramUserDocument>(
+        `${platform}_users`,
+    );
 
-    try { 
+    try {
         const fileName = path.basename(filePath); // Use the file name as the S3 key
-      
-        const s3Key =  `${username}/${receiverUsername}/${fileName}`;;
-        const s3Url = uploadToS3(filePath, s3Key); 
+
+        const s3Key = `${username}/${receiverUsername}/${fileName}`;
+        const s3Url = uploadToS3(filePath, s3Key);
         // Update or insert the user's messages into the 'messages' array
         await collection.updateOne(
             { username: username },
             { $push: { messages: s3Url } },
-            { upsert: true }
+            { upsert: true },
         );
-    } catch (error:any) {
+    } catch (error: any) {
         console.error(`Failed to upload messages: ${error.message}`);
     }
 }
 
-export async function insertTweets(username: string, tweets: Tweet[], platform: string) {
+export async function insertTweets(
+    username: string,
+    tweets: Tweet[],
+    platform: string,
+) {
     await client.connect();
     const db = client.db(`${platform}DB`); // Platform specific database
-    const collection = db.collection<InstagramUserDocument>(`${platform}_users`); // Platform specific collection
+    const collection = db.collection<InstagramUserDocument>(
+        `${platform}_users`,
+    ); // Platform specific collection
 
     // Update or insert the user's posts into the 'tweets' array
     await collection.updateOne(
         { username: username }, // Find document by username
         { $push: { tweets: { $each: tweets } } }, // Append tweets to the 'tweets' array
-        { upsert: true } // Insert the document if it doesn't exist
+        { upsert: true }, // Insert the document if it doesn't exist
     );
 }
 
-export async function insertMeta(collectionName: string, data: any[], platform: string) {
+export async function insertMeta(
+    collectionName: string,
+    data: any[],
+    platform: string,
+) {
     try {
         await client.connect();
-        const db = client.db(`${platform}DB`); 
+        const db = client.db(`${platform}DB`);
         const collection = db.collection(collectionName);
         await collection.insertMany(data);
-        console.log(`Data successfully inserted into MongoDB collection: ${collectionName}`);
+        console.log(
+            `Data successfully inserted into MongoDB collection: ${collectionName}`,
+        );
     } catch (error) {
         console.error(`Error inserting data into ${platform}DB:`, error);
     } finally {
@@ -323,10 +394,13 @@ export async function insertMeta(collectionName: string, data: any[], platform: 
     }
 }
 
-export async function insertInstagramProfile(username: string, profile: InstagramProfile) {
+export async function insertInstagramProfile(
+    username: string,
+    profile: InstagramProfile,
+) {
     await client.connect();
-    const db = client.db('instagramDB'); // Your database name
-    const collection = db.collection<InstagramUserDocument>('instagram_users'); // Collection for all users
+    const db = client.db("instagramDB"); // Your database name
+    const collection = db.collection<InstagramUserDocument>("instagram_users"); // Collection for all users
 
     // Update or insert the user's profile and posts
     await collection.updateOne(
@@ -334,6 +408,6 @@ export async function insertInstagramProfile(username: string, profile: Instagra
         {
             $set: { profile: profile }, // Update or insert the profile information
         },
-        { upsert: true } // Insert the document if it doesn't exist
+        { upsert: true }, // Insert the document if it doesn't exist
     );
 }
