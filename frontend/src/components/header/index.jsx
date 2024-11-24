@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { Link as ScrollLink } from 'react-scroll';
-import { Link, useNavigate, useLocation } from 'react-router-dom';
+import React, { useState, useRef, useEffect } from "react";
+import { Link as ScrollLink } from "react-scroll";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 
 const Header = () => {
   const navigate = useNavigate();
@@ -10,7 +10,7 @@ const Header = () => {
   const dropdownRef = useRef(null);
 
   const checkUserAuth = () => {
-    const storedUserInfo = localStorage.getItem('userInfo');
+    const storedUserInfo = localStorage.getItem("userInfo");
     if (storedUserInfo) {
       setUser(JSON.parse(storedUserInfo));
     } else {
@@ -20,10 +20,10 @@ const Header = () => {
 
   useEffect(() => {
     checkUserAuth();
-    window.addEventListener('storage', checkUserAuth);
+    window.addEventListener("storage", checkUserAuth);
 
     return () => {
-      window.removeEventListener('storage', checkUserAuth);
+      window.removeEventListener("storage", checkUserAuth);
     };
   }, []);
 
@@ -32,9 +32,9 @@ const Header = () => {
   }, [location]);
 
   const handleLogout = () => {
-    localStorage.removeItem('userInfo');
+    localStorage.removeItem("userInfo");
     setUser(null);
-    navigate('/');
+    navigate("/");
   };
 
   const isActive = (path) => location.pathname === path;
@@ -51,11 +51,11 @@ const Header = () => {
     };
 
     if (dropdownOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
+      document.addEventListener("mousedown", handleClickOutside);
     }
 
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
+      document.removeEventListener("mousedown", handleClickOutside);
     };
   }, [dropdownOpen]);
 
@@ -63,11 +63,7 @@ const Header = () => {
     <nav className="fixed top-0 left-0 w-full z-50 h-16 bg-black/30 backdrop-blur-lg shadow-lg flex justify-between items-center px-8 transition-all duration-300">
       <div className="flex items-center space-x-1">
         <Link to="/home">
-          <img
-            src="/images/logo/logo.png"
-            alt="Logo"
-            className="h-10"
-          />
+          <img src="/images/logo/logo.png" alt="Logo" className="h-10" />
         </Link>
         <div className="text-2xl font-bold text-white font-montserrat cursor-pointer">
           <Link to="/home" className="hover:text-blue-400 transition-colors">

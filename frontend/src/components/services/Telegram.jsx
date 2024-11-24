@@ -1,12 +1,18 @@
-import React, { useState } from 'react';
-import { ChevronDown, ChevronUp, X, ExternalLink, Image as ImageIcon } from 'lucide-react';
+import React, { useState } from "react";
+import {
+  ChevronDown,
+  ChevronUp,
+  X,
+  ExternalLink,
+  Image as ImageIcon,
+} from "lucide-react";
 
 const TelegramChat = ({ chat, index }) => {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
 
   const toggleMedia = () => setIsMediaExpanded(!isMediaExpanded);
-  
+
   const openImageViewer = (image) => setSelectedImage(image);
   const closeImageViewer = () => setSelectedImage(null);
 
@@ -19,7 +25,9 @@ const TelegramChat = ({ chat, index }) => {
               {chat.receiverUsername.charAt(0).toUpperCase()}
             </span>
           </div>
-          <h3 className="text-xl font-bold text-white">{chat.receiverUsername}</h3>
+          <h3 className="text-xl font-bold text-white">
+            {chat.receiverUsername}
+          </h3>
         </div>
       </div>
 
@@ -46,7 +54,9 @@ const TelegramChat = ({ chat, index }) => {
 
             <div
               className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4 transition-all duration-300 ease-in-out ${
-                isMediaExpanded ? 'opacity-100 max-h-[1000px]' : 'opacity-0 max-h-0 overflow-hidden'
+                isMediaExpanded
+                  ? "opacity-100 max-h-[1000px]"
+                  : "opacity-0 max-h-0 overflow-hidden"
               }`}
             >
               {chat.media_files.map((mediaFile, idx) => (
@@ -62,7 +72,9 @@ const TelegramChat = ({ chat, index }) => {
                     loading="lazy"
                   />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end justify-center p-3">
-                    <span className="text-white text-sm font-medium">View Full</span>
+                    <span className="text-white text-sm font-medium">
+                      View Full
+                    </span>
                   </div>
                 </div>
               ))}

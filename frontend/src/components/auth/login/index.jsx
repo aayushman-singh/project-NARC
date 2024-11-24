@@ -1,15 +1,15 @@
-import React, { useState } from 'react';
-import { Navigate, Link } from 'react-router-dom';
-import { useDispatch } from 'react-redux';
-import { setUserInfo } from '../../../features/userSlice';
-import axios from 'axios';
+import React, { useState } from "react";
+import { Navigate, Link } from "react-router-dom";
+import { useDispatch } from "react-redux";
+import { setUserInfo } from "../../../features/userSlice";
+import axios from "axios";
 
 const Login = () => {
   const dispatch = useDispatch();
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [isSigningIn, setIsSigningIn] = useState(false);
-  const [errorMessage, setErrorMessage] = useState('');
+  const [errorMessage, setErrorMessage] = useState("");
   const [loading, setLoading] = useState(false);
 
   const handleLogin = async (e) => {
@@ -19,17 +19,20 @@ const Login = () => {
     setLoading(true);
 
     try {
-      const response = await axios.post('http://localhost:5001/api/users/login', {
-        email,
-        password,
-      });
+      const response = await axios.post(
+        "http://localhost:5001/api/users/login",
+        {
+          email,
+          password,
+        },
+      );
 
       if (response.data) {
         dispatch(setUserInfo(response.data));
-        localStorage.setItem('userInfo', JSON.stringify(response.data));
+        localStorage.setItem("userInfo", JSON.stringify(response.data));
       }
     } catch (error) {
-      setErrorMessage('Invalid credentials, please try again.');
+      setErrorMessage("Invalid credentials, please try again.");
       console.error(error);
     } finally {
       setIsSigningIn(false);
@@ -37,7 +40,7 @@ const Login = () => {
     }
   };
 
-  if (localStorage.getItem('userInfo')) {
+  if (localStorage.getItem("userInfo")) {
     return <Navigate to="/home" replace={true} />;
   }
 
@@ -47,7 +50,9 @@ const Login = () => {
         <div className="w-96 bg-gray-800 text-gray-300 space-y-5 p-6 shadow-2xl border border-gray-700 rounded-xl">
           <div className="text-center">
             <div className="mt-2">
-              <h3 className="text-gray-100 text-xl font-semibold sm:text-2xl">Welcome Back</h3>
+              <h3 className="text-gray-100 text-xl font-semibold sm:text-2xl">
+                Welcome Back
+              </h3>
             </div>
           </div>
 
@@ -65,7 +70,9 @@ const Login = () => {
             </div>
 
             <div>
-              <label className="text-sm text-gray-400 font-bold">Password</label>
+              <label className="text-sm text-gray-400 font-bold">
+                Password
+              </label>
               <input
                 type="password"
                 autoComplete="current-password"
@@ -85,17 +92,20 @@ const Login = () => {
               disabled={isSigningIn || loading}
               className={`w-full px-4 py-2 text-white font-medium rounded-lg ${
                 isSigningIn || loading
-                  ? 'bg-gray-600 cursor-not-allowed'
-                  : 'bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition duration-300'
+                  ? "bg-gray-600 cursor-not-allowed"
+                  : "bg-indigo-600 hover:bg-indigo-700 hover:shadow-xl transition duration-300"
               }`}
             >
-              {isSigningIn || loading ? 'Signing In...' : 'Sign In'}
+              {isSigningIn || loading ? "Signing In..." : "Sign In"}
             </button>
           </form>
 
           <p className="text-center text-sm">
-            Don't have an account?{' '}
-            <Link to="/register" className="hover:underline font-bold text-indigo-400">
+            Don't have an account?{" "}
+            <Link
+              to="/register"
+              className="hover:underline font-bold text-indigo-400"
+            >
               Sign up
             </Link>
           </p>
@@ -109,14 +119,19 @@ const Login = () => {
           {/* Add Google Sign-in functionality if required */}
           <button
             disabled={isSigningIn || loading}
-            onClick={() => console.log('Google Sign-in not implemented')}
+            onClick={() => console.log("Google Sign-in not implemented")}
             className={`w-full flex items-center justify-center gap-x-3 py-2.5 border border-gray-700 rounded-lg text-sm font-medium ${
               isSigningIn || loading
-                ? 'cursor-not-allowed'
-                : 'hover:bg-gray-700 transition duration-300 active:bg-gray-800'
+                ? "cursor-not-allowed"
+                : "hover:bg-gray-700 transition duration-300 active:bg-gray-800"
             }`}
           >
-            <svg className="w-5 h-5" viewBox="0 0 48 48" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <svg
+              className="w-5 h-5"
+              viewBox="0 0 48 48"
+              fill="none"
+              xmlns="http://www.w3.org/2000/svg"
+            >
               <g clipPath="url(#clip0_17_40)">
                 <path
                   d="M47.532 24.5528C47.532 22.9214 47.3997 21.2811 47.1175 19.6761H24.48V28.9181H37.4434C36.9055 31.8988 35.177 34.5356 32.6461 36.2111V42.2078H40.3801C44.9217 38.0278 47.532 31.8547 47.532 24.5528Z"
@@ -141,7 +156,7 @@ const Login = () => {
                 </clipPath>
               </defs>
             </svg>
-            {isSigningIn || loading ? 'Signing In...' : 'Continue with Google'}
+            {isSigningIn || loading ? "Signing In..." : "Continue with Google"}
           </button>
         </div>
       </main>

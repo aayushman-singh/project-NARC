@@ -1,5 +1,5 @@
-import React, { useEffect, useRef } from 'react';
-import gsap from 'gsap';
+import React, { useEffect, useRef } from "react";
+import gsap from "gsap";
 
 const CursorFollower = () => {
   const cursorRef = useRef(null);
@@ -11,16 +11,16 @@ const CursorFollower = () => {
         x: e.clientX,
         y: e.clientY,
         duration: 0.2, // Controls the smoothness of the animation
-        ease: 'power2.out',
+        ease: "power2.out",
       });
     };
 
     // Add event listener for mouse movement
-    window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener("mousemove", handleMouseMove);
 
     // Cleanup event listener when component unmounts
     return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener("mousemove", handleMouseMove);
     };
   }, []);
 
