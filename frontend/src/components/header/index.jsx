@@ -1,7 +1,7 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Link as ScrollLink } from "react-scroll";
 import { Link, useNavigate, useLocation } from "react-router-dom";
-
+import { Search, Database, Clock, UserCheck } from 'lucide-react';
 const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
@@ -104,30 +104,42 @@ const Header = () => {
                 </svg>
               </button>
               {dropdownOpen && (
-                <div className="absolute right-0 mt-2 w-48 bg-gray-800 rounded-lg shadow-lg z-50">
-                  <Link
-                    to="/services"
-                    className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    Social Media Investigation Tools
-                  </Link>
-                  <Link
-                    to="/osint"
-                    className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    OSINT Tools
-                  </Link>
-                  <Link
-                    to="/pastData"
-                    className="block px-4 py-2 text-sm text-white hover:bg-gray-700 transition-colors"
-                    onClick={() => setDropdownOpen(false)}
-                  >
-                    Past Data
-                  </Link>
-                </div>
-              )}
+  <div className="absolute right-0  mt-2 w-64 bg-gray-800 rounded-lg shadow-lg z-50">
+    <Link
+      to="/services"
+      className="flex items-center px-4 py-3 text-sm text-white hover:bg-gray-700 transition-colors"
+      onClick={() => setDropdownOpen(false)}
+    >
+      <Search className="mr-3 h-5 w-5 text-blue-400" />
+      <span>Social Media Investigation Tools</span>
+    </Link>
+    <Link
+      to="/osint"
+      className="flex items-center px-4 py-3 text-sm text-white hover:bg-gray-700 transition-colors"
+      onClick={() => setDropdownOpen(false)}
+    >
+      <Database className="mr-3 h-5 w-5 text-blue-400" />
+      <span>OSINT Tools</span>
+    </Link>
+    <Link
+      to="/pastData"
+      className="flex items-center px-4 py-3 text-sm text-white hover:bg-gray-700 transition-colors"
+      onClick={() => setDropdownOpen(false)}
+    >
+      <Clock className="mr-3 h-5 w-5 text-blue-400" />
+      <span>Past Data</span>
+    </Link>
+    <Link
+      to="/profileAnalysis"
+      className="flex items-center px-4 py-3 text-sm text-white hover:bg-gray-700 transition-colors"
+      onClick={() => setDropdownOpen(false)}
+    >
+      <UserCheck className="mr-3 h-5 w-5 text-blue-400" />
+      <span>Profile Analysis</span>
+    </Link>
+  </div>
+)}
+
             </div>
 
             <ScrollLink
