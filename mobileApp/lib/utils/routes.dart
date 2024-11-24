@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:tattletale/screens/auth_page.dart';
 import 'package:tattletale/screens/onboarding_page.dart';
-import '../screens/home_page.dart';
+import 'package:tattletale/screens/home_page.dart';
 import '../screens/profile_page.dart';
 import '../screens/social_media_page.dart';
 import '../screens/osint_page.dart';
@@ -16,6 +17,7 @@ class Routes {
   static const String pastData = '/pastData';
   static const String analysis = '/analysis';
   static const String onboarding = '/onboarding';
+  static const String auth = '/auth';
 
   static Map<String, WidgetBuilder> routes = {
     home: (context) => const HomePage(),
@@ -25,6 +27,8 @@ class Routes {
     pastData: (context) => const PastDataPage(),
     analysis: (context) => const AnalysisPage(),
     onboarding: (context) => const OnboardingPage(),
+    auth: (context) => const AuthScreen(),
+
   };
 }
 
