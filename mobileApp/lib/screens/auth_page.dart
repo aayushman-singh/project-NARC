@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:tattletale/utils/routes.dart';
 
 class AuthScreen extends StatefulWidget {
-  const AuthScreen({Key? key}) : super(key: key);
+  const AuthScreen({super.key});
 
   @override
   State<AuthScreen> createState() => _AuthScreenState();
@@ -11,6 +12,7 @@ class AuthScreen extends StatefulWidget {
 
 class _AuthScreenState extends State<AuthScreen> {
   final _emailController = TextEditingController();
+  final _nameController = TextEditingController();
   final _passwordController = TextEditingController();
   final _storage = const FlutterSecureStorage();
   bool isLogin = true;
@@ -23,19 +25,19 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> authenticate() async {
     final url = isLogin
-        ? 'http://localhost:5000/login'
-        : 'http://localhost:5000/signup';
+        ? 'http://localhost:5001/login'
+        : 'http://localhost:5001/signup';
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
-      body: '{"email": "${_emailController.text}", "password": "${_passwordController.text}"}',
+      body: '{"name": "${_nameController.text}","email": "${_emailController.text}", "password": "${_passwordController.text}"}',
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
       final token = isLogin ? response.body.split('"token":"')[1].split('"')[0] : null;
       if (isLogin && token != null) {
         await _storage.write(key: 'token', value: token);
-        Navigator.pushReplacementNamed(context, '/home');
+        navigateTo(context, Routes.home);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Registration successful.')),
@@ -57,6 +59,13 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
+            isLogin ? 
+            SizedBox.shrink()
+            : TextField(
+                controller: _emailController,
+                decoration: const InputDecoration(labelText: 'Email'),
+            ),
+            const SizedBox(height: 10),
             TextField(
               controller: _emailController,
               decoration: const InputDecoration(labelText: 'Email'),
