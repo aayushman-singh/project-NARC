@@ -176,9 +176,9 @@ const Services = () => {
         <div className="mt-10">
           <h4 className="text-2xl font-bold text-pink-500 mb-6">Messages</h4>
           <div className="space-y-6">
-            {Array.isArray(instagramData.messages) &&
-            instagramData.messages.length > 0 ? (
-              instagramData.messages.map((message, index) => (
+            {Array.isArray(facebookData.messages) &&
+            facebookData.messages.length > 0 ? (
+              facebookData.messages.map((message, index) => (
                 <div
                   key={index}
                   className="bg-gray-800 p-4 rounded-lg shadow-md"
