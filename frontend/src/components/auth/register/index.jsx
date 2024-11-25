@@ -1,15 +1,12 @@
-import React, { useState } from "react";
-import { Navigate, Link, useNavigate } from "react-router-dom";
-import { useSelector, useDispatch } from "react-redux";
+import { useState } from "react";
+import {  Link, useNavigate } from "react-router-dom";
+import {  useDispatch } from "react-redux";
 import { setUserInfo } from "../../../features/userSlice";
 import axios from "axios";
 
 const Register = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-
-  // Get userInfo from Redux to check if a user is logged in
-  const userInfo = useSelector((state) => state.user.userInfo);
 
   const [formData, setFormData] = useState({
     name: "",
@@ -41,7 +38,7 @@ const Register = () => {
 
     try {
       const { data } = await axios.post(
-        "http://localhost:5001/api/users/",
+        "http://localhost:5001/api/users/signup",
         {
           name: formData.name,
           email: formData.email,
@@ -54,7 +51,7 @@ const Register = () => {
       localStorage.setItem("userInfo", JSON.stringify(data));
       navigate("/home");
     } catch (error) {
-      setErrorMessage("Registration failed. Please try again.");
+      setErrorMessage("Registration failed. Please try again."+error);
     } finally {
       setIsRegistering(false);
     }
