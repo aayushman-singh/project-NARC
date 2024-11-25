@@ -1,5 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
+import 'package:tattletale/provider/user.dart';
 import '../utils/routes.dart';
 
 class HomePage extends StatelessWidget {
@@ -7,6 +9,7 @@ class HomePage extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final userProvider = Provider.of<UserProvider>(context);
     var screenSize = MediaQuery.of(context).size;
     return Scaffold(
       appBar: AppBar(
@@ -58,22 +61,50 @@ class HomePage extends StatelessWidget {
               title: const Text('Past Data'),
               onTap: () => navigateTo(context, Routes.pastData),
             ),
+             ListTile(
+              leading: const Icon(Icons.analytics),
+              title: const Text('Profile Analysis'),
+              onTap: () => navigateTo(context, Routes.analysis),
+            ),
           ],
         ),
       ),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+      
+      body: Column(
+          mainAxisAlignment: MainAxisAlignment.start,
           children: [
-            const Text(
-              'Welcome to Tattletale',
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-            ),
-            const SizedBox(height: 20),
-            SizedBox(
-              width: screenSize.width * 0.9,
+            Padding(
+              padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 0.0),
               child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Expanded(
+                    flex: 2,
+                    child: Column(
+                      children: [
+                        const Text(
+                          'Hello,',
+                          style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
+                        ),
+                         Text(
+                          userProvider.name ?? "User",
+                          style: const TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Expanded(
+                    flex: 2,
+                    child: SizedBox(),
+                  )
+                ],
+              ),
+            ),
+            SizedBox(height: 20),
+            Expanded(
+            flex: 4,
+              child: ListView(
+               scrollDirection: Axis.horizontal,
                 children: [
                   InfoCard(
                     title: 'Social Media Investigation Tools',
@@ -96,12 +127,37 @@ class HomePage extends StatelessWidget {
                     link: () =>
                         navigateTo(context, Routes.analysis), // Pass a closure
                   ),
+                  InfoCard(
+                    title: 'Past reports',
+                    description:
+                        'Browse previously made reports and runs.',
+                    link: () =>
+                        navigateTo(context, Routes.pastData), // Pass a closure
+                  ),
                 ],
               ),
             ),
+            SizedBox(height: 20),
+            Expanded(
+              flex: 3,
+              child: Container(
+                decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(20),
+                color: Colors.blue[200],
+                ),
+              height: 300,
+              width: screenSize.width*0.9,
+              
+              child: Padding(
+                padding: const EdgeInsets.symmetric(vertical: 40,horizontal: 20.0),
+                child: const Text('datadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadata'),
+              ),
+              ),
+            ),
+            SizedBox(height: 100)
           ],
         ),
-      ),
+      
     );
   }
 }
@@ -126,8 +182,7 @@ class InfoCard extends StatelessWidget {
       child: Card(
         elevation: 5,
         child: SizedBox(
-          width: screenSize.width * 0.2,
-          height: screenSize.height * 0.7,
+          width: screenSize.width * 0.35,
           child: Column(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [

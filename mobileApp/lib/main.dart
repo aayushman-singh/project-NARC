@@ -1,25 +1,25 @@
 import 'package:flutter/material.dart';
-import 'package:tattletale/screens/home_page.dart';
-import 'package:tattletale/screens/onboarding_page.dart';
-import 'package:tattletale/screens/osint_page.dart';
-import 'package:tattletale/screens/past_data_page.dart';
-import 'package:tattletale/screens/profile_page.dart';
-import 'package:tattletale/screens/social_media_page.dart';
-import 'package:tattletale/screens/splash_screen_page.dart';
 import 'package:tattletale/utils/routes.dart';
 import 'package:shared_preferences/shared_preferences.dart';
-// Assuming services.dart is the file where the Services widget is implemented
+import 'package:provider/provider.dart';
+import 'package:tattletale/provider/user.dart';
 
-void main() async{
-    WidgetsFlutterBinding.ensureInitialized();
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
   final prefs = await SharedPreferences.getInstance();
   final showOnboarding = prefs.getBool('showOnboarding') ?? true;
-  runApp(TattletaleApp(showOnboarding: showOnboarding,));
-  
+  runApp(MultiProvider(
+      providers: [
+        ChangeNotifierProvider(
+            create: (_) => UserProvider()), // Register UserProvider
+      ],
+      child: TattletaleApp(
+        showOnboarding: showOnboarding,
+      )));
 }
 
 class TattletaleApp extends StatelessWidget {
-   final bool showOnboarding;
+  final bool showOnboarding;
   const TattletaleApp({super.key, required this.showOnboarding});
 
   @override
@@ -32,9 +32,7 @@ class TattletaleApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       initialRoute: Routes.splash,
-  routes: Routes.getRoutes(),
-
-  
+      routes: Routes.getRoutes(),
     );
   }
 }
