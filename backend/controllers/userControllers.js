@@ -56,4 +56,21 @@ else{
 }
 })
 
-export { User, asyncHandler, generateToken, authUser, registerUser };
+const getUser = asyncHandler(async (req, res) => {
+    const user = await User.findById(req.user._id);
+  
+    if (user) {
+      res.json({
+        _id: user._id,
+        name: user.name,
+        email: user.email,
+        isAdmin: user.isAdmin,
+        pic: user.pic,
+      });
+    } else {
+      res.status(404);
+      throw new Error('User not found');
+    }
+  });
+  
+export { User, asyncHandler, generateToken, authUser, registerUser, getUser };
