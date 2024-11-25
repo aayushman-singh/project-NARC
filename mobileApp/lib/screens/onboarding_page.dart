@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:tattletale/screens/home_page.dart';
 import 'package:tattletale/utils/routes.dart';
 
-
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});
 
@@ -18,7 +17,6 @@ class OnboardingScreen extends StatefulWidget {
   @override
   State<OnboardingScreen> createState() => _OnboardingScreenState();
 }
-
 
 class _OnboardingScreenState extends State<OnboardingScreen> {
   final PageController _controller = PageController();
@@ -76,10 +74,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   void _skipOnboarding() {
-    Navigator.pushReplacement(
-      context,
-      MaterialPageRoute(builder: (context) => const HomePage()),
-    );
+    navigateTo(context, Routes.auth);
   }
 
   @override
@@ -98,13 +93,9 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             itemBuilder: (context, index) {
               final data = _onboardingData[index];
               return _buildOnboardingPage(
-                context,
-                data["title"]!,
-                data["text"]!,
-                data["icon"],
-                isFirst: data["isFirst"] ?? false,
-                isLast: index == _onboardingData.length - 1
-              );
+                  context, data["title"]!, data["text"]!, data["icon"],
+                  isFirst: data["isFirst"] ?? false,
+                  isLast: index == _onboardingData.length - 1);
             },
           ),
           Positioned(
@@ -147,83 +138,82 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
     );
   }
 
-  Widget _buildOnboardingPage(BuildContext context, String title, String text, IconData? icon,
-    {bool isFirst = false, bool isLast = false}) {
-  return Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        if (isFirst)
-          Column(
-            children: [
-              SizedBox(
-                height: 150,
-                width: 150,
-                child: Image.asset('assets/logo.png'),
-              ),
-              const SizedBox(height: 20),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.blue,
+  Widget _buildOnboardingPage(
+      BuildContext context, String title, String text, IconData? icon,
+      {bool isFirst = false, bool isLast = false}) {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          if (isFirst)
+            Column(
+              children: [
+                SizedBox(
+                  height: 150,
+                  width: 150,
+                  child: Image.asset('assets/logo.png'),
                 ),
-              ),
-            ],
-          )
-        else
-          Column(
-            children: [
-              if (icon != null)
-                Icon(
-                  icon,
-                  size: 100,
-                  color: Colors.blue,
-                ),
-              const SizedBox(height: 16),
-              Text(
-                title,
-                style: const TextStyle(
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Text(
-                  text,
-                  textAlign: TextAlign.center,
-                  style: const TextStyle(fontSize: 18),
-                ),
-              ),
-              if (isLast) // Add the "Get Started" arrow
                 const SizedBox(height: 20),
-              if (isLast)
-                GestureDetector(
-                  onTap: () {
-                    navigateTo(context, Routes.home);
-                  },
-                  child: const Column(
-                    children: [
-                      Icon(
-                        Icons.arrow_right,
-                        size: 200,
-                        color: Colors.blue,
-                      ),
-                      SizedBox(height: 10),
-                     
-                    ],
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 28,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.blue,
                   ),
                 ),
-            ],
-          ),
-      ],
-    ),
-  );
-}
-
+              ],
+            )
+          else
+            Column(
+              children: [
+                if (icon != null)
+                  Icon(
+                    icon,
+                    size: 100,
+                    color: Colors.blue,
+                  ),
+                const SizedBox(height: 16),
+                Text(
+                  title,
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                  child: Text(
+                    text,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(fontSize: 18),
+                  ),
+                ),
+                if (isLast) // Add the "Get Started" arrow
+                  const SizedBox(height: 20),
+                if (isLast)
+                  GestureDetector(
+                    onTap: () {
+                      navigateTo(context, Routes.auth);
+                    },
+                    child: const Column(
+                      children: [
+                        Icon(
+                          Icons.arrow_right,
+                          size: 200,
+                          color: Colors.blue,
+                        ),
+                        SizedBox(height: 10),
+                      ],
+                    ),
+                  ),
+              ],
+            ),
+        ],
+      ),
+    );
+  }
 
   Widget _buildDot(int index) {
     return AnimatedContainer(

@@ -3,6 +3,8 @@ import 'package:http/http.dart' as http;
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:tattletale/utils/routes.dart';
 
+final localhost = '10.0.2.2';
+
 class AuthScreen extends StatefulWidget {
   const AuthScreen({super.key});
 
@@ -25,16 +27,18 @@ class _AuthScreenState extends State<AuthScreen> {
 
   Future<void> authenticate() async {
     final url = isLogin
-        ? 'http://localhost:5001/login'
-        : 'http://localhost:5001/signup';
+        ? 'http://$localhost:5001/api/users/login'
+        : 'http://$localhost:5001/api/users/signup';
     final response = await http.post(
       Uri.parse(url),
       headers: {'Content-Type': 'application/json'},
-      body: '{"name": "${_nameController.text}","email": "${_emailController.text}", "password": "${_passwordController.text}"}',
+      body:
+          '{"name": "${_nameController.text}","email": "${_emailController.text}", "password": "${_passwordController.text}"}',
     );
 
     if (response.statusCode == 200 || response.statusCode == 201) {
-      final token = isLogin ? response.body.split('"token":"')[1].split('"')[0] : null;
+      final token =
+          isLogin ? response.body.split('"token":"')[1].split('"')[0] : null;
       if (isLogin && token != null) {
         await _storage.write(key: 'token', value: token);
         navigateTo(context, Routes.home);
@@ -43,9 +47,10 @@ class _AuthScreenState extends State<AuthScreen> {
           const SnackBar(content: Text('Registration successful.')),
         );
       }
-    } else {
+    } else {print(response.body);
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text('Error: ${response.body}')),
+        
       );
     }
   }
@@ -59,12 +64,12 @@ class _AuthScreenState extends State<AuthScreen> {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            isLogin ? 
-            SizedBox.shrink()
-            : TextField(
-                controller: _emailController,
-                decoration: const InputDecoration(labelText: 'Email'),
-            ),
+            isLogin
+                ? SizedBox.shrink()
+                : TextField(
+                    controller: _nameController,
+                    decoration: const InputDecoration(labelText: 'Name'),
+                  ),
             const SizedBox(height: 10),
             TextField(
               controller: _emailController,
@@ -83,7 +88,9 @@ class _AuthScreenState extends State<AuthScreen> {
             ),
             TextButton(
               onPressed: toggleAuthMode,
-              child: Text(isLogin ? 'Create an Account' : 'Already have an account? Login'),
+              child: Text(isLogin
+                  ? 'Create an Account'
+                  : 'Already have an account? Login'),
             ),
           ],
         ),

@@ -32,15 +32,9 @@ class TattletaleApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       initialRoute: Routes.splash,
-  routes: {
-    Routes.splash: (context) => SplashScreenPage(showOnboarding: showOnboarding),
-    Routes.home: (context) => const HomePage(),
-    Routes.profile: (context) => const ProfilePage(),
-    Routes.socialMedia: (context) => const SocialMediaPage(),
-    Routes.osint: (context) => const OsintPage(),
-    Routes.pastData: (context) => const PastDataPage(),
-    Routes.onboarding: (context) => const OnboardingScreen(),
-  },
+  routes: Routes.getRoutes(),
+
+  
     );
   }
 }
