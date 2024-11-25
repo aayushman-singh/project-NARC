@@ -61,7 +61,7 @@ class HomePage extends StatelessWidget {
               title: const Text('Past Data'),
               onTap: () => navigateTo(context, Routes.pastData),
             ),
-             ListTile(
+            ListTile(
               leading: const Icon(Icons.analytics),
               title: const Text('Profile Analysis'),
               onTap: () => navigateTo(context, Routes.analysis),
@@ -69,42 +69,45 @@ class HomePage extends StatelessWidget {
           ],
         ),
       ),
-      
       body: Column(
-          mainAxisAlignment: MainAxisAlignment.start,
-          children: [
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 10,horizontal: 0.0),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                children: [
-                  Expanded(
-                    flex: 2,
-                    child: Column(
-                      children: [
-                        const Text(
-                          'Hello,',
-                          style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
-                        ),
-                         Text(
-                          userProvider.name ?? "User",
-                          style: const TextStyle(fontSize: 50, fontWeight: FontWeight.bold),
-                        ),
-                      ],
-                    ),
+        mainAxisAlignment: MainAxisAlignment.start,
+        children: [
+          Padding(
+            padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 0.0),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Expanded(
+                  flex: 2,
+                  child: Column(
+                    children: [
+                      const Text(
+                        'Hello,',
+                        style: TextStyle(
+                            fontSize: 40, fontWeight: FontWeight.bold),
+                      ),
+                      Text(
+                        userProvider.name ?? "User",
+                        style: const TextStyle(
+                            fontSize: 50, fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
-                  Expanded(
-                    flex: 2,
-                    child: SizedBox(),
-                  )
-                ],
-              ),
+                ),
+                Expanded(
+                  flex: 2,
+                  child: SizedBox(),
+                )
+              ],
             ),
-            SizedBox(height: 20),
-            Expanded(
+          ),
+          SizedBox(height: 20),
+          Expanded(
             flex: 4,
+            child: Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: ListView(
-               scrollDirection: Axis.horizontal,
+                scrollDirection: Axis.horizontal,
                 children: [
                   InfoCard(
                     title: 'Social Media Investigation Tools',
@@ -129,35 +132,97 @@ class HomePage extends StatelessWidget {
                   ),
                   InfoCard(
                     title: 'Past reports',
-                    description:
-                        'Browse previously made reports and runs.',
+                    description: 'Browse previously made reports and runs.',
                     link: () =>
                         navigateTo(context, Routes.pastData), // Pass a closure
                   ),
                 ],
               ),
             ),
-            SizedBox(height: 20),
-            Expanded(
-              flex: 3,
-              child: Container(
-                decoration: BoxDecoration(
+          ),
+          SizedBox(height: 20),
+          Expanded(
+            flex: 3,
+            child: Container(
+              decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 color: Colors.blue[200],
-                ),
-              height: 300,
-              width: screenSize.width*0.9,
-              
-              child: Padding(
-                padding: const EdgeInsets.symmetric(vertical: 40,horizontal: 20.0),
-                child: const Text('datadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadata'),
               ),
+              height: 300,
+              width: screenSize.width * 0.9,
+              child: Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 40, horizontal: 20.0),
+                child: const Text(
+                    'datadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadata'),
               ),
             ),
-            SizedBox(height: 100)
-          ],
+          ),
+          SizedBox(height: 100)
+        ],
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(24.0),
+        child: Container(
+          decoration: BoxDecoration(
+            color: const Color.fromARGB(255, 7, 19, 28), // Background color
+            borderRadius: BorderRadius.circular(20 // Rounded top-right corner
+                ),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.1), // Subtle shadow
+                spreadRadius: 5,
+                blurRadius: 10,
+              ),
+            ],
+          ),
+          child: BottomAppBar(
+            color: Colors
+                .transparent, // Make it transparent as `Container` handles the color
+            shape: const CircularNotchedRectangle(), // Adds a notch for a FAB
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.spaceAround,
+              children: [
+                IconButton(
+                  icon: const Icon(Icons.camera),
+                  color: Colors.white,
+                  onPressed: () {
+                    navigateTo(context, Routes.socialMedia);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.search),
+                  color: Colors.white,
+                  onPressed: () {
+                    navigateTo(context, Routes.osint);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.home),
+                  color: Colors.white,
+                  onPressed: () {
+                    navigateTo(context, Routes.home);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.analytics),
+                  color: Colors.white,
+                  onPressed: () {
+                    navigateTo(context, Routes.analysis);
+                  },
+                ),
+                IconButton(
+                  icon: const Icon(Icons.person),
+                  color: Colors.white,
+                  onPressed: () {
+                    navigateTo(context, Routes.profile);
+                  },
+                ),
+              ],
+            ),
+          ),
         ),
-      
+      ),
     );
   }
 }
@@ -183,26 +248,48 @@ class InfoCard extends StatelessWidget {
         elevation: 5,
         child: SizedBox(
           width: screenSize.width * 0.35,
+          height: screenSize.height * 0.5, // Fixed height for uniformity
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              Text(
-                title,
-                style:
-                    const TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+              // Title at the top
+              Padding(
+                padding: const EdgeInsets.all(8.0),
+                child: Text(
+                  title,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    fontSize: 16,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
               ),
-              Text(
-                description,
-                textAlign: TextAlign.center,
+
+              // Description (Flexible content area)
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                    description,
+                    textAlign: TextAlign.center,
+                  ),
+                ),
               ),
-              ElevatedButton(
-                onPressed: () {
-                  if (kDebugMode) {
-                    print('clicked');
-                  }
-                  link();
-                },
-                child: const Text('Navigate'),
+
+              // Spacer ensures the button stays at the bottom
+              const Spacer(),
+
+              // Button aligned at a fixed position from the bottom
+              Padding(
+                padding: const EdgeInsets.only(bottom: 8.0),
+                child: ElevatedButton(
+                  onPressed: () {
+                    if (kDebugMode) {
+                      print('clicked');
+                    }
+                    link();
+                  },
+                  child: const Text('Navigate'),
+                ),
               ),
             ],
           ),
