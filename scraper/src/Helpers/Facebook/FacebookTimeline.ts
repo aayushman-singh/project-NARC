@@ -5,6 +5,7 @@ import {
     insertFollowers,
     insertPosts,
     uploadScreenshotToMongo,
+    uploadToS3,
 } from "../mongoUtils";
 import { fileURLToPath } from "url";
 import fs from "fs";
@@ -266,10 +267,11 @@ export async function scrapeFacebook(
                         );
                         await postElement.screenshot({ path: screenshotPath });
                         console.log(`Screenshot for post ${i + 1} taken.`);
-
+                        const s3Key = `post_${i+1}`;
+                        const s3Url = await uploadToS3(screenshotPath, s3Key)
                         // Add the post data to the scrapedPosts array
                         scrapedPosts.push({
-                            screenshotPath, // Path to the screenshot
+                            s3Url, // Path to the screenshot
                             timestamp: new Date().toISOString(), // Add a timestamp for the post
                             postIndex: i + 1, // Add an index or any other metadata
                         });
