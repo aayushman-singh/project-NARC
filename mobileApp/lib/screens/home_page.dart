@@ -12,63 +12,8 @@ class HomePage extends StatelessWidget {
     final userProvider = Provider.of<UserProvider>(context);
     var screenSize = MediaQuery.of(context).size;
     return Scaffold(
-      appBar: AppBar(
-        title: const Text(
-          'Tattletale',
-          style: TextStyle(fontWeight: FontWeight.bold),
-        ),
-        centerTitle: true,
-        leading: Builder(
-          builder: (context) {
-            return IconButton(
-              icon: const Icon(Icons.menu),
-              onPressed: () {
-                Scaffold.of(context).openDrawer();
-              },
-            );
-          },
-        ),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.person),
-            onPressed: () => navigateTo(context, Routes.profile),
-          ),
-        ],
-      ),
-      drawer: Drawer(
-        child: ListView(
-          padding: EdgeInsets.zero,
-          children: [
-            const DrawerHeader(
-              decoration: BoxDecoration(color: Colors.blue),
-              child: Text(
-                'Tattletale Menu',
-                style: TextStyle(color: Colors.white, fontSize: 24),
-              ),
-            ),
-            ListTile(
-              leading: const Icon(Icons.people),
-              title: const Text('Social Media'),
-              onTap: () => navigateTo(context, Routes.socialMedia),
-            ),
-            ListTile(
-              leading: const Icon(Icons.search),
-              title: const Text('OSINT'),
-              onTap: () => navigateTo(context, Routes.osint),
-            ),
-            ListTile(
-              leading: const Icon(Icons.history),
-              title: const Text('Past Data'),
-              onTap: () => navigateTo(context, Routes.pastData),
-            ),
-            ListTile(
-              leading: const Icon(Icons.analytics),
-              title: const Text('Profile Analysis'),
-              onTap: () => navigateTo(context, Routes.analysis),
-            ),
-          ],
-        ),
-      ),
+      
+     
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -161,68 +106,7 @@ class HomePage extends StatelessWidget {
           SizedBox(height: 100)
         ],
       ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(24.0),
-        child: Container(
-          decoration: BoxDecoration(
-            color: const Color.fromARGB(255, 7, 19, 28), // Background color
-            borderRadius: BorderRadius.circular(20 // Rounded top-right corner
-                ),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.1), // Subtle shadow
-                spreadRadius: 5,
-                blurRadius: 10,
-              ),
-            ],
-          ),
-          child: BottomAppBar(
-            color: Colors
-                .transparent, // Make it transparent as `Container` handles the color
-            shape: const CircularNotchedRectangle(), // Adds a notch for a FAB
-            child: Row(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                IconButton(
-                  icon: const Icon(Icons.camera),
-                  color: Colors.white,
-                  onPressed: () {
-                    navigateTo(context, Routes.socialMedia);
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  color: Colors.white,
-                  onPressed: () {
-                    navigateTo(context, Routes.osint);
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.home),
-                  color: Colors.white,
-                  onPressed: () {
-                    navigateTo(context, Routes.home);
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.analytics),
-                  color: Colors.white,
-                  onPressed: () {
-                    navigateTo(context, Routes.analysis);
-                  },
-                ),
-                IconButton(
-                  icon: const Icon(Icons.person),
-                  color: Colors.white,
-                  onPressed: () {
-                    navigateTo(context, Routes.profile);
-                  },
-                ),
-              ],
-            ),
-          ),
-        ),
-      ),
+     
     );
   }
 }
