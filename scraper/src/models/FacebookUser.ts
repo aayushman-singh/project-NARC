@@ -8,79 +8,58 @@ export interface IFriend {
     profileUrl: string;
 }
 
+// Interface for a post object
+export interface IPost {
+    s3Url: string;
+    timestamp: Date;
+    postIndex: number;
+}
+
 // Interface for the Facebook user document
 export interface IFacebookUser extends Document {
     username: string;
-    timelines: { [key: string]: string }; // Dynamic key-value pairs for timeline URLs
-    posts: { [key: string]: string }; // Dynamic key-value pairs for post URLs
-    message: string; // URL for message data
+    timelines: Map<string, string>; // Dynamic key-value pairs for timeline URLs
+    posts: IPost[]; // Array of post objects
+    messages: Map<string, string>; // Dynamic key-value pairs for message URLs
     profile: string; // URL for profile picture
-    friends: IFriend[]; // Array of friends
+    friendsList: IFriend[]; // Array of friends
 }
 
 // Schema for friend objects
 const friendSchema: Schema<IFriend> = new Schema({
-    index: {
-        type: Number,
-        required: true,
-    },
-    userName: {
-        type: String,
-        required: true,
-        trim: true,
-    },
-    profilePicUrl: {
-        type: String,
-        required: true,
-    },
-    profileUrl: {
-        type: String,
-        required: true,
-    },
+    index: { type: Number, required: true },
+    userName: { type: String, required: true, trim: true },
+    profilePicUrl: { type: String, required: true },
+    profileUrl: { type: String, required: true },
+});
+
+// Schema for post objects
+const postSchema: Schema<IPost> = new Schema({
+    s3Url: { type: String, required: true },
+    timestamp: { type: Date, required: true },
+    postIndex: { type: Number, required: true },
 });
 
 // Schema for Facebook users
 const facebookUserSchema: Schema<IFacebookUser> = new Schema(
     {
-        username: {
-            type: String,
-            required: true,
-            unique: true,
-            trim: true,
-        },
-        timelines: {
-            type: Map, // Use a Map to handle dynamic key-value pairs for timelines
-            of: String,
-            required: true,
-        },
-        posts: {
-            type: Map, // Use a Map to handle dynamic key-value pairs for posts
-            of: String,
-            required: true,
-        },
-        message: {
-            type: String,
-            required: true,
-        },
-        profile: {
-            type: String,
-            required: true,
-        },
-        friends: {
-            type: [friendSchema], // Use the friendSchema for friends array
-            required: false,
-        },
+        username: { type: String, required: true, unique: true, trim: true },
+        timelines: { type: Map, of: String, required: true },
+        posts: { type: [postSchema], required: true },
+        messages: { type: Map, of: String, required: false },
+        profile: { type: String, required: true },
+        friendsList: { type: [friendSchema], required: false },
     },
     {
-        collection: "facebook_users", // Specify the collection name
-        timestamps: true, // Automatically add createdAt and updatedAt fields
-    },
+        collection: "facebook_users",
+        timestamps: true, // Automatically adds createdAt and updatedAt
+    }
 );
 
 // Create the model for FacebookUser
 const FacebookUser: Model<IFacebookUser> = mongoose.model<IFacebookUser>(
     "FacebookUser",
-    facebookUserSchema,
+    facebookUserSchema
 );
 
 export default FacebookUser;
