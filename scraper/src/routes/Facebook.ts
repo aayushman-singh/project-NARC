@@ -12,7 +12,7 @@ const PORT = Number(process.env.PORT) || 3002;
 const connectDB = async () => {
     try {
         await mongoose.connect(
-            process.env.MONGO_URI as string,
+            "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/facebookDB?retryWrites=true&w=majority",
             {
                 useNewUrlParser: true,
                 useUnifiedTopology: true,
