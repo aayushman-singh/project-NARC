@@ -1,4 +1,4 @@
-import { chromium, Browser, Page } from "playwright";
+import { chromium, BrowserContext, Page } from "playwright";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import {
@@ -9,6 +9,7 @@ import {
 import { fileURLToPath } from "url";
 import fs from "fs";
 import path, { dirname } from "path";
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 // Use the stealth plugin to avoid detection
@@ -28,21 +29,31 @@ export async function scrapeFacebook(
     pin: string,
     limit: number,
 ) {
-    let browser: Browser | null = null;
+    let context: BrowserContext | null = null;
     try {
         // Launch the browser
-        browser = await chromium.launch({
+        context = await chromium.launchPersistentContext("./fb_context",{
             headless: false,
             slowMo: 500,
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
         });
-        const context = await browser.newContext();
-        const page: Page = await context.newPage();
+    
+        const pages = context.pages();
+        const page: Page = pages.length > 0 ? pages[0] : await context.newPage();
 
         // Navigate to Facebook login page
         await page.goto("https://www.facebook.com/", {
             waitUntil: "networkidle",
         });
+
+       // Check if the user is already logged in
+       const isLoggedIn = await page.evaluate(() => {
+        // Facebook's homepage shows different elements when logged in
+        return !!document.querySelector('[aria-label="Create a post"]'); // Example selector for logged-in user menu
+    });
+
+    if (!isLoggedIn) {
+        console.log("Not logged in, starting login process.");
 
         // Wait for the username input and enter the username
         await page.waitForSelector("#email", { timeout: 30000 });
@@ -60,13 +71,14 @@ export async function scrapeFacebook(
         });
         await page.click('button[data-testid="royal_login_button"]');
         console.log("Clicked Facebook login button.");
-
-        // Wait for the specified screen element to load after login
-
-        console.log(
-            "Successfully logged in and the screen element has loaded.",
-        );
-        await randomDelay(20000, 40000);
+        await page.waitForTimeout(40000);
+        // Wait for the main screen element to confirm login success
+        await page.waitForSelector('[aria-label="Create a post"]', { timeout: 8000 });
+        console.log("Successfully logged in.");
+    } else {
+        console.log("Already logged in, skipping login process.");
+    }
+        
 
         await page.goto("https://www.facebook.com/me/", {
             waitUntil: "networkidle",
@@ -87,92 +99,132 @@ export async function scrapeFacebook(
             waitUntil: "networkidle",
         });
         // Take at least three screenshots with random delays and scroll
-        let resultId;
-        for (let i = 1; i <= 3; i++) {
-            await randomDelay(2000, 4000); // Random delay between 2-4 seconds
-            const screenshotPath = `facebook_screenshot_${i}.png`;
-            await page.screenshot({ path: screenshotPath, fullPage: false });
-            console.log(`Took screenshot ${i}.`);
-
-            await uploadScreenshotToMongo(
-                username,
-                screenshotPath,
-                `timeline_${i}`,
-                "facebook",
-            );
-            // Add ObjectId to the user's search history
-
-            // Scroll down the page after each screenshot
-            await page.evaluate(() => window.scrollBy(0, window.innerHeight));
-            console.log(`Scrolled down the page after screenshot ${i}.`);
-        }
-        // Wait for the profile page to load
-        try {
-            await page.goto("https://www.facebook.com/me/");
-
-            const screenshotPath = `profile_page.png`;
-            await page.screenshot({ path: screenshotPath, fullPage: false });
-            resultId = await uploadScreenshotToMongo(
-                username,
-                screenshotPath,
-                `profile`,
-                "facebook",
-            );
-            // Extract profile page
-            await page.goto(`https://www.facebook.com/${username}/friends`);
-
-            await page.waitForSelector(
-                "xpath=/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]",
-            );
-
-            // Use XPath to select all user tiles
-            const userTiles = await page.$$(
-                "xpath=/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div/div/div/div[1]/div/div/div/div/div[3]/div[1]",
-            );
-
-            console.log(`Total user tiles found: ${userTiles.length}`);
-
-            const usersData = [];
-
-            // Loop through each user tile
-            for (const [index, userTile] of userTiles.entries()) {
-                // Extract the profile picture URL
-                const profilePicUrl = await userTile
-                    .$eval(
-                        "div:nth-child(1) a img",
-                        (img) => (img as HTMLImageElement).src,
-                    )
-                    .catch(() => "Profile picture not found");
-
-                // Extract the user name
-                const userName = await userTile
-                    .$eval("div:nth-child(2) a", (a) => a.textContent.trim())
-                    .catch(() => "Name not found");
-
-                // Extract the profile URL
-                const profileUrl = await userTile
-                    .$eval(
-                        "div:nth-child(2) a",
-                        (a) => (a as HTMLAnchorElement).href,
-                    )
-                    .catch(() => "Profile URL not found");
-
-                // Push the data into the array
-                usersData.push({
-                    index: index + 1,
-                    userName,
-                    profilePicUrl,
-                    profileUrl,
-                });
+        await (async function () {
+            try {
+                // Loop to take timeline screenshots
+                for (let i = 1; i <= 3; i++) {
+                    await randomDelay(2000, 4000); // Random delay between 2-4 seconds
+                    const screenshotPath = `facebook_screenshot_${i}.png`;
+                    await page.screenshot({ path: screenshotPath, fullPage: false });
+                    console.log(`Took screenshot ${i}.`);
+        
+                    await uploadScreenshotToMongo(
+                        username,
+                        screenshotPath,
+                        `timeline_${i}`,
+                        "facebook"
+                    );
+        
+                    // Scroll down the page after each screenshot
+                    await page.evaluate(() => window.scrollBy(0, window.innerHeight));
+                    console.log(`Scrolled down the page after screenshot ${i}.`);
+                }
+        
+                // Navigate to the profile page and take a screenshot
+                await page.goto("https://www.facebook.com/me/");
+                const profileScreenshotPath = `profile_page.png`;
+                await page.screenshot({ path: profileScreenshotPath, fullPage: false });
+        
+                const resultId = await uploadScreenshotToMongo(
+                    username,
+                    profileScreenshotPath,
+                    "profile",
+                    "facebook"
+                );
+        
+                // Navigate to the friends list page
+                await page.goto(`https://www.facebook.com/${username}/friends`);
+                await page.waitForSelector('div[role="main"]');
+        
+                // Extract friends list
+                try {
+                    // Locate the element with an ID starting with "mount_"
+                    await page.waitForSelector('[id^="mount_"]');
+                    console.log("Mount container found.");
+        
+                    const friendsListContainerSelector =
+                        '[id^="mount_"] div > div:nth-child(1) > div > div.x9f619.x1n2onr6.x1ja2u2z > div > div > div.x78zum5.xdt5ytf.x1t2pt76.x1n2onr6.x1ja2u2z.x10cihs4 > div.x78zum5.xdt5ytf.x1t2pt76 > div > div > div.x6s0dn4.x78zum5.xdt5ytf.x193iq5w > div > div > div > div:nth-child(1) > div > div > div > div';
+        
+                    await page.waitForSelector(friendsListContainerSelector);
+                    console.log("Friends list container found.");
+        
+                    // Scroll to load all friends dynamically
+                    async function scrollToLoadAllFriends() {
+                        let previousHeight = 0;
+                        let currentHeight = await page.evaluate(
+                            (selector) => document.querySelector(selector).scrollHeight,
+                            friendsListContainerSelector
+                        );
+        
+                        while (currentHeight !== previousHeight) {
+                            previousHeight = currentHeight;
+                            await page.evaluate(
+                                (selector) =>
+                                    document.querySelector(selector).scrollBy(0, 500),
+                                friendsListContainerSelector
+                            );
+                            await page.waitForTimeout(1000); // Wait for lazy loading
+                            currentHeight = await page.evaluate(
+                                (selector) => document.querySelector(selector).scrollHeight,
+                                friendsListContainerSelector
+                            );
+                        }
+                    }
+        
+                    // Scroll to load all friends
+                    await scrollToLoadAllFriends();
+        
+                    // Extract friend data
+                    const usersData = await page.evaluate((selector) => {
+                        const container = document.querySelector(selector);
+                        const friendTiles = container.querySelectorAll(
+                            'div.x78zum5.x1q0g3np.x1a02dak.x1qughib > div'
+                        );
+        
+                        console.log(`Total friend tiles found: ${friendTiles.length}`);
+        
+                        const users = [];
+                        friendTiles.forEach((friendTile, index) => {
+                            const profilePic = friendTile.querySelector('div:nth-child(1) > a img');
+                            const profilePicUrl = profilePic ? profilePic.src : null;
+        
+                            const nameElement = friendTile.querySelector(
+                                'div.x1iyjqo2.x1pi30zi > div:nth-child(1) > a > span'
+                            );
+                            const userName = nameElement ? nameElement.textContent.trim() : null;
+        
+                            const profileAnchor = friendTile.querySelector('div:nth-child(1) > a');
+                            const profileUrl = profileAnchor ? profileAnchor.href : null;
+        
+                            if (profilePicUrl && userName) {
+                                users.push({
+                                    index: index + 1,
+                                    userName,
+                                    profilePicUrl,
+                                    profileUrl: profileUrl || "Profile URL not found",
+                                });
+                            }
+                        });
+        
+                        return users;
+                    }, friendsListContainerSelector);
+        
+                    console.log("Extracted Friend Data:", usersData);
+        
+                    // Insert followers into MongoDB
+                    await insertFollowers(username, usersData, "facebook");
+                } catch (error) {
+                    console.error("An error occurred while extracting friends data:", error);
+                } finally {
+                    
+                }
+            } catch (error) {
+                console.error("An unexpected error occurred:", error);
             }
-
-            // Log the collected data
-            console.log("Extracted Friend Data:", usersData);
-
-            insertFollowers(username, usersData, "facebook");
-        } catch (error) {
-            console.log(`Friend list scraping failed:${error}`);
-        }
+        })();
+        
+        await page.goto('https://facebook.com/me');
+        page.waitForTimeout(2000);
         // Wait for the post container using XPath
         const xpath =
             "/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[3]";
@@ -312,7 +364,7 @@ export async function scrapeFacebook(
                 await uploadScreenshotToMongo(
                     username,
                     screenshotPath,
-                    "message",
+                    `messages_${i}`,
                     "facebook",
                 );
                 console.log(
@@ -391,8 +443,8 @@ export async function scrapeFacebook(
     } catch (error) {
         console.error("Error during scraping:", error);
     } finally {
-        if (browser) {
-            await browser.close();
+        if (context) {
+            await context.close();
         }
     }
 }

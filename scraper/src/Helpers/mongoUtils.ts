@@ -226,15 +226,14 @@ export async function insertFollowers(
         await client.connect();
         const database = client.db(`${platform}DB`);
         const collection = database.collection(`${platform}_users`);
-        const fieldKey = platform === "facebook" ? "friends" : "followers";
+        const fieldKey = platform === "facebook" ? "friends_list" : "followers";
         const updateObject = { [fieldKey]: followersData };
         // Insert or update the document under the username
         await collection.updateOne(
             { username: username },
             {
-                $set: {
-                    updateObject,
-                },
+                $set: updateObject,
+                
             },
             { upsert: true },
         );
