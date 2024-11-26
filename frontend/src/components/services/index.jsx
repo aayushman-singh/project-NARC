@@ -15,6 +15,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import "./style.css";
 import WhatsAppChats from "./Whatsapp";
 import TelegramChats from "./Telegram";
+import FacebookData from "./Facebook";
 import RenderInstagramData from "./Instagram";
 const Services = () => {
   const [activeSection, setActiveSection] = useState("");
@@ -114,128 +115,128 @@ const Services = () => {
     }
   };
 
-  const renderFacebookData = (facebookData) => {
-    if (!facebookData)
-      return <p className="text-gray-400">No data available.</p>;
+  // const renderFacebookData = (facebookData) => {
+  //   if (!facebookData)
+  //     return <p className="text-gray-400">No data available.</p>;
 
-    return (
-      <div>
-        <h3 className="text-xl font-bold text-blue-400 mb-4">
-          Facebook Details
-        </h3>
+  //   return (
+  //     <div>
+  //       <h3 className="text-xl font-bold text-blue-400 mb-4">
+  //         Facebook Details
+  //       </h3>
 
-        {/* Username Display */}
-        <div className="text-lg font-semibold text-gray-300 mb-4">
-          Username:{" "}
-          <span className="text-blue-300">{facebookData.username}</span>
-        </div>
+  //       {/* Username Display */}
+  //       <div className="text-lg font-semibold text-gray-300 mb-4">
+  //         Username:{" "}
+  //         <span className="text-blue-300">{facebookData.username}</span>
+  //       </div>
 
-        {/* Timelines */}
-        <div className="mt-6">
-          <h4 className="text-lg font-bold text-blue-300 mb-2">Timelines:</h4>
-          {facebookData.timelines && facebookData.timelines.length > 0 ? (
-            facebookData.timelines.map((timeline, index) => (
-              <div key={index} className="mt-2">
-                <a
-                  href={timeline}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 underline"
-                >
-                  Timeline {index + 1}
-                </a>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400">No timelines available.</p>
-          )}
-        </div>
+  //       {/* Timelines */}
+  //       <div className="mt-6">
+  //         <h4 className="text-lg font-bold text-blue-300 mb-2">Timelines:</h4>
+  //         {facebookData.timelines && facebookData.timelines.length > 0 ? (
+  //           facebookData.timelines.map((timeline, index) => (
+  //             <div key={index} className="mt-2">
+  //               <a
+  //                 href={timeline}
+  //                 target="_blank"
+  //                 rel="noopener noreferrer"
+  //                 className="text-blue-400 underline"
+  //               >
+  //                 Timeline {index + 1}
+  //               </a>
+  //             </div>
+  //           ))
+  //         ) : (
+  //           <p className="text-gray-400">No timelines available.</p>
+  //         )}
+  //       </div>
 
-        {/* Posts */}
-        <div className="mt-6">
-          <h4 className="text-lg font-bold text-blue-300 mb-2">Posts:</h4>
-          {facebookData.posts && facebookData.posts.length > 0 ? (
-            facebookData.posts.map((post, index) => (
-              <div key={index} className="mt-2">
-                <a
-                  href={post}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-blue-400 underline"
-                >
-                  Post {index + 1}
-                </a>
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400">No posts available.</p>
-          )}
-        </div>
+  //       {/* Posts */}
+  //       <div className="mt-6">
+  //         <h4 className="text-lg font-bold text-blue-300 mb-2">Posts:</h4>
+  //         {facebookData.posts && facebookData.posts.length > 0 ? (
+  //           facebookData.posts.map((post, index) => (
+  //             <div key={index} className="mt-2">
+  //               <a
+  //                 href={post}
+  //                 target="_blank"
+  //                 rel="noopener noreferrer"
+  //                 className="text-blue-400 underline"
+  //               >
+  //                 Post {index + 1}
+  //               </a>
+  //             </div>
+  //           ))
+  //         ) : (
+  //           <p className="text-gray-400">No posts available.</p>
+  //         )}
+  //       </div>
 
-        {/* Messages */}
-        <div className="mt-10">
-          <h4 className="text-2xl font-bold text-pink-500 mb-6">Messages</h4>
-          <div className="space-y-6">
-            {Array.isArray(facebookData.messages) &&
-            facebookData.messages.length > 0 ? (
-              facebookData.messages.map((message, index) => (
-                <div
-                  key={index}
-                  className="bg-gray-800 p-4 rounded-lg shadow-md"
-                >
-                  {/* Display receiver username */}
-                  <p className="text-white text-sm font-semibold">
-                    Receiver: {message.receiverUsername}
-                  </p>
+  //       {/* Messages */}
+  //       <div className="mt-10">
+  //         <h4 className="text-2xl font-bold text-pink-500 mb-6">Messages</h4>
+  //         <div className="space-y-6">
+  //           {Array.isArray(facebookData.messages) &&
+  //           facebookData.messages.length > 0 ? (
+  //             facebookData.messages.map((message, index) => (
+  //               <div
+  //                 key={index}
+  //                 className="bg-gray-800 p-4 rounded-lg shadow-md"
+  //               >
+  //                 {/* Display receiver username */}
+  //                 <p className="text-white text-sm font-semibold">
+  //                   Receiver: {message.receiverUsername}
+  //                 </p>
 
-                  {/* Display screenshots */}
-                  <div className="mt-4">
-                    <p className="text-gray-400 text-sm">Screenshots:</p>
-                    {Array.isArray(message.screenshots) ? (
-                      message.screenshots.map((screenshot, i) => (
-                        <a
-                          key={i}
-                          href={screenshot}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-blue-500 underline text-sm"
-                        >
-                          Screenshot {i + 1}
-                        </a>
-                      ))
-                    ) : (
-                      <p className="text-gray-500 text-xs">
-                        No screenshots available
-                      </p>
-                    )}
-                  </div>
+  //                 {/* Display screenshots */}
+  //                 <div className="mt-4">
+  //                   <p className="text-gray-400 text-sm">Screenshots:</p>
+  //                   {Array.isArray(message.screenshots) ? (
+  //                     message.screenshots.map((screenshot, i) => (
+  //                       <a
+  //                         key={i}
+  //                         href={screenshot}
+  //                         target="_blank"
+  //                         rel="noopener noreferrer"
+  //                         className="text-blue-500 underline text-sm"
+  //                       >
+  //                         Screenshot {i + 1}
+  //                       </a>
+  //                     ))
+  //                   ) : (
+  //                     <p className="text-gray-500 text-xs">
+  //                       No screenshots available
+  //                     </p>
+  //                   )}
+  //                 </div>
 
-                  {/* Display chat link */}
-                  <div className="mt-4">
-                    <p className="text-gray-400 text-sm">Chat:</p>
-                    {message.chats ? (
-                      <a
-                        href={message.chats}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-blue-500 underline text-sm"
-                      >
-                        View Chat
-                      </a>
-                    ) : (
-                      <p className="text-gray-500 text-xs">No chat available</p>
-                    )}
-                  </div>
-                </div>
-              ))
-            ) : (
-              <p className="text-gray-400">No messages available.</p>
-            )}
-          </div>
-        </div>
-      </div>
-    );
-  };
+  //                 {/* Display chat link */}
+  //                 <div className="mt-4">
+  //                   <p className="text-gray-400 text-sm">Chat:</p>
+  //                   {message.chats ? (
+  //                     <a
+  //                       href={message.chats}
+  //                       target="_blank"
+  //                       rel="noopener noreferrer"
+  //                       className="text-blue-500 underline text-sm"
+  //                     >
+  //                       View Chat
+  //                     </a>
+  //                   ) : (
+  //                     <p className="text-gray-500 text-xs">No chat available</p>
+  //                   )}
+  //                 </div>
+  //               </div>
+  //             ))
+  //           ) : (
+  //             <p className="text-gray-400">No messages available.</p>
+  //           )}
+  //         </div>
+  //       </div>
+  //     </div>
+  //   );
+  // };
 
   const renderXTweets = (tweets) => {
     return tweets.map((tweet, index) => (
@@ -740,56 +741,60 @@ const Services = () => {
         </div>
       )}
 
-      {activeSection === "facebook" && (
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold text-blue-600">Facebook</h2>
-          <input
-            type="text"
-            id="facebookInput"
-            placeholder="Enter email or phone number"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-          />
-          <input
-            type="password"
-            id="facebookPassword"
-            placeholder="Enter Facebook password"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-          />
-          <input
-            type="pin"
-            id="facebookPin"
-            placeholder="Enter Facebook pin"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-          />
-          Max posts:
-          {renderDropdown("facebook")}
-          <p className="text-yellow-400 mt-4 mb-2 italic">
-            Warning: A CAPTCHA may be required for verification.
-          </p>
-          <div className="flex space-x-4 mt-4">
-            <button
-              onClick={() => handleSubmit("facebook")}
-              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-              disabled={isLoading}
-            >
-              Submit
-            </button>
-            <button
-              onClick={() => handleShowDetails("facebook")}
-              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-            >
-              Show Details
-            </button>
-          </div>
-          <div className="mt-8">
-            {facebookData ? (
-              renderFacebookData(facebookData)
-            ) : (
-              <p className="text-gray-400">No Facebook data loaded yet.</p>
-            )}
-          </div>
+{activeSection === "facebook" && (
+  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 className="text-2xl font-bold text-blue-600">Facebook</h2>
+    <input
+      type="text"
+      id="facebookInput"
+      placeholder="Enter email or phone number"
+      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+    />
+    <input
+      type="password"
+      id="facebookPassword"
+      placeholder="Enter Facebook password"
+      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+    />
+    <input
+      type="pin"
+      id="facebookPin"
+      placeholder="Enter Facebook pin"
+      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+    />
+    <div className="mt-4">
+      Max posts: {renderDropdown("facebook")}
+    </div>
+    <p className="text-yellow-400 mt-4 mb-2 italic">
+      Warning: A CAPTCHA may be required for verification.
+    </p>
+    <div className="flex space-x-4 mt-4">
+      <button
+        onClick={() => handleSubmit("facebook")}
+        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+        disabled={isLoading}
+      >
+        Submit
+      </button>
+      <button
+        onClick={() => handleShowDetails("facebook")}
+        className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+      >
+        Show Details
+      </button>
+    </div>
+    <div className="mt-8">
+      {facebookData ? (
+        <div>
+          <FacebookData facebookData={facebookData}/>
         </div>
+      ) : (
+        <p className="text-gray-400">No Facebook data loaded yet.</p>
       )}
+    </div>
+  </div>
+)}
+
     </div>
   );
 };
