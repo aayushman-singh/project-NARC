@@ -35,6 +35,8 @@ class Routes {
   }
 }
 
-void navigateTo(BuildContext context, String route) {
-  Navigator.pushNamed(context, route);
+void navigateTo(
+    BuildContext context, PageController pageController, int pageIndex) {
+  pageController.animateToPage(pageIndex,
+      duration: const Duration(milliseconds: 200), curve: Curves.easeInOut);
 }
