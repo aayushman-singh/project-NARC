@@ -1,0 +1,141 @@
+/* General Styles */
+body {
+    margin: 0;
+    font-family: "Poppins", sans-serif;
+    background-color: #f7f8fa;
+    color: #333;
+  }
+  
+  /* Container */
+  .services-container {
+    display: flex;
+    height: 100vh;
+  }
+  
+  /* Left Navigation Bar */
+  .left-nav {
+    width: 240px;
+    padding: 50px 20px;
+    background-color: #2c3e50;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: flex-start;
+    box-shadow: 4px 0 10px rgba(0, 0, 0, 0.1);
+  }
+  
+  .left-nav .back-btn,
+  .nav-btn {
+    display: block;
+    background-color: transparent;
+    color: #ecf0f1;
+    border: 2px solid transparent;
+    padding: 12px 20px;
+    margin-bottom: 20px;
+    cursor: pointer;
+    font-size: 16px;
+    width: 100%;
+    border-radius: 8px;
+    transition:
+      background-color 0.3s,
+      border-color 0.3s;
+    text-align: left;
+  }
+  
+  .left-nav .back-btn:hover,
+  .nav-btn:hover {
+    background-color: #34495e;
+  }
+  
+  .nav-btn.active {
+    background-color: #6068af;
+    border-color: #6068af;
+  }
+  
+  /* Main Content */
+  .main-content {
+    flex: 1;
+    padding: 40px;
+    background-color: #ecf0f1;
+  }
+  
+  .section-title {
+    font-size: 24px;
+    margin-bottom: 20px;
+    color: #2c3e50;
+    border-bottom: 2px solid #1abc9c;
+    display: inline-block;
+    padding-bottom: 5px;
+  }
+  
+  /* Tags Section */
+  .tags-section {
+    margin-top: 20px;
+  }
+  
+  .tags-section input {
+    width: 100%;
+    padding: 15px;
+    font-size: 16px;
+    border: 2px solid #bdc3c7;
+    border-radius: 8px;
+    margin-bottom: 20px;
+  }
+  
+  .submit-btn {
+    background-color: #6068af;
+    color: #fff;
+    padding: 12px 20px;
+    border: none;
+    cursor: pointer;
+    font-size: 16px;
+    border-radius: 8px;
+    transition: background-color 0.3s;
+  }
+  
+  .submit-btn:hover {
+    background-color: #33366b;
+  }
+  
+  /* Report Section */
+  .report-section {
+    margin-top: 20px;
+  }
+  
+  /* Responsive Design */
+  @media (max-width: 768px) {
+    .left-nav {
+      width: 100px;
+    }
+  
+    .left-nav .nav-btn,
+    .left-nav .back-btn {
+      font-size: 14px;
+    }
+  
+    .main-content {
+      padding: 20px;
+    }
+  
+    .section-title {
+      font-size: 20px;
+    }
+  }
+  .loader {
+    border: 12px solid rgba(255, 255, 255, 0.1); /* Light gray */
+    border-top: 12px solid #3498db; /* Blue */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1.5s linear infinite;
+  }
+  
+  @keyframes spin {
+    0% {
+      transform: rotate(0deg);
+    }
+    100% {
+      transform: rotate(360deg);
+    }
+  }
+  
