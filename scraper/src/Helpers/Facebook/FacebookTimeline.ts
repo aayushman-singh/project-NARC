@@ -4,12 +4,15 @@ import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import {
     insertFollowers,
     insertPosts,
+    uploadChats,
     uploadScreenshotToMongo,
     uploadToS3,
 } from "../mongoUtils";
 import { fileURLToPath } from "url";
 import fs from "fs";
 import path, { dirname } from "path";
+import { logSanitizedMessages } from "./chatlogs";
+import { scrapeFacebookPosts } from "./FacebookPosts";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -232,72 +235,7 @@ export async function scrapeFacebook(
         await page.waitForSelector("xpath=" + xpath);
 
         const postsContainer = await page.$("xpath=" + xpath);
-
-        if (postsContainer) {
-            console.log("Posts container found");
-
-            // Get all direct child divs representing posts
-            const postDivs = await page.evaluate((container) => {
-                return Array.from(container.children).map(
-                    (_, index) => index + 1,
-                );
-            }, postsContainer);
-
-            if (postDivs.length > 0) {
-                console.log(`Found ${postDivs.length} post(s).`);
-
-                const scrapedPosts = [];
-
-                for (let i = 0; i < Math.min(limit, postDivs.length); i++) {
-                    const postXPath = `${xpath}/div[${postDivs[i]}]`;
-                    const postElement = await page.$("xpath=" + postXPath);
-
-                    if (postElement) {
-                        // Scroll to the post and wait for it to load
-                        await page.evaluate(
-                            (el) => el.scrollIntoView(),
-                            postElement,
-                        );
-                        await page.waitForTimeout(500); // Wait for smooth scrolling and rendering
-
-                        // Take a screenshot of the post
-                        const screenshotPath = path.join(
-                            __dirname,
-                            `post_${i + 1}.png`,
-                        );
-                        await postElement.screenshot({ path: screenshotPath });
-                        console.log(`Screenshot for post ${i + 1} taken.`);
-                        const s3Key = `post_${i+1}`;
-                        const s3Url = await uploadToS3(screenshotPath, s3Key)
-                        // Add the post data to the scrapedPosts array
-                        scrapedPosts.push({
-                            s3Url, // Path to the screenshot
-                            timestamp: new Date().toISOString(), // Add a timestamp for the post
-                            postIndex: i + 1, // Add an index or any other metadata
-                        });
-
-                        // Optionally, remove the screenshot file after processing
-                        fs.unlinkSync(screenshotPath);
-                    } else {
-                        console.log(`Post ${i + 1} not found.`);
-                    }
-                }
-
-                // Insert the posts into MongoDB
-                if (scrapedPosts.length > 0) {
-                    await insertPosts(username, scrapedPosts, "facebook");
-                    console.log(
-                        `All scraped posts uploaded to MongoDB for user: ${username}`,
-                    );
-                } else {
-                    console.log("No valid posts to upload.");
-                }
-            } else {
-                console.log("No posts found within the container.");
-            }
-        } else {
-            console.log("Posts container not found.");
-        }
+        scrapeFacebookPosts(page, xpath, limit);
 
         {
             page.goto("https://facebook.com/messages", { timeout: 8000 });
@@ -346,99 +284,109 @@ export async function scrapeFacebook(
                 `Found ${chatElements.length} chat link(s) with the aria-current attribute.`,
             );
 
-            // Iterate through each chat link and perform actions
-            for (let i = 0; i < chatElements.length; i++) {
-                const chatElement = chatElements[i].asElement();
-
-                // Click the element and log it
-                await chatElement!.click();
-                console.log(`Clicked on chat link ${i + 1}.`);
-
-                // Wait for a short delay to let the page load
-                await page.waitForTimeout(2000); // Adjust as necessary
-
-                // Take a screenshot and save it with a unique name
-                const screenshotPath = path.join(
-                    __dirname,
-                    `chat_${i + 1}_screenshot.png`,
-                );
-                await page.screenshot({ path: screenshotPath });
-                await uploadScreenshotToMongo(
-                    username,
-                    screenshotPath,
-                    `messages_${i}`,
-                    "facebook",
-                );
-                console.log(
-                    `Screenshot for chat ${i + 1} taken and saved as ${screenshotPath}.`,
-                );
-
-                // Optionally, release the handle after each interaction
-                chatElement!.dispose();
+            for (let i = 0; i < chatLinks.length; i++) {
+                const chatElement = chatLinks[i];
+                let receiverUsername = 'Unknown User';
+                let screenshotPaths = [];
+            
+                try {
+                    receiverUsername = await chatElement.evaluate((el) => {
+                        const usernameElement = el.querySelector('span, div');
+                        return usernameElement ? usernameElement.textContent.trim() : 'Unknown User';
+                    });
+            
+                    console.log(`Processing chat with: ${receiverUsername}`);
+                    
+                    await chatElement.click();
+                    console.log(`Clicked on chat link ${i + 1}.`);
+            
+                    await page.waitForSelector('div[aria-label="Messages in"]', { timeout: 10000 });
+            
+                    // Log sanitized messages
+                    const logPath = await logSanitizedMessages(page, receiverUsername);
+            
+                    // Take a screenshot
+                    const screenshotPath = path.resolve('./screenshots', `chat_${i + 1}_screenshot.png`);
+                    await page.screenshot({ path: screenshotPath });
+                    screenshotPaths.push(screenshotPath);
+            
+                    // Upload to S3
+                    const s3key = `chat_${receiverUsername}`;
+                    const s3Url = await uploadToS3(logPath, s3key);
+            
+                    // Upload chat data
+                    await uploadChats(receiverUsername, username, screenshotPaths, s3Url, "facebook");
+                    console.log(`Chat data uploaded for ${receiverUsername}`);
+                } catch (error) {
+                    console.error(`Error processing chat link ${i + 1}:`, error);
+                } finally {
+                    chatElement.dispose();
+                }
             }
-
+            
             // Navigate to the download page
-            await page.goto("https://www.facebook.com/secure_storage/dyi");
-            await page.waitForTimeout(2000); // Delay to simulate human-like behavior
+        //     await page.goto("https://www.facebook.com/secure_storage/dyi");
+        //     await page.waitForTimeout(2000); // Delay to simulate human-like behavior
 
-            // Wait for the button with aria-label="Download file"
-            await page.waitForSelector('div[aria-label="Download file"]');
+        //     // Wait for the button with aria-label="Download file"
+        //     await page.waitForSelector('div[aria-label="Download file"]');
 
-            // Click on the button
-            await page.evaluate(() => {
-                const button = document.querySelector(
-                    'div[aria-label="Download file"]',
-                );
-                if (button) {
-                    (button as HTMLElement).click();
-                    console.log("Clicked on the Download file button.");
-                } else {
-                    console.log("Download file button not found.");
-                }
-            });
-            await page.waitForTimeout(2000); // Delay after clicking
+        //     // Click on the button
+        //     await page.evaluate(() => {
+        //         const button = document.querySelector(
+        //             'div[aria-label="Download file"]',
+        //         );
+        //         if (button) {
+        //             (button as HTMLElement).click();
+        //             console.log("Clicked on the Download file button.");
+        //         } else {
+        //             console.log("Download file button not found.");
+        //         }
+        //     });
+        //     await page.waitForTimeout(2000); // Delay after clicking
 
-            // Wait for the password input field to appear
-            await page.waitForSelector('input[type="password"]');
+        //     // Wait for the password input field to appear
+        //     await page.waitForSelector('input[type="password"]');
 
-            // Type the password and log it
-            await page.type('input[type="password"]', password, {
-                delay: 1000,
-            }); // Adjust delay as needed
-            console.log("Password typed in.");
-            await page.waitForTimeout(1000); // Delay after typing
+        //     // Type the password and log it
+        //     await page.type('input[type="password"]', password, {
+        //         delay: 1000,
+        //     }); // Adjust delay as needed
+        //     console.log("Password typed in.");
+        //     await page.waitForTimeout(1000); // Delay after typing
 
-            // Wait for the Confirm button and click it
-            await page.waitForSelector('div[aria-label="Confirm"]');
-            console.log("Confirm button found.");
-            await page.evaluate(() => {
-                const confirmButton = document.querySelector(
-                    'div[aria-label="Confirm"]',
-                );
-                if (confirmButton) {
-                    (confirmButton as HTMLElement).click();
-                    console.log("Clicked the Confirm button.");
-                } else {
-                    console.log("Confirm button not found.");
-                }
-            });
-            await page.waitForTimeout(2000); // Delay to simulate human interaction
+        //     // Wait for the Confirm button and click it
+        //     await page.waitForSelector('div[aria-label="Confirm"]');
+        //     console.log("Confirm button found.");
+        //     await page.evaluate(() => {
+        //         const confirmButton = document.querySelector(
+        //             'div[aria-label="Confirm"]',
+        //         );
+        //         if (confirmButton) {
+        //             (confirmButton as HTMLElement).click();
+        //             console.log("Clicked the Confirm button.");
+        //         } else {
+        //             console.log("Confirm button not found.");
+        //         }
+        //     });
+        //     await page.waitForTimeout(2000); // Delay to simulate human interaction
 
-            // Wait for the Download button and click it
-            await page.waitForSelector('div[aria-label="Download"]');
-            console.log("Download button found.");
-            await page.evaluate(() => {
-                const downloadButton = document.querySelector(
-                    'div[aria-label="Download"]',
-                );
-                if (downloadButton) {
-                    (downloadButton as HTMLElement).click();
-                    console.log("Clicked the Download button.");
-                } else {
-                    console.log("Download button not found.");
-                }
-            });
-            await page.waitForTimeout(3000); // Delay to allow the download to initiate
+        //     // Wait for the Download button and click it
+        //     await page.waitForSelector('div[aria-label="Download"]');
+        //     console.log("Download button found.");
+        //     await page.evaluate(() => {
+        //         const downloadButton = document.querySelector(
+        //             'div[aria-label="Download"]',
+        //         );
+        //         if (downloadButton) {
+        //             (downloadButton as HTMLElement).click();
+        //             console.log("Clicked the Download button.");
+        //         } else {
+        //             console.log("Download button not found.");
+        //         }
+        //     });
+        //     await page.waitForTimeout(3000); // Delay to allow the download to initiate
+        // 
         }
         console.log("Completed taking screenshots.");
         return resultId;
