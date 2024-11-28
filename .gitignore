@@ -36,3 +36,11 @@ session_9650593099.session
 scraper/session.json
 scraper/src/Helpers/Whatsapp/screenshots_chat_2/chat_text.txt
 /user-data
+node_modules/
+/test-results/
+/playwright-report/
+/blob-report/
+/playwright/.cache/
+/tests
+/tests-examples
+playwright.config.ts
