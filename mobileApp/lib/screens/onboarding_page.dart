@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:tattletale/utils/routes.dart';
+import 'package:tattletale/screens/auth_page.dart';
+import 'package:tattletale/structure/appbar.dart';
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});
@@ -73,7 +74,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   ];
 
   void _skipOnboarding() {
-    navigateTo(context, Routes.auth);
+   Navigator.pushReplacement(
+      context,
+      MaterialPageRoute(
+        builder: (_) => const PersistentStructure(),
+      ),
+    );
   }
 
   @override
@@ -194,7 +200,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                 if (isLast)
                   GestureDetector(
                     onTap: () {
-                      navigateTo(context, Routes.auth);
+                      Navigator.pushReplacement(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const AuthPage(),
+                        ),
+                      );
                     },
                     child: const Column(
                       children: [

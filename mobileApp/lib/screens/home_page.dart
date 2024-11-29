@@ -5,15 +5,14 @@ import 'package:tattletale/provider/user.dart';
 import '../utils/routes.dart';
 
 class HomePage extends StatelessWidget {
-  const HomePage({super.key});
+  final PageController pageController;
+  const HomePage({super.key, required this.pageController});
 
   @override
   Widget build(BuildContext context) {
     final userProvider = Provider.of<UserProvider>(context);
     var screenSize = MediaQuery.of(context).size;
     return Scaffold(
-      
-     
       body: Column(
         mainAxisAlignment: MainAxisAlignment.start,
         children: [
@@ -39,14 +38,14 @@ class HomePage extends StatelessWidget {
                     ],
                   ),
                 ),
-                Expanded(
+                const Expanded(
                   flex: 2,
                   child: SizedBox(),
                 )
               ],
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Expanded(
             flex: 4,
             child: Padding(
@@ -59,33 +58,33 @@ class HomePage extends StatelessWidget {
                     description:
                         'Access our cutting-edge tools designed specifically for investigating social media platforms.',
                     link: () => navigateTo(
-                        context, Routes.socialMedia), // Pass a closure
+                        context, pageController,AppPage.socialMedia), // Pass a closure
                   ),
                   InfoCard(
                     title: 'OSINT Tools',
                     description:
                         'Utilize Open Source Intelligence (OSINT) tools to gather and analyze publicly available information.',
                     link: () =>
-                        navigateTo(context, Routes.osint), // Pass a closure
+                        navigateTo(context,pageController, AppPage.osint), // Pass a closure
                   ),
                   InfoCard(
                     title: 'Profile Analysis',
                     description:
                         'Analyze social media profiles with advanced tools. Gain insights into user activity, engagement, and follower growth.',
                     link: () =>
-                        navigateTo(context, Routes.analysis), // Pass a closure
+                        navigateTo(context,pageController, AppPage.analysis), // Pass a closure
                   ),
                   InfoCard(
                     title: 'Past reports',
                     description: 'Browse previously made reports and runs.',
                     link: () =>
-                        navigateTo(context, Routes.pastData), // Pass a closure
+                        navigateTo(context,pageController, AppPage.pastData), // Pass a closure
                   ),
                 ],
               ),
             ),
           ),
-          SizedBox(height: 20),
+          const SizedBox(height: 20),
           Expanded(
             flex: 3,
             child: Container(
@@ -95,18 +94,17 @@ class HomePage extends StatelessWidget {
               ),
               height: 300,
               width: screenSize.width * 0.9,
-              child: Padding(
+              child: const Padding(
                 padding:
-                    const EdgeInsets.symmetric(vertical: 40, horizontal: 20.0),
-                child: const Text(
+                    EdgeInsets.symmetric(vertical: 40, horizontal: 20.0),
+                child: Text(
                     'datadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadatadata'),
               ),
             ),
           ),
-          SizedBox(height: 100)
+          const SizedBox(height: 100)
         ],
       ),
-     
     );
   }
 }
