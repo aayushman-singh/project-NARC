@@ -21,6 +21,7 @@ import FacebookDataViewer from "./FacebookSection";
 import WhatsAppChatsViewer from "./WhatsappSection";
 import TelegramChatsDisplay from "./TelegramSection";
 import XTweetsDisplay from "./TwitterSection"
+import InstagramUsersViewer from "./InstagramSection"
 const PastData = () => {
   const [activeSection, setActiveSection] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -305,28 +306,9 @@ const PastData = () => {
       {activeSection === "instagram" && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-pink-500">Instagram</h2>
-          <input
-            type="text"
-            id="instagramInput"
-            placeholder="Enter Instagram username"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
-          />
-          <input
-            type="password"
-            id="instagramPassword"
-            placeholder="Enter Instagram password"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
-          />
-          Max posts:
-          {renderDropdown("instagram")}
+         
           <div className="flex space-x-4 mt-4">
-            <button
-              onClick={() => handleSubmit("instagram")}
-              className="bg-pink-500 text-white px-6 py-2 rounded-md hover:bg-pink-600 disabled:opacity-50"
-              disabled={isLoading}
-            >
-              Submit
-            </button>
+           
             <button
               onClick={() => handleShowDetails("instagram")}
               className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
@@ -336,7 +318,7 @@ const PastData = () => {
           </div>
           {showDetails && instagramData && (
             <div className="mt-8">
-              <RenderInstagramData instagramData={instagramData} />
+              <InstagramUsersViewer apiData = {instagramData}/>
 
               <div className="flex mt-12 space-x-2">
                 <button className="flex items-center space-x-2 bg-green-200 text-green-700 px-4 py-2 rounded-md hover:bg-green-300 transition-colors">
