@@ -57,20 +57,29 @@ else{
 })
 
 const getUser = asyncHandler(async (req, res) => {
-    const user = await User.findById(req.user._id);
-  
-    if (user) {
-      res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        pic: user.pic,
-      });
-    } else {
+  if (!req.user) {
+    console.error("No user found in request");
+    res.status(400);
+    throw new Error("User not found or token invalid");
+  }
+
+  try {
+    console.log(`Fetching user with ID: ${req.user._id}`);
+    const user = await User.findById(req.user._id).select("-password");
+
+    if (!user) {
+      console.error("User not found in database");
       res.status(404);
-      throw new Error('User not found');
+      throw new Error("User not found");
     }
-  });
-  
+
+    res.json(user);
+  } catch (error) {
+    console.error(`Error fetching user: ${error.message}`);
+    res.status(500);
+    throw new Error("Server error while fetching user");
+  }
+});
+
+
 export { User, asyncHandler, generateToken, authUser, registerUser, getUser };
