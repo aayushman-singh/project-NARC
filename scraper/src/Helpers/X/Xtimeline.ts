@@ -1,4 +1,4 @@
-import { chromium, Browser, Page } from "playwright";
+import { BrowserContext, chromium, Page } from "playwright";
 import puppeteer from "puppeteer-extra";
 import StealthPlugin from "puppeteer-extra-plugin-stealth";
 import {
@@ -6,7 +6,13 @@ import {
     insertFollowing,
     uploadScreenshotToMongo,
 } from "../mongoUtils";
-import fs from "fs";
+import fs from "fs"; 
+import path from 'path';
+import { fileURLToPath } from "url";
+import { dirname } from "path";
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
 
 // Use the stealth plugin to avoid detection
 puppeteer.use(StealthPlugin());
@@ -19,18 +25,35 @@ function randomDelay(min: number, max: number) {
 }
 
 export async function scrapeX(EMAIL: string, PASSWORD: string) {
-    let browser: Browser | null = null;
+    let context: BrowserContext | null = null;
     try {
-        // Launch the browser
-        browser = await chromium.launch({
+        // Launch the persistent context
+        context = await chromium.launchPersistentContext("./x_context", {
             headless: false,
             slowMo: 2000,
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
         });
-        const context = await browser.newContext();
-        const page: Page = await context.newPage();
 
-        // Navigate to the X.com login page
+        // Check if session is already active
+        const pages = context.pages();
+        const page: Page =
+            pages.length > 0 ? pages[0] : await context.newPage();
+
+        await page.goto("https://x.com/", { waitUntil: "networkidle" });
+
+        // Check if the user is already logged in by looking for a logged-in element
+        const isLoggedIn = await page
+            .locator('a[aria-label="Profile"], a[aria-label="Home"]')
+            .count();
+
+        if (isLoggedIn > 0) {
+            console.log("Session found. User is already logged in.");
+            return;
+        }
+
+        console.log("No active session found. Proceeding to login...");
+
+        // Navigate to the login page
         await page.goto("https://x.com/i/flow/login", {
             waitUntil: "networkidle",
         });
@@ -47,11 +70,6 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
         await page.click('button[role="button"]:has-text("Next")');
         console.log("Clicked next button after username.");
 
-        // // Wait for the password input to appear
-        // await page.waitForSelector('input[name="password"]', { timeout: 60000 });
-        // await page.fill('input[name="password"]', PASSWORD);
-        // console.log('Entered password.');
-
         // Wait for the password input to appear
         await page.waitForSelector('input[name="password"]', {
             timeout: 60000,
@@ -62,15 +80,18 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
         // Wait for the "Log in" button to appear and click it
         await page.waitForSelector(
             'button[data-testid="LoginForm_Login_Button"]',
-            { timeout: 30000 },
+            { timeout: 30000 }
         );
         await page.click('button[data-testid="LoginForm_Login_Button"]');
         console.log("Clicked login button after password.");
 
+        // Wait for the home page to load as a confirmation of successful login
+        await page.waitForSelector('a[aria-label="Home"]', { timeout: 60000 });
+        console.log("Login successful. Session is now active.");
         // Wait for the element after login to confirm successful navigation
         await page.waitForSelector(
             "#react-root > div > div > div.css-175oi2r.r-1f2l425.r-13qz1uu.r-417010.r-18u37iz > main > div",
-            { timeout: 30000 },
+            { timeout: 30000 }
         );
         console.log("Successfully logged in and main page loaded.");
         await page.waitForTimeout(7000);
@@ -82,9 +103,9 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
         await page.waitForFunction(
             () =>
                 window.location.href.match(
-                    /https:\/\/x\.com\/[^/]+\/followers/,
+                    /https:\/\/x\.com\/[^/]+\/followers/
                 ),
-            { timeout: 10000 }, // Adjust timeout as needed
+            { timeout: 10000 } // Adjust timeout as needed
         );
 
         // Extract the username from the URL
@@ -123,12 +144,12 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                 USERNAME,
                 `timeline_screenshot${i}.png`,
                 "timeline",
-                "twitter",
+                "twitter"
             );
         }
 
         console.log(
-            "Timeline scraping completed. Now navigating to profile, followers, and following pages.",
+            "Timeline scraping completed. Now navigating to profile, followers, and following pages."
         );
 
         const scrapeList = async (
@@ -138,7 +159,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
             logFilePath: string,
             username: string,
 
-            insertMethod: Function,
+            insertMethod: Function
         ) => {
             console.log(`Starting to scrape ${listType} for ${username}...`);
 
@@ -159,7 +180,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                     // Scrape data
                     const data = await page.evaluate(() => {
                         const userCells = document.querySelectorAll(
-                            'button[data-testid="UserCell"]',
+                            'button[data-testid="UserCell"]'
                         );
                         const scrapedData = [];
                         userCells.forEach((button) => {
@@ -177,7 +198,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                                 }
                             } catch (error) {
                                 console.error(
-                                    `Error processing a button: ${error.message}`,
+                                    `Error processing a button: ${error.message}`
                                 );
                             }
                         });
@@ -190,20 +211,20 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                         if (
                             !dataSet.some(
                                 (existing) =>
-                                    existing.username === item.username,
+                                    existing.username === item.username
                             )
                         ) {
                             dataSet.push(item);
                             newItemsAdded = true;
                             console.log(
-                                `${listType}: Username: ${item.username}, Profile Pic: ${item.profilePic}`,
+                                `${listType}: Username: ${item.username}, Profile Pic: ${item.profilePic}`
                             );
                         }
                     }
 
                     // Scroll down
                     await page.evaluate(() =>
-                        window.scrollBy(0, window.innerHeight),
+                        window.scrollBy(0, window.innerHeight)
                     );
                     console.log(`Scrolled down ${listType} page.`);
 
@@ -213,7 +234,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                     if (!newItemsAdded) {
                         scrollAttempts++;
                         console.log(
-                            `No new ${listType} loaded. Scroll attempt: ${scrollAttempts}`,
+                            `No new ${listType} loaded. Scroll attempt: ${scrollAttempts}`
                         );
                     } else {
                         scrollAttempts = 0; // Reset scroll attempts if new items are added
@@ -221,7 +242,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
 
                     if (scrollAttempts >= 3) {
                         console.log(
-                            `No new ${listType} after several attempts. Stopping scroll.`,
+                            `No new ${listType} after several attempts. Stopping scroll.`
                         );
                         break;
                     }
@@ -231,21 +252,23 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                 const logData = dataSet
                     .map(
                         (item) =>
-                            `Username: ${item.username}, Profile Pic: ${item.profilePic}`,
+                            `Username: ${item.username}, Profile Pic: ${item.profilePic}`
                     )
                     .join("\n");
-                await fs.writeFile(logFilePath, logData, { flag: "w" });
+                await fs.writeFile(logFilePath, logData, (err) => {
+                    if (err) console.log(err);
+                });
                 console.log(`Total ${listType} extracted and logged.`);
 
                 // Upload data to MongoDB
                 await insertMethod(username, dataSet, "twitter");
                 console.log(
-                    `${listType} data uploaded to MongoDB successfully.`,
+                    `${listType} data uploaded to MongoDB successfully.`
                 );
             } catch (error) {
                 console.error(
                     `Error scraping ${listType} for ${username}:`,
-                    error,
+                    error
                 );
             }
         };
@@ -261,7 +284,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                 `./${username}_followers_log.txt`,
                 username,
 
-                insertFollowers,
+                insertFollowers
             );
 
             // Scrape following
@@ -272,11 +295,11 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                 `./${username}_following_log.txt`,
                 username,
 
-                insertFollowing,
+                insertFollowing
             );
 
             console.log(
-                `Completed scraping followers and following for user: ${username}`,
+                `Completed scraping followers and following for user: ${username}`
             );
         };
         await scrapeXProfile(page, USERNAME);
@@ -288,11 +311,12 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
             USERNAME,
             screenshotPath,
             "profile_page",
-            "facebook",
+            "facebook"
         );
 
         fs.unlinkSync(screenshotPath);
 
+        await page.goto("https://x.com/messages");
         // Wait for user tiles to load on the page
         await page.waitForSelector('[data-testid="conversation"]');
 
@@ -313,7 +337,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                 // Extract the display name and handle from each user tile
                 const { displayName, handle } = await page.evaluate((tile) => {
                     const nameElement = tile.querySelector(
-                        "div > div > div > div > div > div > div > span",
+                        "div > div > div > div > div > div > div > span"
                     );
                     const username = nameElement
                         ? nameElement.textContent.trim()
@@ -325,7 +349,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                         tile,
                         null,
                         XPathResult.FIRST_ORDERED_NODE_TYPE,
-                        null,
+                        null
                     ).singleNodeValue as HTMLElement;
                     const userHandle = handleElement
                         ? handleElement.textContent.trim()
@@ -338,17 +362,19 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                 const sanitizedHandle = handle.replace(/[^a-zA-Z0-9_]/g, "");
                 const sanitizedDisplayName = displayName.replace(
                     /[^a-zA-Z0-9_]/g,
-                    "",
+                    ""
                 );
                 const screenshotPath = path.join(
                     __dirname,
-                    `${sanitizedDisplayName}_${sanitizedHandle}_messages.png`,
+                    `${sanitizedDisplayName}_${sanitizedHandle}_messages.png`
                 );
 
                 // Take a screenshot of the messages and save it with the new filename
                 await page.screenshot({ path: screenshotPath, fullPage: true });
                 console.log(
-                    `Screenshot for user tile ${i + 1} taken as ${screenshotPath}.`,
+                    `Screenshot for user tile ${
+                        i + 1
+                    } taken as ${screenshotPath}.`
                 );
 
                 // Use a function to upload the screenshot to MongoDB (this function needs to be defined elsewhere)
@@ -356,10 +382,10 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                     sanitizedDisplayName,
                     screenshotPath,
                     "message",
-                    "twitter",
+                    "twitter"
                 );
                 console.log(
-                    `Screenshot for user ${sanitizedDisplayName} uploaded to MongoDB.`,
+                    `Screenshot for user ${sanitizedDisplayName} uploaded to MongoDB.`
                 );
 
                 // Optionally, delete the local screenshot file after uploading
@@ -371,8 +397,8 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
     } catch (error) {
         console.error("Error during scraping:", error);
     } finally {
-        if (browser) {
-            await browser.close();
+        if (context) {
+            await context.close();
         }
     }
 }
