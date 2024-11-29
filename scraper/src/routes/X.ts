@@ -10,23 +10,18 @@ import mongoose from "mongoose";
 import { updateUserHistory } from "../Helpers/mongoUtils";
 
 dotenv.config();
+const port = Number(process.env.PORT) || 3003;
 const app = express();
 
-const port = Number(process.env.PORT) || 3003; // Use Vercel's port or fallback to 3003
 const connectDB = async () => {
-    const uri = process.env.MONGODB_URI;
-    if (!uri) {
-        console.error(
-            "MONGODB_URI is not defined in the environment variables",
-        );
-        process.exit(1);
-    }
-
     try {
-        await mongoose.connect(uri, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true,
-        } as mongoose.ConnectOptions);
+        await mongoose.connect(
+            "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/twitterDB?retryWrites=true&w=majority",
+            {
+                useNewUrlParser: true,
+                useUnifiedTopology: true,
+            } as mongoose.ConnectOptions,
+        );
         console.log("MongoDB connected successfully");
     } catch (error) {
         console.error("MongoDB connection error:", error);
@@ -35,7 +30,6 @@ const connectDB = async () => {
 };
 
 connectDB();
-
 app.use(cors());
 app.use(express.json());
 

@@ -117,7 +117,7 @@ const Services = () => {
 
  
 
-  const renderXTweets = (tweets) => {
+  const renderXTweets = (tweets, timeline) => {
     return tweets.map((tweet, index) => (
       <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
         <h3 className="text-xl font-bold mb-2">
@@ -127,18 +127,99 @@ const Services = () => {
             rel="noopener noreferrer"
             className="text-blue-400 underline"
           >
-            {tweet.id_str}
+            Tweet ID: {tweet.id_str}
           </a>
         </h3>
-        <p className="text-gray-300">{tweet.full_text}</p>
-        <div className="flex space-x-4 mt-2 text-gray-400 text-sm">
-          <span>Created at: {tweet.created_at}</span>
-          <span>Lang: {tweet.lang}</span>
-          <span>Retweets: {tweet.retweet_count}</span>
-          <span>Favorites: {tweet.favorite_count}</span>
-          <span>Replies: {tweet.reply_count}</span>
-          <span>Quotes: {tweet.quote_count}</span>
+        <p className="text-gray-300 mb-2">{tweet.full_text}</p>
+  
+        <div className="flex flex-col text-gray-400 text-sm">
+          <div className="mb-2">
+            <strong>Created At:</strong> {tweet.created_at}
+          </div>
+          <div className="mb-2">
+            <strong>Language:</strong> {tweet.lang}
+          </div>
+          <div className="flex space-x-4 mb-2">
+            <span>
+              <strong>Retweets:</strong> {tweet.retweet_count}
+            </span>
+            <span>
+              <strong>Favorites:</strong> {tweet.favorite_count}
+            </span>
+            <span>
+              <strong>Replies:</strong> {tweet.reply_count}
+            </span>
+            <span>
+              <strong>Quotes:</strong> {tweet.quote_count}
+            </span>
+          </div>
+          <div className="mb-2">
+            <strong>Possibly Sensitive:</strong>{" "}
+            {tweet.possibly_sensitive ? "Yes" : "No"}
+          </div>
+          <div className="mb-2">
+            <strong>Views:</strong> {tweet.views_count || "N/A"}
+          </div>
+          <div className="mb-4">
+            <strong>User:</strong> {tweet.user.name} (@{tweet.user.screen_name})
+            <br />
+            <strong>Description:</strong>{" "}
+            {tweet.user.description || "No description available"}
+            <br />
+            <strong>Followers:</strong> {tweet.user.followers_count} |{" "}
+            <strong>Friends:</strong> {tweet.user.friends_count}
+            <br />
+            <strong>Profile Image:</strong>{" "}
+            <a
+              href={tweet.user.profile_image_url_https}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="text-blue-400 underline"
+            >
+              View Image
+            </a>
+          </div>
+          <div className="mb-2">
+            <strong>Entities:</strong>
+            <ul className="list-disc ml-5">
+              <li>
+                <strong>Hashtags:</strong>{" "}
+                {tweet.entities.hashtags.length
+                  ? tweet.entities.hashtags.join(", ")
+                  : "None"}
+              </li>
+              <li>
+                <strong>URLs:</strong>{" "}
+                {tweet.entities.urls.length
+                  ? tweet.entities.urls.join(", ")
+                  : "None"}
+              </li>
+              <li>
+                <strong>User Mentions:</strong>{" "}
+                {tweet.entities.user_mentions.length
+                  ? tweet.entities.user_mentions.join(", ")
+                  : "None"}
+              </li>
+            </ul>
+          </div>
         </div>
+  
+        {/* Timeline Section */}
+        {timeline && (
+          <div className="bg-gray-800 p-4 mt-4 rounded-md">
+            <h3 className="text-lg font-bold text-blue-400 mb-2">Timeline</h3>
+            <p className="text-gray-300">
+              <a
+                href={timeline}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-blue-400 underline"
+              >
+                View Timeline
+              </a>
+            </p>
+          </div>
+        )}
       </div>
     ));
   };
@@ -571,15 +652,15 @@ const Services = () => {
             </button>
           </div>
           {showDetails && (
-            <div className="mt-6">
-              <h3 className="text-xl font-bold text-blue-400 mb-4">Tweets</h3>
-              {xData?.tweets ? (
-                renderXTweets(xData.tweets)
-              ) : (
-                <p>No tweets available</p>
-              )}
-            </div>
-          )}
+  <div className="mt-6">
+    <h3 className="text-xl font-bold text-blue-400 mb-4">Tweets</h3>
+    {xData?.tweets?.length > 0 ? (
+      renderXTweets(xData.tweets, xData.timeline)
+    ) : (
+      <p className="text-gray-400">No tweets available</p>
+    )}
+  </div>
+)}
         </div>
       )}
 

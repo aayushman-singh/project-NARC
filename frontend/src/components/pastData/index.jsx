@@ -20,7 +20,7 @@ import RenderInstagramData from "../services/Instagram";
 import FacebookDataViewer from "./FacebookSection";
 import WhatsAppChatsViewer from "./WhatsappSection";
 import TelegramChatsDisplay from "./TelegramSection";
-
+import XTweetsDisplay from "./TwitterSection"
 const PastData = () => {
   const [activeSection, setActiveSection] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -119,32 +119,8 @@ const PastData = () => {
 
  
 
-  const renderXTweets = (tweets) => {
-    return tweets.map((tweet, index) => (
-      <div key={index} className="bg-gray-700 p-4 rounded-md mt-4">
-        <h3 className="text-xl font-bold mb-2">
-          <a
-            href={tweet.url}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="text-blue-400 underline"
-          >
-            {tweet.id_str}
-          </a>
-        </h3>
-        <p className="text-gray-300">{tweet.full_text}</p>
-        <div className="flex space-x-4 mt-2 text-gray-400 text-sm">
-          <span>Created at: {tweet.created_at}</span>
-          <span>Lang: {tweet.lang}</span>
-          <span>Retweets: {tweet.retweet_count}</span>
-          <span>Favorites: {tweet.favorite_count}</span>
-          <span>Replies: {tweet.reply_count}</span>
-          <span>Quotes: {tweet.quote_count}</span>
-        </div>
-      </div>
-    ));
-  };
-
+ 
+  
   
 
   const renderDropdown = (platform) => (
@@ -418,29 +394,11 @@ const PastData = () => {
           <h2 className="text-2xl font-bold text-blue-500">
             X (formerly Twitter)
           </h2>
-          <input
-            type="text"
-            id="xInput"
-            placeholder="Enter X username, email, or phone number"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="password"
-            id="xPassword"
-            placeholder="Enter X password"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          Max posts:
-          {renderDropdown("x")}{" "}
-          {/* Assuming this renders the dropdown for the max posts */}
+         
+        
+        
           <div className="flex space-x-4 mt-4">
-            <button
-              onClick={() => handleSubmit("x")}
-              className=" bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
-              disabled={isLoading}
-            >
-              Submit
-            </button>
+           
             <button
               onClick={() => handleShowDetails("x")}
               className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
@@ -449,15 +407,16 @@ const PastData = () => {
             </button>
           </div>
           {showDetails && (
-            <div className="mt-6">
-              <h3 className="text-xl font-bold text-blue-400 mb-4">Tweets</h3>
-              {xData?.tweets ? (
-                renderXTweets(xData.tweets)
-              ) : (
-                <p>No tweets available</p>
-              )}
-            </div>
-          )}
+  <div className="mt-6">
+    <h3 className="text-xl font-bold text-blue-400 mb-4">Tweets</h3>
+   
+      <XTweetsDisplay apiData={xData} />
+   
+    
+  </div>
+)}
+
+
         </div>
       )}
 
