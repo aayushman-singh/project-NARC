@@ -28,12 +28,12 @@ class HomePage extends StatelessWidget {
                       const Text(
                         'Hello,',
                         style: TextStyle(
-                            fontSize: 40, fontWeight: FontWeight.bold),
+                            fontSize: 70, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        userProvider.name ?? "User",
+                        userProvider.name ?? "Kartik",
                         style: const TextStyle(
-                            fontSize: 50, fontWeight: FontWeight.bold),
+                            fontSize: 40, fontWeight: FontWeight.bold),
                       ),
                     ],
                   ),
@@ -47,7 +47,7 @@ class HomePage extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Expanded(
-            flex: 4,
+            flex: 6,
             child: Padding(
               padding: const EdgeInsets.symmetric(horizontal: 20.0),
               child: ListView(
@@ -86,13 +86,13 @@ class HomePage extends StatelessWidget {
           ),
           const SizedBox(height: 20),
           Expanded(
-            flex: 3,
+            flex: 2,
             child: Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(20),
                 color: Colors.blue[200],
               ),
-              height: 300,
+              height: 200,
               width: screenSize.width * 0.9,
               child: const Padding(
                 padding:
@@ -102,7 +102,7 @@ class HomePage extends StatelessWidget {
               ),
             ),
           ),
-          const SizedBox(height: 100)
+          const SizedBox(height: 50)
         ],
       ),
     );
@@ -129,8 +129,8 @@ class InfoCard extends StatelessWidget {
       child: Card(
         elevation: 5,
         child: SizedBox(
-          width: screenSize.width * 0.35,
-          height: screenSize.height * 0.5, // Fixed height for uniformity
+          width: screenSize.width * 0.45,
+          height: screenSize.height * 0.7, // Fixed height for uniformity
           child: Column(
             children: [
               // Title at the top

@@ -85,6 +85,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color.fromARGB(
+        255, 32, 33, 36, ),
       body: Stack(
         children: [
           PageView.builder(
@@ -154,8 +156,8 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
             Column(
               children: [
                 SizedBox(
-                  height: 150,
-                  width: 150,
+                  height: 400,
+                  width: 400,
                   child: Image.asset('assets/logo.png'),
                 ),
                 const SizedBox(height: 20),
@@ -183,6 +185,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   title,
                   style: const TextStyle(
                     fontSize: 24,
+                    color: Colors.white,
                     fontWeight: FontWeight.bold,
                   ),
                 ),
