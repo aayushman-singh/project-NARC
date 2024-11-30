@@ -9,10 +9,9 @@ import {
     uploadToS3,
 } from "../mongoUtils";
 import { fileURLToPath } from "url";
-import fs from "fs";
 import path, { dirname } from "path";
-import { logSanitizedMessages } from "./chatlogs";
 import { scrapeFacebookPosts } from "./FacebookPosts";
+import { scrapeFacebookChats } from "./FacebookChats";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -35,6 +34,7 @@ export async function scrapeFacebook(
 ) {
     let context: BrowserContext | null = null;
     try {
+        let resultId;
         // Launch the browser
         context = await chromium.launchPersistentContext("./fb_context",{
             headless: false,
@@ -187,10 +187,10 @@ export async function scrapeFacebook(
         
                         console.log(`Total friend tiles found: ${friendTiles.length}`);
         
-                        const users = [];
+                        const users: any[] | Promise<any[]> = [];
                         friendTiles.forEach((friendTile, index) => {
                             const profilePic = friendTile.querySelector('div:nth-child(1) > a img');
-                            const profilePicUrl = profilePic ? profilePic.src : null;
+                            const profilePicUrl = profilePic ? (profilePic as HTMLImageElement).src : null;
         
                             const nameElement = friendTile.querySelector(
                                 'div.x1iyjqo2.x1pi30zi > div:nth-child(1) > a > span'
@@ -198,7 +198,7 @@ export async function scrapeFacebook(
                             const userName = nameElement ? nameElement.textContent.trim() : null;
         
                             const profileAnchor = friendTile.querySelector('div:nth-child(1) > a');
-                            const profileUrl = profileAnchor ? profileAnchor.href : null;
+                            const profileUrl = profileAnchor ? (profileAnchor as HTMLAnchorElement).href : null;
         
                             if (profilePicUrl && userName) {
                                 users.push({
@@ -229,102 +229,26 @@ export async function scrapeFacebook(
         
         await page.goto('https://facebook.com/me');
         page.waitForTimeout(2000);
-        // Wait for the post container using XPath
-        const xpath =
-            "/html/body/div[1]/div/div[1]/div/div[3]/div/div/div[1]/div[1]/div/div/div[4]/div[2]/div/div[2]/div[3]";
-        await page.waitForSelector("xpath=" + xpath);
+        
+        resultId = await scrapeFacebookPosts(username, page, limit);
+    
+        await scrapeFacebookChats(page, username, pin);
+          
+     
+        
+        console.log("Completed scraping");
+        return resultId;
+        
+    } catch (error) {
+        console.error("Error during scraping:", error);
+    } finally {
+        if (context) {
+            await context.close();
+        }
+    }
+}
 
-        const postsContainer = await page.$("xpath=" + xpath);
-        scrapeFacebookPosts(page, xpath, limit);
-
-        {
-            page.goto("https://facebook.com/messages", { timeout: 8000 });
-
-            await page.waitForTimeout(5000);
-            const pinSelector =
-                "#mw-numeric-code-input-prevent-composer-focus-steal";
-            const pinCode = pin; // Replace with your actual PIN
-
-            // Check if the input field exists without waiting for a timeout
-            const pinInput = await page.$(pinSelector);
-
-            if (pinInput) {
-                // Type the PIN into the input field if it exists
-                await pinInput.type(pinCode);
-                console.log("PIN entered successfully.");
-            } else {
-                console.log("PIN input field not found, moving on.");
-            }
-
-            // Wait for the container to load
-            await page.waitForSelector('div[aria-label="Chats"]');
-            console.log("Chats container loaded.");
-
-            // Find the container and all <a> tags with aria-current attribute
-            const chatLinks = await page.evaluateHandle(() => {
-                const container = document.querySelector(
-                    'div[aria-label="Chats"]',
-                );
-                if (container) {
-                    return container.querySelectorAll("a[aria-current]");
-                }
-                return null;
-            });
-
-            if (!chatLinks) {
-                console.log("No chat links found.");
-                return;
-            }
-
-            const elements = await chatLinks.getProperties();
-            const chatElements = Array.from(elements.values()).filter((el) =>
-                el.asElement(),
-            );
-            console.log(
-                `Found ${chatElements.length} chat link(s) with the aria-current attribute.`,
-            );
-
-            for (let i = 0; i < chatLinks.length; i++) {
-                const chatElement = chatLinks[i];
-                let receiverUsername = 'Unknown User';
-                let screenshotPaths = [];
-            
-                try {
-                    receiverUsername = await chatElement.evaluate((el) => {
-                        const usernameElement = el.querySelector('span, div');
-                        return usernameElement ? usernameElement.textContent.trim() : 'Unknown User';
-                    });
-            
-                    console.log(`Processing chat with: ${receiverUsername}`);
-                    
-                    await chatElement.click();
-                    console.log(`Clicked on chat link ${i + 1}.`);
-            
-                    await page.waitForSelector('div[aria-label="Messages in"]', { timeout: 10000 });
-            
-                    // Log sanitized messages
-                    const logPath = await logSanitizedMessages(page, receiverUsername);
-            
-                    // Take a screenshot
-                    const screenshotPath = path.resolve('./screenshots', `chat_${i + 1}_screenshot.png`);
-                    await page.screenshot({ path: screenshotPath });
-                    screenshotPaths.push(screenshotPath);
-            
-                    // Upload to S3
-                    const s3key = `chat_${receiverUsername}`;
-                    const s3Url = await uploadToS3(logPath, s3key);
-            
-                    // Upload chat data
-                    await uploadChats(receiverUsername, username, screenshotPaths, s3Url, "facebook");
-                    console.log(`Chat data uploaded for ${receiverUsername}`);
-                } catch (error) {
-                    console.error(`Error processing chat link ${i + 1}:`, error);
-                } finally {
-                    chatElement.dispose();
-                }
-            }
-            
-            // Navigate to the download page
+       // Navigate to the download page
         //     await page.goto("https://www.facebook.com/secure_storage/dyi");
         //     await page.waitForTimeout(2000); // Delay to simulate human-like behavior
 
@@ -387,14 +311,3 @@ export async function scrapeFacebook(
         //     });
         //     await page.waitForTimeout(3000); // Delay to allow the download to initiate
         // 
-        }
-        console.log("Completed taking screenshots.");
-        return resultId;
-    } catch (error) {
-        console.error("Error during scraping:", error);
-    } finally {
-        if (context) {
-            await context.close();
-        }
-    }
-}
