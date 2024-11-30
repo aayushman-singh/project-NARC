@@ -103,13 +103,22 @@ class _AuthPageState extends State<AuthPage> {
         Uri.parse('http://$localhost:5001/api/users/'),
         headers: {'Authorization': 'Bearer $token'},
       );
-
+      
       print(
           "User data response received. Status code: ${userResponse.statusCode}");
       print("Response body: ${userResponse.body}");
 
       if (userResponse.statusCode == 200) {
         final userData = jsonDecode(userResponse.body);
+        final List<Map<String, dynamic>> searchHistory =
+              (userData['searchHistory'] as List)
+                  .map((entry) => {
+                        'resultId': entry['resultId'] ?? '',
+                        'platform': entry['platform'] ?? '',
+                        'identifier': entry['identifier'] ?? '',
+                        'timestamp': entry['timestamp'] ?? '',
+                      })
+                  .toList();
 
         // Update UserProvider
         Provider.of<UserProvider>(context, listen: false).setUser(
@@ -117,6 +126,7 @@ class _AuthPageState extends State<AuthPage> {
           name: userData['name'] ?? '', // Fallback to empty string
           email: userData['email'] ?? '', // Fallback to empty string
           pic: userData['pic'] ?? '', // Handle null for optional fields
+          searchHistory: userData['searchHistory']
         );
 
         // Navigate to PersistentStructure
