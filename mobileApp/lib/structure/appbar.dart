@@ -112,10 +112,10 @@ class _PersistentStructureState extends State<PersistentStructure> {
         children: [
           HomePage(pageController: pageController,),
           const SocialMediaPage(),
-          const OsintPage(),
+          OsintPage(),
           const AnalysisPage(),
           const PastDataPage(),
-          const ProfilePage(),
+          ProfilePage(),
           SplashPage(),
           const OnboardingPage(),
           AuthPage(),
