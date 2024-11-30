@@ -49,7 +49,7 @@ app.post("/facebook", async (req, res) => {
                 pin,
                 limit,
             );
-            updateUserHistory(userId, startUrls, resultId, "facebook");
+            await updateUserHistory(userId, startUrls, resultId, "facebook");
         }
 
         return res.status(200).json("Success"); // Return final response with status 200
