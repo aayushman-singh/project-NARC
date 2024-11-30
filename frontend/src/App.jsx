@@ -10,6 +10,7 @@ import DataAnalysisPage from "./components/analysis";
 // import CursorFollower from "./components/cursor";
 import { AuthProvider } from "./contexts/authContext";
 import { useRoutes } from "react-router-dom";
+import ProfilePage from "./components/profile";
 
 function App() {
   const routesArray = [
@@ -49,6 +50,10 @@ function App() {
       path: "/profileAnalysis",
       element: <DataAnalysisPage />,
     },
+    {
+      path: "/profilePage",
+      element: <ProfilePage/>,
+    }
   ];
 
   let routesElement = useRoutes(routesArray);

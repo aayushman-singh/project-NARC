@@ -75,6 +75,14 @@ const Header = () => {
       <div className="flex items-center space-x-6 relative">
         {user ? (
           <>
+          <Link
+              to="profilePage"
+              smooth={true}
+              duration={500}
+              className="text-white text-sm font-semibold cursor-pointer hover:text-blue-400 transition-colors"
+            >
+              {user.name}
+            </Link>
             <ScrollLink
               to="about"
               smooth={true}
