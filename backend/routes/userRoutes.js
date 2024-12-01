@@ -8,5 +8,6 @@ router.route('/signup').post(registerUser);
 router.route('/login').post(authUser);
 
 router.route('/').get(protect, getUser)
+router.route('/userInfo').put(protect, updateUser)
 
 export default router;
