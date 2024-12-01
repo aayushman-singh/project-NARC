@@ -36,25 +36,25 @@ const registerUser = asyncHandler(async(req,res) => {
 })
 
 
-const authUser = asyncHandler(async(req,res) => {
-    const { email , password} = req.body;
- const user = await User.findOne({email});
+const authUser = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
+  const user = await User.findOne({ email });
 
-if(user && (await user.matchPassword(password))){
+  if (user && (await user.matchPassword(password))) {
     res.json({
-        _id: user._id,
-        name: user.name,
-        email: user.email,
-        isAdmin: user.isAdmin,
-        token: generateToken(user._id),
-        pic: user.pic
+      _id: user._id,
+      name: user.name,
+      email: user.email,
+      isAdmin: user.isAdmin,
+      token: generateToken(user._id),
+      pic: user.pic
     })
-}
-else{
+  }
+  else {
     res.status(400);
     throw new Error("invalid username or password")
-}
-})
+  }
+});
 
 const getUser = asyncHandler(async (req, res) => {
   if (!req.user) {
@@ -81,5 +81,36 @@ const getUser = asyncHandler(async (req, res) => {
   }
 });
 
+const updateUser = asyncHandler(async (req, res) => {
+  const { name, email } = req.body;
 
-export { User, asyncHandler, generateToken, authUser, registerUser, getUser };
+  if (!name || !email) {
+    res.status(400);
+    throw new Error('Name and email are required.');
+  }
+
+  const user = await User.findById(req.user._id);
+
+  if (!user) {
+    res.status(404);
+    throw new Error('User not found.');
+  }
+
+  user.name = name || user.name;
+  user.email = email || user.email;
+
+  const updatedUser = await user.save();
+
+  res.status(200).json({
+    _id: updatedUser._id,
+    name: updatedUser.name,
+    email: updatedUser.email,
+    isAdmin: updatedUser.isAdmin,
+    searchHistory: updatedUser.searchHistory,
+    createdAt: updatedUser.createdAt,
+    updatedAt: updatedUser.updatedAt,
+  });
+
+});
+
+export { User, asyncHandler, generateToken, authUser, registerUser, getUser, updateUser };
