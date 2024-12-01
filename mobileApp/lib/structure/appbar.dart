@@ -90,7 +90,7 @@ class _PersistentStructureState extends State<PersistentStructure> {
               onTap: () => navigateTo(AppPage.analysis),
             ),
             ListTile(
-              leading: const Icon(Icons.analytics),
+              leading: const Icon(Icons.data_exploration),
               title: const Text('Past Reports'),
               onTap: () => navigateTo(AppPage.pastData),
             ),
@@ -110,7 +110,9 @@ class _PersistentStructureState extends State<PersistentStructure> {
           });
         },
         children: [
-          HomePage(pageController: pageController,),
+          HomePage(
+            pageController: pageController,
+          ),
           const SocialMediaPage(),
           OsintPage(),
           const AnalysisPage(),
@@ -140,54 +142,103 @@ class _PersistentStructureState extends State<PersistentStructure> {
             child: Row(
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
-                IconButton(
-                  icon: const Icon(Icons.home),
-                  color:
-                      _currentPage == AppPage.home ? Colors.blue : Colors.white,
+                _buildAppBarItem(
+                  icon: Icons.home,
+                  isSelected: _currentPage == AppPage.home,
                   onPressed: () => navigateTo(AppPage.home),
                 ),
-                IconButton(
-                  icon: Image.asset(
+                AppBarImageItem(
+                  imagePath: 
                     'assets/detective-logo.PNG',
-                    height: 10,
-                    width: 10,
-                    color: _currentPage == AppPage.socialMedia
-                        ? Colors.blue
-                        : Colors.white,
-                  ),
+                   
+                  
+                  isSelected: _currentPage == AppPage.socialMedia,
                   onPressed: () => navigateTo(AppPage.socialMedia),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.search),
-                  color: _currentPage == AppPage.osint
-                      ? Colors.blue
-                      : Colors.white,
+
+                _buildAppBarItem(
+                  icon: Icons.search,
+                  isSelected: _currentPage == AppPage.osint,
                   onPressed: () => navigateTo(AppPage.osint),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.analytics),
-                  color: _currentPage == AppPage.analysis
-                      ? Colors.blue
-                      : Colors.white,
+                _buildAppBarItem(
+                  icon: Icons.analytics,
+                  isSelected: _currentPage == AppPage.analysis,
                   onPressed: () => navigateTo(AppPage.analysis),
                 ),
-                 IconButton(
-                  icon: const Icon(Icons.data_exploration),
-                  color: _currentPage == AppPage.pastData
-                      ? Colors.blue
-                      : Colors.white,
+                _buildAppBarItem(
+                  icon: Icons.data_exploration,
+                  isSelected: _currentPage == AppPage.pastData,
                   onPressed: () => navigateTo(AppPage.pastData),
                 ),
-                IconButton(
-                  icon: const Icon(Icons.person),
-                  color: _currentPage == AppPage.profile
-                      ? Colors.blue
-                      : Colors.white,
+                _buildAppBarItem(
+                  icon: Icons.person,
+                  isSelected: _currentPage == AppPage.profile,
                   onPressed: () => navigateTo(AppPage.profile),
                 ),
-               
               ],
             ),
+          ),
+        ),
+
+      ),
+    );
+  }
+
+  Widget _buildAppBarItem({
+    required IconData icon,
+    required bool isSelected,
+    required VoidCallback onPressed,
+  }) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isSelected ? Colors.white : Colors.transparent,
+        ),
+        child: Center(
+          child: Icon(
+            icon,
+            color: isSelected ? Colors.black : Colors.white,
+          ),
+        ),
+      ),
+    );
+  }
+}
+class AppBarImageItem extends StatelessWidget {
+  final String imagePath;
+  final bool isSelected;
+  final VoidCallback onPressed;
+
+  const AppBarImageItem({
+    Key? key,
+    required this.imagePath,
+    required this.isSelected,
+    required this.onPressed,
+  }) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return GestureDetector(
+      onTap: onPressed,
+      child: Container(
+        width: 50,
+        height: 50,
+        decoration: BoxDecoration(
+          shape: BoxShape.circle,
+          color: isSelected ? Colors.white : Colors.transparent,
+        ),
+        child: Center(
+          child: Image.asset(
+            imagePath,
+            height: 20,
+            width: 20,
+            color: isSelected ? Colors.black : Colors.white,
+            fit: BoxFit.contain,
           ),
         ),
       ),

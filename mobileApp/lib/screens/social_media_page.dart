@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:tattletale/utils/submitter.dart';
+import 'package:tattletale/utils/fetch_data.dart';
 
 class SocialMediaPage extends StatefulWidget {
   const SocialMediaPage({super.key});
@@ -10,6 +12,33 @@ class SocialMediaPage extends StatefulWidget {
 class _SocialMediaPageState extends State<SocialMediaPage> {
   String activeSection = '';
   bool isLoading = false;
+  final submitter = SocialMediaSubmitter();
+  Map<String, dynamic>? fetchedData;
+
+  final Map<String, TextEditingController> tagControllers = {
+    'instagram': TextEditingController(),
+    'x': TextEditingController(),
+    'facebook': TextEditingController(),
+    'whatsapp': TextEditingController(),
+    'telegram': TextEditingController(),
+  };
+  final Map<String, TextEditingController> passwordControllers = {
+    'instagram': TextEditingController(),
+    'x': TextEditingController(),
+    'facebook': TextEditingController(),
+    'whatsapp': TextEditingController(),
+    'telegram': TextEditingController(),
+  };
+  final Map<String, int> maxPosts = {
+    'instagram': 10,
+    'x': 10,
+    'facebook': 10,
+  };
+
+  final Map<String, int> maxMessages = {
+    'telegram': 10,
+    'whatsapp': 10,
+  };
 
   void handleSectionClick(String section) {
     setState(() {
@@ -17,33 +46,120 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
     });
   }
 
-  Future<void> handleSubmit(String platform) async {
-    final TextEditingController tagController = TextEditingController();
-    String tagInputValue = tagController.text;
-    List<String> tagsArray = tagInputValue
+  Future<void> handleSubmit(String platformKey) async {
+    final tagController = tagControllers[platformKey];
+    final passwordController = passwordControllers[platformKey];
+
+    if (tagController == null) return;
+
+    final tagsArray = tagController.text
         .split(',')
         .map((tag) => tag.trim())
         .where((tag) => tag.isNotEmpty)
         .toList();
 
-    final payload = {'startUrls': tagsArray};
+    if (tagsArray.isEmpty) {
+      ScaffoldMessenger.of(context)
+          .showSnackBar(const SnackBar(content: Text('Please enter tags.')));
+      return;
+    }
+
+    final limit = (platformKey == 'telegram' || platformKey == 'whatsapp')
+        ? maxMessages[platformKey]!
+        : maxPosts[platformKey]!;
+
+    // Check if password is required for this platform
+    String? password;
+    if (platformKey != 'whatsapp' && platformKey != 'telegram') {
+      if (passwordController == null || passwordController.text.isEmpty) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter the password.')),
+        );
+        return;
+      }
+      password = passwordController.text.trim();
+    }
 
     setState(() {
       isLoading = true;
     });
 
     try {
-      // Simulate API calls (replace with actual implementation)
-      await Future.delayed(const Duration(seconds: 2));
-      print('Payload being sent: $payload');
+      await submitter.handleSubmit(
+        context: context,
+        platform: platformKey,
+        tagsInput: tagsArray.join(','),
+        password: password,
+        limit: limit,
+      );
 
-      ScaffoldMessenger.of(context)
-          .showSnackBar(const SnackBar(content: Text('User Submitted Successfully')));
-      tagController.clear();
-    } catch (error) {
-      print('Error submitting tags: $error');
       ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to submit tags. Please try again.')));
+        const SnackBar(content: Text('Request submitted successfully')),
+      );
+      tagController.clear();
+      if (passwordController != null) passwordController.clear();
+    } catch (error) {
+      print('Error submitting request for $platformKey: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to submit request.')),
+      );
+    } finally {
+      setState(() {
+        isLoading = false;
+      });
+    }
+  }
+    void handleShowDetails(String platform,
+      {bool requiresPassword = false}) async {
+    final tagController = tagControllers[platform];
+    final passwordController = passwordControllers[platform];
+
+    if (tagController == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(
+            content: Text('Username input is missing for this platform.')),
+      );
+      return;
+    }
+
+    final username = tagController.text.trim();
+    final password = requiresPassword ? passwordController?.text.trim() : null;
+
+    if (username.isEmpty) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Please enter a username.')),
+      );
+      return;
+    }
+
+    setState(() {
+      isLoading = true;
+    });
+
+    try {
+      final data = await SocialMediaDetailsFetcher.handleShowDetails(
+        context: context,
+        platform: platform,
+        username: username,
+        password: password,
+      );
+
+      if (data == null) {
+        throw Exception('No data returned for the query.');
+      }
+
+      setState(() {
+        fetchedData = data;
+      });
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Data fetched successfully.')),
+      );
+    } catch (error) {
+      print('Error fetching details for $platform: $error');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text('Failed to fetch data: $error')),
+      );
     } finally {
       setState(() {
         isLoading = false;
@@ -51,7 +167,9 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
     }
   }
 
-  @override
+
+
+@override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[900],
@@ -88,25 +206,25 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    _buildServiceButton(Icons.photo_camera, 'Instagram',
+                    _buildServiceButton('instagram', 'Instagram',
                         activeSection == 'instagram', Colors.pink, () {
                       handleSectionClick('instagram');
                     }),
-                    _buildServiceButton(Icons.wechat_sharp, 'WhatsApp',
+                    _buildServiceButton('facebook', 'Facebook',
+                        activeSection == 'facebook', Colors.blue, () {
+                      handleSectionClick('facebook');
+                    }),
+                    _buildServiceButton(
+                        'x', 'X', activeSection == 'x', Colors.blue, () {
+                      handleSectionClick('x');
+                    }),
+                    _buildServiceButton('whatsapp', 'WhatsApp',
                         activeSection == 'whatsapp', Colors.green, () {
                       handleSectionClick('whatsapp');
                     }),
-                    _buildServiceButton(
-                        Icons.web, 'X', activeSection == 'x', Colors.blue, () {
-                      handleSectionClick('x');
-                    }),
-                    _buildServiceButton(Icons.send, 'Telegram',
+                    _buildServiceButton('telegram', 'Telegram',
                         activeSection == 'telegram', Colors.blueAccent, () {
                       handleSectionClick('telegram');
-                    }),
-                    _buildServiceButton(Icons.facebook, 'Facebook',
-                        activeSection == 'facebook', Colors.blue, () {
-                      handleSectionClick('facebook');
                     }),
                   ],
                 ),
@@ -129,24 +247,55 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
     );
   }
 
-  Widget _buildServiceButton(IconData icon, String label, bool isActive,
+
+Widget _buildServiceButton(String platformKey, String label, bool isActive,
       Color activeColor, VoidCallback onPressed) {
     return Column(
       children: [
-        IconButton(
-          icon:
-              Icon(icon, color: isActive ? activeColor : Colors.grey, size: 32),
-          onPressed: onPressed,
+        GestureDetector(
+          onTap: onPressed,
+          child: Container(
+            width: 50,
+            height: 50,
+            decoration: BoxDecoration(
+              shape: BoxShape.circle,
+              color:
+                  isActive ? activeColor.withOpacity(0.2) : Colors.transparent,
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Image.asset(
+                'assets/$platformKey.png',
+                color: isActive ? activeColor : Colors.grey,
+                fit: BoxFit.contain,
+              ),
+            ),
+          ),
         ),
-        Text(label,
-            style: TextStyle(color: isActive ? activeColor : Colors.grey)),
+        const SizedBox(height: 8),
+        Text(
+          label,
+          style: TextStyle(
+            color: isActive ? activeColor : Colors.grey,
+          ),
+        ),
+        if (fetchedData != null)
+          Expanded(
+            child: SingleChildScrollView(
+              child: Text(
+                fetchedData.toString(),
+                style: const TextStyle(color: Colors.white),
+              ),
+            ),
+          ),
       ],
     );
   }
 
-  Widget _buildServiceForm(String platform, Color color, String platformKey) {
-    final TextEditingController tagController = TextEditingController();
 
+  Widget _buildServiceForm(String platform, Color color, String platformKey) {
+    final tagController = tagControllers[platformKey];
+    final passwordController = passwordControllers[platformKey];
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
@@ -157,6 +306,43 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
           Text(platform,
               style: TextStyle(
                   fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+          const SizedBox(height: 10),
+          DropdownButton<int>(
+            value: (platformKey == 'telegram' || platformKey == 'whatsapp')
+                ? maxMessages[platformKey]
+                : maxPosts[platformKey],
+            dropdownColor: Colors.grey[800],
+            items: (platformKey == 'telegram' || platformKey == 'whatsapp')
+                ? List.generate(
+                    5,
+                    (index) => DropdownMenuItem(
+                      value: (index + 1) * 10,
+                      child: Text(
+                        'Max messages: ${(index + 1) * 10}',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  )
+                : [1, 3, 5, 10, 15, 20, 30, 50, 100].map((value) {
+                    return DropdownMenuItem(
+                      value: value,
+                      child: Text(
+                        'Max posts: $value',
+                        style: const TextStyle(color: Colors.white),
+                      ),
+                    );
+                  }).toList(),
+            onChanged: (value) {
+              setState(() {
+                if (platformKey == 'telegram' || platformKey == 'whatsapp') {
+                  maxMessages[platformKey] = value!;
+                } else {
+                  maxPosts[platformKey] = value!;
+                }
+              });
+            },
+          ),
+          const SizedBox(height: 10),
           TextField(
             controller: tagController,
             decoration: InputDecoration(
@@ -168,10 +354,30 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
             ),
           ),
           const SizedBox(height: 10),
-          ElevatedButton(
-            onPressed: () => handleSubmit(platformKey),
-            style: ElevatedButton.styleFrom(backgroundColor: color),
-            child: const Text('Submit'),
+          TextField(
+            controller: passwordController,
+            decoration: InputDecoration(
+              hintText: 'Enter password',
+              filled: true,
+              fillColor: Colors.grey[700],
+              border:
+                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          const SizedBox(height: 10),
+          Row(
+            children: [
+              ElevatedButton(
+                onPressed: () => handleSubmit(platformKey),
+                style: ElevatedButton.styleFrom(backgroundColor: color),
+                child: const Text('Submit'),
+              ),
+              ElevatedButton(
+                onPressed: () => handleShowDetails(platformKey),
+                style: ElevatedButton.styleFrom(backgroundColor: color),
+                child: const Text('Show details'),
+              ),
+            ],
           ),
         ],
       ),
