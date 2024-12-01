@@ -77,7 +77,7 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
    Navigator.pushReplacement(
       context,
       MaterialPageRoute(
-        builder: (_) => const PersistentStructure(),
+        builder: (_) => const AuthPage(),
       ),
     );
   }
