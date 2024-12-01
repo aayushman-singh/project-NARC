@@ -14,10 +14,10 @@ export const protect = asyncHandler(async (req, res, next) => {
     try {
       console.log(`${JWT_SECRET}`)
       token = req.headers.authorization.split(" ")[1];
-      console.log(`Received token: ${token}`); // Log the token
+     
 
       const decoded = jwt.verify(token, JWT_SECRET); // Verify token with hardcoded secret
-      console.log(`Decoded token: ${JSON.stringify(decoded)}`); // Log the decoded token
+     
 
       req.user = await User.findById(decoded.id).select("-password");
       if (!req.user) {
@@ -26,7 +26,7 @@ export const protect = asyncHandler(async (req, res, next) => {
         throw new Error("User not found");
       }
 
-      console.log(`User set in req.user: ${JSON.stringify(req.user)}`); // Log req.user
+    
       next();
     } catch (error) {
       console.error(`Token validation error: ${error.message}`);
