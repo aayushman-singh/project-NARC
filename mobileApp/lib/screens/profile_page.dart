@@ -4,7 +4,6 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 import 'package:provider/provider.dart';
 import 'package:tattletale/provider/user.dart';
-import 'package:tattletale/screens/auth_page.dart';
 
 class ProfilePage extends StatefulWidget {
   @override
@@ -17,6 +16,8 @@ class _ProfilePageState extends State<ProfilePage> {
   bool loading = true;
   String? error;
   final String localhost = '10.0.2.2';
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _emailController = TextEditingController();
 
   @override
   void initState() {
@@ -31,13 +32,11 @@ class _ProfilePageState extends State<ProfilePage> {
     });
 
     try {
-      // Retrieve the token from secure storage
       final token = await storage.read(key: 'token');
       if (token == null || token.isEmpty) {
         throw Exception("Authentication token not found. Please log in.");
       }
 
-      // Fetch user data using the token
       final userResponse = await http.get(
         Uri.parse('http://$localhost:5001/api/users/'),
         headers: {'Authorization': 'Bearer $token'},
@@ -48,15 +47,18 @@ class _ProfilePageState extends State<ProfilePage> {
 
         // Update UserProvider
         Provider.of<UserProvider>(context, listen: false).setUser(
-            id: userData['_id'] ?? '',
-            name: userData['name'] ?? '',
-            email: userData['email'] ?? '',
-            pic: userData['pic'] ?? '',
-            searchHistory: userData['searchHistory']);
+          id: userData['_id'] ?? '',
+          name: userData['name'] ?? '',
+          email: userData['email'] ?? '',
+          pic: userData['pic'] ?? '',
+          searchHistory: userData['searchHistory'],
+        );
 
         // Set user data for display
         setState(() {
           user = userData;
+          _nameController.text = userData['name'] ?? '';
+          _emailController.text = userData['email'] ?? '';
         });
       } else {
         final errorMessage = jsonDecode(userResponse.body)['message'] ??
@@ -74,13 +76,59 @@ class _ProfilePageState extends State<ProfilePage> {
     }
   }
 
+  Future<void> updateUserData() async {
+    setState(() {
+      loading = true;
+    });
+
+    try {
+      final token = await storage.read(key: 'token');
+      if (token == null || token.isEmpty) {
+        throw Exception("Authentication token not found. Please log in.");
+      }
+
+      final response = await http.put(
+        Uri.parse('http://$localhost:5001/api/users/userInfo'),
+        headers: {
+          'Authorization': 'Bearer $token',
+          'Content-Type': 'application/json',
+        },
+        body: jsonEncode({
+          'name': _nameController.text,
+          'email': _emailController.text,
+        }),
+      );
+
+      if (response.statusCode == 200) {
+        fetchUserData();
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text("Profile updated successfully!")),
+        );
+      } else {
+        final errorMessage =
+            jsonDecode(response.body)['message'] ?? 'Failed to update profile';
+        throw Exception(errorMessage);
+      }
+    } catch (err) {
+      setState(() {
+        error = err.toString();
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(content: Text("Error: $error")),
+      );
+    } finally {
+      setState(() {
+        loading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
-    final userProvider = Provider.of<UserProvider>(context);
     if (loading) {
       return Scaffold(
         backgroundColor: Colors.black,
-        body: Center(
+        body: const Center(
           child: CircularProgressIndicator(),
         ),
       );
@@ -143,12 +191,13 @@ class _ProfilePageState extends State<ProfilePage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          user!['name'],
-                          style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 24,
-                              fontWeight: FontWeight.bold),
+                        TextField(
+                          controller: _nameController,
+                          style: const TextStyle(color: Colors.white),
+                          decoration: const InputDecoration(
+                            labelText: 'Name',
+                            labelStyle: TextStyle(color: Colors.grey),
+                          ),
                         ),
                         const SizedBox(height: 4),
                         Text(
@@ -164,80 +213,27 @@ class _ProfilePageState extends State<ProfilePage> {
             ),
             const SizedBox(height: 20),
 
-            // User Info
+            // Email Input
             Card(
               color: Colors.grey[850],
               child: Padding(
                 padding: const EdgeInsets.all(16.0),
-                child: Column(
-                  children: [
-                    ListTile(
-                      leading: const Icon(Icons.email, color: Colors.blue),
-                      title: const Text(
-                        "Email Address",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
-                      subtitle: Text(
-                        user!['email'],
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    ListTile(
-                      leading: const Icon(Icons.person, color: Colors.purple),
-                      title: const Text(
-                        "Account Type",
-                        style: TextStyle(color: Colors.grey, fontSize: 14),
-                      ),
-                      subtitle: Text(
-                        user!['isAdmin'] ? "Administrator" : "Standard User",
-                        style: const TextStyle(color: Colors.white),
-                      ),
-                    ),
-                    Card(
-                      color: Colors.grey[850],
-                      child: Padding(
-                        padding: const EdgeInsets.all(16.0),
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              "Search History",
-                              style: TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold),
-                            ),
-                            const SizedBox(height: 10),
-                            userProvider.searchHistory.isNotEmpty
-                                ? Column(
-                                    children: userProvider.searchHistory
-                                        .map<Widget>((history) => ListTile(
-                                              title: Text(
-                                                history['platform'],
-                                                style: const TextStyle(
-                                                    color: Colors.blue),
-                                              ),
-                                              subtitle: Text(
-                                                "${history['identifier']} - ${DateTime.parse(history['timestamp']).toLocal()}",
-                                                style: const TextStyle(
-                                                    color: Colors.grey),
-                                              ),
-                                            ))
-                                        .toList(),
-                                  )
-                                : const Center(
-                                    child: Text(
-                                      "No search history available.",
-                                      style: TextStyle(color: Colors.grey),
-                                    ),
-                                  ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ],
+                child: TextField(
+                  controller: _emailController,
+                  style: const TextStyle(color: Colors.white),
+                  decoration: const InputDecoration(
+                    labelText: 'Email',
+                    labelStyle: TextStyle(color: Colors.grey),
+                  ),
                 ),
               ),
+            ),
+            const SizedBox(height: 20),
+
+            // Save Button
+            ElevatedButton(
+              onPressed: updateUserData,
+              child: const Text("Save Changes"),
             ),
           ],
         ),

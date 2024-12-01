@@ -31,9 +31,9 @@ class HomePage extends StatelessWidget {
                             fontSize: 70, fontWeight: FontWeight.bold),
                       ),
                       Text(
-                        userProvider.name ?? "Kartik",
+                        userProvider.name! ,
                         style: const TextStyle(
-                            fontSize: 40, fontWeight: FontWeight.bold),
+                            fontSize: 40, fontWeight:FontWeight.bold),
                       ),
                     ],
                   ),
