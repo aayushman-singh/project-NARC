@@ -10,6 +10,7 @@ import { Request, Response } from "express";
 import mongoose from "mongoose";
 import { updateUserHistory } from "../Helpers/mongoUtils";
 const app = express();
+
 const PORT = Number(process.env.PORT) || 3001; // Instagram Scraper Port
 const connectDB = async () => {
     try {
