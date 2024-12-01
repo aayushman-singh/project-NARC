@@ -43,6 +43,5 @@ node_modules/
 /playwright/.cache/
 /tests
 /tests-examples
-playwright.config.ts
 scraper/Darke_TheDragon_following_log.txt
 scraper/Darke_TheDragon_followers_log.txt

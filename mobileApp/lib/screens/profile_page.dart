@@ -191,13 +191,17 @@ class _ProfilePageState extends State<ProfilePage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        TextField(
+                        Container(
+                          height: 100,
+                          width: 150,
+                          child: TextField(
                           controller: _nameController,
                           style: const TextStyle(color: Colors.white),
                           decoration: const InputDecoration(
                             labelText: 'Name',
                             labelStyle: TextStyle(color: Colors.grey),
                           ),
+                        ),
                         ),
                         const SizedBox(height: 4),
                         Text(
