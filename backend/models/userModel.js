@@ -2,7 +2,7 @@ import mongoose from 'mongoose';
 import bcrypt from 'bcryptjs';
 
 const searchHistorySchema = new mongoose.Schema({
-    term: { type: String, required: true }, // The search term or URL
+    term: { type: String, required: false }, // The search term or URL
     platform: { type: String, required: true }, // Platform name (e.g., "telegram")
     logo: { type: String }, // URL or path to the platform logo
     date: { type: Date, default: Date.now }, // Timestamp of the search

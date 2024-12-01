@@ -1,17 +1,31 @@
 'use client'
-
+import { SiInstagram, SiX, SiWhatsapp, SiTelegram } from "react-icons/si"
 import React, { useEffect, useState } from "react"
 import axios from "axios"
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Skeleton } from "@/components/ui/skeleton"
-import { AlertCircle, Calendar, Mail, User } from 'lucide-react'
+import { Button } from "@/components/ui/button"
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
+} from "@/components/ui/dialog"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { AlertCircle, Calendar, Edit, Mail, User, Save, X } from 'lucide-react'
+import { toast, Toaster } from "sonner"
 
 const ProfilePage = () => {
   const [user, setUser] = useState(null)
   const [loading, setLoading] = useState(true)
   const [error, setError] = useState(null)
+  const [isEditing, setIsEditing] = useState(false)
+  const [editName, setEditName] = useState('')
+  const [editEmail, setEditEmail] = useState('')
 
   useEffect(() => {
     const fetchUser = async () => {
@@ -35,6 +49,8 @@ const ProfilePage = () => {
         })
 
         setUser(response.data)
+        setEditName(response.data.name)
+        setEditEmail(response.data.email)
       } catch (err) {
         setError(
           err.response?.data?.message || 
@@ -48,6 +64,65 @@ const ProfilePage = () => {
 
     fetchUser()
   }, [])
+
+  const handleUpdateUser = async () => {
+    try {
+      const userInfoString = localStorage.getItem('userInfo')
+      const userInfo = JSON.parse(userInfoString)
+
+      const response = await axios.put(
+        'http://localhost:5001/api/users/userInfo', 
+        { name: editName, email: editEmail },
+        {
+          headers: {
+            Authorization: `Bearer ${userInfo.token}`
+          }
+        }
+      )
+
+      // Update user in state and local storage
+      setUser(response.data)
+      userInfo.name = response.data.name
+      userInfo.email = response.data.email
+      localStorage.setItem('userInfo', JSON.stringify(userInfo))
+
+      // Update edit state
+      setIsEditing(false)
+      
+      // Show success toast
+      toast.success("Profile updated successfully!", {
+        description: `Name: ${response.data.name}, Email: ${response.data.email}`
+      })
+    } catch (err) {
+      // Show error toast
+      toast.error("Failed to update profile", {
+        description: err.response?.data?.message || err.message
+      })
+    }
+  }
+
+  const platformData = {
+    Instagram: {
+      icon: <SiInstagram className="text-pink-500 h-6 w-6" />,
+      color: "bg-gradient-to-r from-purple-500 to-pink-500",
+      textColor: "text-white",
+    },
+    X: {
+      icon: <SiX className="text-blue-500 h-6 w-6" />,
+      color: "bg-blue-500",
+      textColor: "text-white",
+    },
+    WhatsApp: {
+      icon: <SiWhatsapp className="text-green-500 h-6 w-6" />,
+      color: "bg-green-500",
+      textColor: "text-white",
+    },
+    Telegram: {
+      icon: <SiTelegram className="text-blue-400 h-6 w-6" />,
+      color: "bg-blue-400",
+      textColor: "text-white",
+    },
+  }
   
   if (loading) return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900">
@@ -78,6 +153,7 @@ const ProfilePage = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-900 via-gray-800 to-gray-900 text-white py-12 px-4 sm:px-6 lg:px-8">
+      <Toaster richColors />
       <div className="max-w-4xl mx-auto space-y-8">
         {/* Profile Header */}
         <Card className="bg-gray-800 border-gray-700">
@@ -87,10 +163,20 @@ const ProfilePage = () => {
                 <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${user.name}`} alt={user.name} />
                 <AvatarFallback>{user.name.charAt(0)}</AvatarFallback>
               </Avatar>
-              <div>
-                <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
-                  {user.name}
-                </h1>
+              <div className="flex-1">
+                <div className="flex items-center justify-between">
+                  <h1 className="text-3xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-600">
+                    {user.name}
+                  </h1>
+                  <Button 
+                    variant="outline" 
+                    size="sm" 
+                    className="text-gray-300 bg-slate-500 hover:text-white hover:bg-gray-700"
+                    onClick={() => setIsEditing(true)}
+                  >
+                    <Edit className="mr-2 h-4 w-4" /> Edit Profile
+                  </Button>
+                </div>
                 <p className="text-gray-400 mt-1">Joined on {new Date(user.createdAt).toLocaleDateString()}</p>
               </div>
             </div>
@@ -120,6 +206,59 @@ const ProfilePage = () => {
           </CardContent>
         </Card>
 
+        {/* Edit Profile Modal */}
+        {isEditing && (
+  <Dialog open={isEditing} onOpenChange={setIsEditing}>
+    <DialogContent className="sm:max-w-[425px] bg-gradient-to-br from-slate-800 to-slate-900 border-slate-700 shadow-2xl rounded-xl">
+      <DialogHeader>
+        <DialogTitle className="text-2xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-teal-400 to-cyan-500">
+          Edit Profile
+        </DialogTitle>
+        <p className="text-sm text-slate-400">Update your personal information</p>
+      </DialogHeader>
+      <div className="grid gap-6 py-4">
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="name" className="text-right text-slate-300 font-medium">Name</Label>
+          <Input 
+            id="name" 
+            value={editName} 
+            onChange={(e) => setEditName(e.target.value)} 
+            className="col-span-3 bg-slate-700/50 border-slate-600/50 text-white focus:ring-2 focus:ring-teal-500 transition-all duration-300" 
+            placeholder="Enter your full name"
+          />
+        </div>
+        <div className="grid grid-cols-4 items-center gap-4">
+          <Label htmlFor="email" className="text-right text-slate-300 font-medium">Email</Label>
+          <Input 
+            id="email" 
+            type="email" 
+            value={editEmail} 
+            onChange={(e) => setEditEmail(e.target.value)} 
+            className="col-span-3 bg-slate-700/50 border-slate-600/50 text-white focus:ring-2 focus:ring-teal-500 transition-all duration-300" 
+            placeholder="Enter your email address"
+          />
+        </div>
+      </div>
+      <div className="flex justify-end space-x-3">
+        <Button 
+          variant="outline" 
+          onClick={() => setIsEditing(false)}
+          className="text-slate-300 hover:text-white hover:bg-slate-700 bg-slate-600 border-slate-600 transition-all duration-300"
+        >
+          <X className="mr-2 h-4 w-4" /> Cancel
+        </Button>
+        <Button 
+          onClick={handleUpdateUser}
+          className="bg-gradient-to-r from-teal-500 to-cyan-600 hover:from-teal-600 hover:to-cyan-700 text-white shadow-md hover:shadow-xl transition-all duration-300"
+        >
+          <Save className="mr-2 h-4 w-4" /> Save Changes
+        </Button>
+      </div>
+    </DialogContent>
+  </Dialog>
+)}
+
+
         {/* Search History */}
         <Card className="bg-gray-800 border-gray-700">
           <CardHeader>
@@ -134,8 +273,8 @@ const ProfilePage = () => {
                   <thead className="bg-gray-700">
                     <tr>
                       <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Platform</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Identifier</th>
-                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Timestamp</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Username</th>
+                      <th className="px-6 py-3 text-left text-xs font-medium text-gray-300 uppercase tracking-wider">Date</th>
                     </tr>
                   </thead>
                   <tbody className="bg-gray-800 divide-y divide-gray-700">
@@ -172,4 +311,3 @@ const ProfilePage = () => {
 }
 
 export default ProfilePage
-
