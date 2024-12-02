@@ -10,6 +10,7 @@ import fs from "fs";
 import path from 'path';
 import { fileURLToPath } from "url";
 import { dirname } from "path";
+import { scrapeXMessages } from "./Xmessages";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
@@ -34,79 +35,67 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
             args: ["--no-sandbox", "--disable-setuid-sandbox"],
         });
 
-        // Check if session is already active
+        // Get the active page
         const pages = context.pages();
         const page: Page =
             pages.length > 0 ? pages[0] : await context.newPage();
 
-        await page.goto("https://x.com/", { waitUntil: "networkidle" });
+        await page.goto("https://x.com/", { waitUntil: "domcontentloaded" });
+        await page.waitForTimeout(2000);
 
-        // Check if the user is already logged in by looking for a logged-in element
-        const isLoggedIn = await page
-            .locator('a[aria-label="Profile"], a[aria-label="Home"]')
-            .count();
+        // Check if the user is already logged in
+        const isLoggedIn =
+            (await page.$('div[aria-label="Home timeline"]')) !== null;
 
-        if (isLoggedIn > 0) {
+        if (isLoggedIn) {
             console.log("Session found. User is already logged in.");
-            return;
+        } else {
+            console.log("No active session found. Proceeding to login...");
+
+            // Navigate to the login page
+            await page.goto("https://x.com/i/flow/login", {
+                waitUntil: "networkidle",
+            });
+
+            // Enter the username
+            await page.waitForSelector('input[name="text"]', {
+                timeout: 30000,
+            });
+            await page.fill('input[name="text"]', EMAIL);
+            console.log("Entered username.");
+
+            // Click the "Next" button
+            await page.waitForSelector('button:has-text("Next")', {
+                timeout: 30000,
+            });
+            await page.click('button:has-text("Next")');
+            console.log("Clicked next button.");
+
+            // Enter the password
+            await page.waitForSelector('input[name="password"]', {
+                timeout: 60000,
+            });
+            await page.fill('input[name="password"]', PASSWORD);
+            console.log("Entered password.");
+
+            // Click the "Log in" button
+            await page.waitForSelector(
+                'button[data-testid="LoginForm_Login_Button"]',
+                { timeout: 30000 }
+            );
+            await page.click('button[data-testid="LoginForm_Login_Button"]');
+            console.log("Clicked login button.");
+            await page.waitForSelector('a[aria-label="Home"]', {
+                timeout: 60000,
+            });
+            console.log("Login successful.");
         }
 
-        console.log("No active session found. Proceeding to login...");
-
-        // Navigate to the login page
-        await page.goto("https://x.com/i/flow/login", {
-            waitUntil: "networkidle",
-        });
-
-        // Wait for the username input to appear and enter the username
-        await page.waitForSelector('input[name="text"]', { timeout: 30000 });
-        await page.fill('input[name="text"]', EMAIL);
-        console.log("Entered username.");
-
-        // Wait for the "Next" button to be visible and click it
-        await page.waitForSelector('button[role="button"]:has-text("Next")', {
-            timeout: 30000,
-        });
-        await page.click('button[role="button"]:has-text("Next")');
-        console.log("Clicked next button after username.");
-
-        // Wait for the password input to appear
-        await page.waitForSelector('input[name="password"]', {
-            timeout: 60000,
-        });
-        await page.fill('input[name="password"]', PASSWORD);
-        console.log("Entered password.");
-
-        // Wait for the "Log in" button to appear and click it
-        await page.waitForSelector(
-            'button[data-testid="LoginForm_Login_Button"]',
-            { timeout: 30000 }
-        );
-        await page.click('button[data-testid="LoginForm_Login_Button"]');
-        console.log("Clicked login button after password.");
-
-        // Wait for the home page to load as a confirmation of successful login
-        await page.waitForSelector('a[aria-label="Home"]', { timeout: 60000 });
-        console.log("Login successful. Session is now active.");
-        // Wait for the element after login to confirm successful navigation
-        await page.waitForSelector(
-            "#react-root > div > div > div.css-175oi2r.r-1f2l425.r-13qz1uu.r-417010.r-18u37iz > main > div",
-            { timeout: 30000 }
-        );
-        console.log("Successfully logged in and main page loaded.");
-        await page.waitForTimeout(7000);
+        // Navigate to the followers page
         await page.goto("https://x.com/followers", {
             waitUntil: "networkidle",
         });
-
-        // Wait for the URL to change to include '/followers'
-        await page.waitForFunction(
-            () =>
-                window.location.href.match(
-                    /https:\/\/x\.com\/[^/]+\/followers/
-                ),
-            { timeout: 10000 } // Adjust timeout as needed
-        );
+        await page.waitForTimeout(2000);
 
         // Extract the username from the URL
         const currentUrl = page.url();
@@ -118,6 +107,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
         } else {
             console.log("Username could not be extracted.");
         }
+
         // Visit user profile
         const profileUrl = `https://x.com/${USERNAME}`;
         await page.goto(profileUrl);
@@ -196,7 +186,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
                                 if (username && profilePic) {
                                     scrapedData.push({ username, profilePic });
                                 }
-                            } catch (error) {
+                            } catch (error: any) {
                                 console.error(
                                     `Error processing a button: ${error.message}`
                                 );
@@ -318,82 +308,7 @@ export async function scrapeX(EMAIL: string, PASSWORD: string) {
 
         await page.goto("https://x.com/messages");
         // Wait for user tiles to load on the page
-        await page.waitForSelector('[data-testid="conversation"]');
-
-        // Select user tiles and interact with them
-        const userTiles = await page.$$('div[data-testid="conversation"]');
-
-        if (userTiles.length > 0) {
-            console.log(`Found ${userTiles.length} user tile(s).`);
-
-            for (let i = 0; i < userTiles.length; i++) {
-                // Click on each user tile one at a time
-                await userTiles[i].click();
-                console.log(`Simulated click on user tile ${i + 1}.`);
-
-                // Wait for the messages container to load (adjust timeout as necessary)
-                await page.waitForTimeout(5000);
-
-                // Extract the display name and handle from each user tile
-                const { displayName, handle } = await page.evaluate((tile) => {
-                    const nameElement = tile.querySelector(
-                        "div > div > div > div > div > div > div > span"
-                    );
-                    const username = nameElement
-                        ? nameElement.textContent.trim()
-                        : `user_${i + 1}`;
-
-                    const handleXPath = ".//div/div[2]/div/div/div/span";
-                    const handleElement = document.evaluate(
-                        handleXPath,
-                        tile,
-                        null,
-                        XPathResult.FIRST_ORDERED_NODE_TYPE,
-                        null
-                    ).singleNodeValue as HTMLElement;
-                    const userHandle = handleElement
-                        ? handleElement.textContent.trim()
-                        : `handle_${i + 1}`;
-
-                    return { displayName: username, handle: userHandle };
-                }, userTiles[i]);
-
-                // Create a formatted file name for the screenshot
-                const sanitizedHandle = handle.replace(/[^a-zA-Z0-9_]/g, "");
-                const sanitizedDisplayName = displayName.replace(
-                    /[^a-zA-Z0-9_]/g,
-                    ""
-                );
-                const screenshotPath = path.join(
-                    __dirname,
-                    `${sanitizedDisplayName}_${sanitizedHandle}_messages.png`
-                );
-
-                // Take a screenshot of the messages and save it with the new filename
-                await page.screenshot({ path: screenshotPath, fullPage: true });
-                console.log(
-                    `Screenshot for user tile ${
-                        i + 1
-                    } taken as ${screenshotPath}.`
-                );
-
-                // Use a function to upload the screenshot to MongoDB (this function needs to be defined elsewhere)
-                await uploadScreenshotToMongo(
-                    sanitizedDisplayName,
-                    screenshotPath,
-                    "message",
-                    "twitter"
-                );
-                console.log(
-                    `Screenshot for user ${sanitizedDisplayName} uploaded to MongoDB.`
-                );
-
-                // Optionally, delete the local screenshot file after uploading
-                fs.unlinkSync(screenshotPath);
-            }
-        } else {
-            console.log("No user tiles found.");
-        }
+        await scrapeXMessages(page, USERNAME, "twitter");
     } catch (error) {
         console.error("Error during scraping:", error);
     } finally {
