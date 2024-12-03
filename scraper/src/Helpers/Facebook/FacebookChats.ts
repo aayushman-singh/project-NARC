@@ -65,7 +65,7 @@ export async function scrapeFacebookChats(
           console.log(`Clicked on chat link ${i + 1}.`);
 
           // Wait for a short delay to let the page load
-          await page.waitForTimeout(2000); // Adjust as necessary
+          await page.waitForTimeout(200000); // Adjust as necessary
 
           // Take a screenshot and save it with a unique name
           const screenshotPath = path.join(
