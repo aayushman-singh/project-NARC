@@ -8,6 +8,16 @@ import "../../../config.js";
 const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri as string);
 
+interface PartialUserDocument {
+    username: string;
+    chats: {
+        receiverUsername: string;
+        screenshots: string[];
+        chats: string;
+    }[];
+}
+
+
 // Initialize S3 client
 const s3 = new S3Client({
     region: process.env.AWS_REGION,
@@ -16,68 +26,6 @@ const s3 = new S3Client({
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY!,
     },
 });
-
-export const updateUserHistory = async (
-    userId,
-    phoneNumber,
-    resultId,
-    platform,
-) => {
-    const client = new MongoClient(process.env.MONGO_URI as string);
-    try {
-        await client.connect();
-        const database = client.db("test").collection("users");
-
-        // Convert `userId` to ObjectId
-        const objectId = new ObjectId(userId);
-
-        const updateResult = await database.updateOne(
-            { _id: objectId },
-            {
-                $addToSet: {
-                    searchHistory: {
-                        resultId,
-                        platform,
-                        identifier: phoneNumber,
-                        timestamp: new Date(),
-                    },
-                },
-            },
-            { upsert: false }, // Ensure the document exists or is created
-        );
-
-        if (updateResult.matchedCount > 0 || updateResult.upsertedCount > 0) {
-            console.log("Updated user search history successfully.");
-        } else {
-            console.error("User not found.");
-        }
-    } catch (error) {
-        console.error("Error updating user search history:", error);
-        throw error;
-    } finally {
-        await client.close();
-    }
-};
-
-// Function to upload a file to S3
-export const uploadToS3 = async (filePath: string, key: string) => {
-    try {
-        const fileContent = await fs.readFile(filePath);
-
-        const command = new PutObjectCommand({
-            Bucket: process.env.S3_BUCKET_NAME,
-            Key: key,
-            Body: fileContent,
-        });
-
-        await s3.send(command);
-        console.log(`Uploaded ${key} to S3`);
-        return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
-    } catch (error) {
-        console.error(`Error uploading ${key} to S3:`, error);
-        throw error;
-    }
-};
 
 // Define the interface for the posts and followers document structure
 interface InstagramPost {
@@ -169,49 +117,76 @@ export async function uploadScreenshotToMongo(
     }
 }
 
-// Modified uploadChats function
 export async function uploadChats(
     username: string,
     receiverUsername: string,
     screenshotPaths: string[],
     chatLogURL: string,
-    platform: string,
+    platform: string
 ) {
     try {
         await client.connect();
         const db = client.db(`${platform}DB`);
-        const collection = db.collection(`${platform}_users`);
+        const collection = db.collection<PartialUserDocument>(
+            `${platform}_users`
+        );
 
         // Upload each screenshot to S3 and collect URLs
-        const screenshotURLs = [];
+        const screenshotURLs: string[] = [];
         for (const filePath of screenshotPaths) {
-            const fileName = path.basename(filePath); // Use the file name as the S3 key
+            const fileName = path.basename(filePath);
             const s3Key = `${username}/${receiverUsername}/${fileName}`;
             const s3URL = await uploadToS3(filePath, s3Key);
             screenshotURLs.push(s3URL);
         }
 
-        // Update the user document with the S3 URLs
-        await collection.updateOne(
-            { username },
-            {
-                $setOnInsert: { username }, // Creates the user document if it doesn’t exist
-                $addToSet: {
-                    chats: {
-                        receiverUsername,
-                        screenshots: screenshotURLs, // Store S3 URLs
-                        chats: chatLogURL,
+        // Check if a chat with this receiverUsername already exists
+        const existingChat = await collection.findOne({
+            username,
+            "chats.receiverUsername": receiverUsername,
+        });
+
+        if (existingChat) {
+            // Update the existing chat entry
+            await collection.updateOne(
+                {
+                    username,
+                    "chats.receiverUsername": receiverUsername,
+                },
+                {
+                    $addToSet: {
+                        "chats.$.screenshots": { $each: screenshotURLs },
+                    },
+                    $set: {
+                        "chats.$.chats": chatLogURL,
+                    },
+                }
+            );
+            console.log(
+                `Updated existing chat entry for ${username} -> ${receiverUsername}`
+            );
+        } else {
+            // Add a new chat entry
+            await collection.updateOne(
+                { username },
+                {
+                    $setOnInsert: { username }, // Creates the user document if it doesn’t exist
+                    $push: {
+                        chats: {
+                            receiverUsername,
+                            screenshots: screenshotURLs,
+                            chats: chatLogURL,
+                        },
                     },
                 },
-            },
-            { upsert: true },
-        );
-
-        console.log(
-            `Screenshots uploaded to MongoDB for ${username} -> ${receiverUsername}`,
-        );
+                { upsert: true }
+            );
+            console.log(
+                `Added new chat entry for ${username} -> ${receiverUsername}`
+            );
+        }
     } catch (error) {
-        console.error("Error uploading screenshots to MongoDB:", error);
+        console.error("Error uploading chats to MongoDB:", error);
     } finally {
         await client.close();
     }
@@ -410,3 +385,67 @@ export async function insertInstagramProfile(
         { upsert: true }, // Insert the document if it doesn't exist
     );
 }
+
+
+export const updateUserHistory = async (
+    userId: string,
+    phoneNumber: string,
+    resultId: string,
+    platform: string
+) => {
+    const client = new MongoClient(process.env.MONGO_URI as string);
+    try {
+        await client.connect();
+        const database = client.db("test").collection("users");
+
+        // Convert `userId` to ObjectId
+        const objectId = new ObjectId(userId);
+
+        const updateResult = await database.updateOne(
+            { _id: objectId },
+            {
+                $addToSet: {
+                    searchHistory: {
+                        resultId,
+                        platform,
+                        identifier: phoneNumber,
+                        timestamp: new Date(),
+                    },
+                },
+            },
+            { upsert: false } // Ensure the document exists or is created
+        );
+
+        if (updateResult.matchedCount > 0 || updateResult.upsertedCount > 0) {
+            console.log("Updated user search history successfully.");
+        } else {
+            console.error("User not found.");
+        }
+    } catch (error) {
+        console.error("Error updating user search history:", error);
+        throw error;
+    } finally {
+        await client.close();
+    }
+};
+
+// Function to upload a file to S3
+export const uploadToS3 = async (filePath: string, key: string) => {
+    try {
+        const fileContent = await fs.readFile(filePath);
+
+        const command = new PutObjectCommand({
+            Bucket: process.env.S3_BUCKET_NAME,
+            Key: key,
+            Body: fileContent,
+        });
+
+        await s3.send(command);
+        console.log(`Uploaded ${key} to S3`);
+        return `https://${process.env.S3_BUCKET_NAME}.s3.${process.env.AWS_REGION}.amazonaws.com/${key}`;
+    } catch (error) {
+        console.error(`Error uploading ${key} to S3:`, error);
+        throw error;
+    }
+};
+
