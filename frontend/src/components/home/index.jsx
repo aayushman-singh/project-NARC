@@ -232,14 +232,36 @@ const Home = () => {
             <p className="text-xl sm:text-2xl text-gray-200 mt-4 max-w-3xl mx-auto">
               Streamline your social media investigations with tattletale.
             </p>
-            <div className="text-center mt-8">
-              <Link
-                to="/servicesMain"
-                className="inline-block px-7 py-3 text-lg font-semibold bg-blue-600 bg-opacity-70 rounded-full hover:bg-opacity-75 transition-all"
-              >
-                Explore Services
-              </Link>
-            </div>
+            <div className="text-center mt-8 flex justify-center items-center space-x-4">
+      <Link
+        to="/servicesMain"
+        className="group relative inline-flex items-center 
+        px-10 py-4 text-lg font-semibold 
+        bg-blue-600 text-white 
+        rounded-full 
+        hover:bg-blue-500 
+        transition-all duration-300 
+        transform hover:-translate-y-1 
+        hover:scale-105 
+        shadow-2xl hover:shadow-blue-500/50"
+      >
+        Explore Services
+        <svg 
+          className="ml-3 w-6 h-6 transition-transform group-hover:translate-x-2"
+          fill="none" 
+          stroke="currentColor" 
+          viewBox="0 0 24 24" 
+          xmlns="http://www.w3.org/2000/svg"
+        >
+          <path 
+            strokeLinecap="round" 
+            strokeLinejoin="round" 
+            strokeWidth={2} 
+            d="M13 5l7 7-7 7M5 5l7 7-7 7" 
+          />
+        </svg>
+      </Link>
+    </div>
           </div>
         </section>
 
