@@ -1,53 +1,85 @@
-import React, { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import React, { useState } from 'react';
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Instagram, Users, UserPlus, Heart, MessageCircle, ChevronDown } from 'lucide-react';
+import GlassCard from '@/components/ui/Glass-Card';
 
 const InstagramUsersViewer = ({ apiData }) => {
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   if (!apiData || apiData.length === 0) {
     return <p className="text-gray-400">No user data available.</p>;
   }
 
-  const handleUserSelect = (event) => {
-    setSelectedUserId(event.target.value);
-  };
-
-  const selectedUser =
-    selectedUserId && apiData.find((user) => user._id === selectedUserId);
-
   return (
-    <div className="space-y-8">
-      {/* Dropdown for User Selection */}
-      <div className="mb-6">
-        <label htmlFor="userDropdown" className="block text-gray-300 font-semibold mb-2">
-          Select User:
-        </label>
-        <select
-          id="userDropdown"
-          value={selectedUserId || ""}
-          onChange={handleUserSelect}
-          className="w-full bg-gray-800 text-gray-300 border border-gray-700 rounded-lg p-2"
-        >
-          <option value="" disabled>
-            Select a user
-          </option>
-          {apiData.map((user) => (
-            <option key={user._id} value={user._id}>
-              {user.username}
-            </option>
-          ))}
-        </select>
-      </div>
-
-      {/* Display Selected User's Data */}
-      {selectedUser ? (
-        <RenderInstagramData instagramData={selectedUser} />
-      ) : (
-        <p className="text-gray-400">Select a user to view their Instagram data.</p>
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+      {apiData.map((user) => (
+        <UserCard key={user._id} user={user} onSelect={() => setSelectedUser(user)} />
+      ))}
+      {selectedUser && (
+        <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
+          <DialogContent className="max-w-4xl h-[90vh] bg-gray-900 text-gray-100 overflow-hidden">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-pink-400">
+                {selectedUser.profile[0].fullName}'s Profile
+              </DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="h-[calc(90vh-80px)] overflow-y-auto pr-4">
+              <RenderInstagramData instagramData={selectedUser} />
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
 };
+
+const UserCard = ({ user, onSelect }) => {
+  const profile = user.profile[0];
+
+  return (
+    <GlassCard onClick={onSelect} className="cursor-pointer bg-gray-800 text-gray-100">
+      <div className="flex items-center mb-4">
+        <Avatar className="w-12 h-12 mr-4">
+          <AvatarImage src={profile.profilePicUrl} alt={profile.username} />
+          <AvatarFallback><Instagram className="w-8 h-8 text-pink-400" /></AvatarFallback>
+        </Avatar>
+        <div>
+          <h3 className="text-xl font-semibold text-gray-100">{profile.username}</h3>
+          <p className="text-sm text-gray-400">{profile.fullName}</p>
+        </div>
+      </div>
+      <p className="text-gray-300 mb-4 line-clamp-2">{profile.biography}</p>
+      <div className="flex justify-between text-sm text-gray-400">
+        <span>Followers: {profile.followersCount}</span>
+        <span>Following: {profile.followsCount}</span>
+      </div>
+    </GlassCard>
+  );
+};
+
+const PostCard = ({ post }) => (
+  <GlassCard className="bg-gray-800 text-gray-100">
+    {post.type === "Video" ? (
+      <video controls className="w-full h-48 object-cover rounded-lg mb-4">
+        <source src={post.videoUrl} type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    ) : (
+      <img
+        src={post.displayUrl}
+        alt={`Post ${post.id}`}
+        className="w-full h-48 object-cover rounded-lg mb-4"
+      />
+    )}
+    <p className="text-gray-300 mb-2 line-clamp-2">{post.caption}</p>
+    <div className="flex justify-between text-sm text-gray-400">
+      <span><Heart className="inline w-4 h-4 mr-1 text-pink-400" /> {post.likesCount}</span>
+      <span><MessageCircle className="inline w-4 h-4 mr-1 text-blue-400" /> {post.commentsCount}</span>
+    </div>
+  </GlassCard>
+);
 
 const RenderInstagramData = ({ instagramData }) => {
   const [showFollowers, setShowFollowers] = useState(false);
@@ -56,129 +88,84 @@ const RenderInstagramData = ({ instagramData }) => {
   if (!instagramData) return null;
 
   return (
-    <div className="mt-6 bg-gray-900 p-6 rounded-lg shadow-xl">
+    <div className="space-y-8">
       {/* Profile Section */}
-      <div className="flex flex-col md:flex-row md:space-x-6 items-center md:items-start">
-        <img
-          src={instagramData.profile[0].profilePicUrl}
-          alt={`${instagramData.profile[0].username}'s profile`}
-          className="w-32 h-32 rounded-full border-4 border-pink-500"
-          onError={(e) => {
-            e.target.onerror = null;
-            e.target.src =
-              "https://via.placeholder.com/128?text=Profile+Not+Available";
-          }}
-        />
-        <div className="mt-4 md:mt-0 text-center md:text-left">
-          <h3 className="text-2xl font-bold text-white">
-            {instagramData.profile[0].fullName}
-          </h3>
-          <p className="text-lg text-pink-400">
-            @{instagramData.profile[0].username}
-          </p>
-          <p className="mt-2 text-gray-300">
-            {instagramData.profile[0].biography}
-          </p>
-          <div className="flex justify-center md:justify-start space-x-6 mt-4">
-            <p className="text-sm text-gray-300">
-              <span className="font-bold text-pink-500">
-                {instagramData.profile[0].followersCount}
-              </span>{" "}
-              followers
+      <GlassCard className="bg-gray-800 text-gray-100">
+        <div className="flex flex-col md:flex-row md:space-x-6 items-center md:items-start">
+          <Avatar className="w-32 h-32">
+            <AvatarImage src={instagramData.profile[0].profilePicUrl} alt={`${instagramData.profile[0].username}'s profile`} />
+            <AvatarFallback><Instagram className="w-20 h-20 text-pink-400" /></AvatarFallback>
+          </Avatar>
+          <div className="mt-4 md:mt-0 text-center md:text-left">
+            <h3 className="text-2xl font-bold text-gray-100">
+              {instagramData.profile[0].fullName}
+            </h3>
+            <p className="text-lg text-pink-400">
+              @{instagramData.profile[0].username}
             </p>
-            <p className="text-sm text-gray-300">
-              <span className="font-bold text-pink-500">
-                {instagramData.profile[0].followsCount}
-              </span>{" "}
-              following
+            <p className="mt-2 text-gray-300">
+              {instagramData.profile[0].biography}
             </p>
-            <p className="text-sm text-gray-300">
-              <span className="font-bold text-pink-500">
-                {instagramData.profile[0].postsCount}
-              </span>{" "}
-              posts
-            </p>
+            <div className="flex justify-center md:justify-start space-x-6 mt-4">
+              <p className="text-sm text-gray-300">
+                <span className="font-bold text-pink-400">
+                  {instagramData.profile[0].followersCount}
+                </span>{" "}
+                followers
+              </p>
+              <p className="text-sm text-gray-300">
+                <span className="font-bold text-pink-400">
+                  {instagramData.profile[0].followsCount}
+                </span>{" "}
+                following
+              </p>
+              <p className="text-sm text-gray-300">
+                <span className="font-bold text-pink-400">
+                  {instagramData.profile[0].postsCount}
+                </span>{" "}
+                posts
+              </p>
+            </div>
           </div>
         </div>
-      </div>
+      </GlassCard>
 
-      
       {/* Posts Section */}
-      <div className="mt-10">
-        <h4 className="text-2xl font-bold text-pink-500 mb-6">Posts</h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {instagramData.posts.map((post) => (
-            <div
-              key={post.id}
-              className="bg-gray-800 p-4 rounded-lg shadow-md transform transition duration-300 hover:scale-105"
-            >
-              {post.type === "Video" ? (
-                <video controls className="w-full h-64 object-cover rounded-md">
-                  <source src={post.videoUrl} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              ) : (
-                <img
-                  src={post.displayUrl}
-                  alt={`Post ${post.id}`}
-                  className="w-full h-64 object-cover rounded-md"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src =
-                      "https://via.placeholder.com/300x300?text=Image+Not+Available";
-                  }}
-                />
-              )}
-              <div className="mt-4">
-                <p className="text-white text-sm line-clamp-2">
-                  {post.caption}
-                </p>
-                <div className="flex justify-between mt-2">
-                  <span className="text-pink-400 text-sm">
-                    {post.likesCount} likes
-                  </span>
-                  <span className="text-pink-400 text-sm">
-                    {post.commentsCount} comments
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+      <div>
+        <h4 className="text-2xl font-bold text-pink-400 mb-6">Posts</h4>
+        <ScrollArea className="h-[400px]">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 pr-4">
+            {instagramData.posts.map((post) => (
+              <PostCard key={post.id} post={post} />
+            ))}
+          </div>
+        </ScrollArea>
       </div>
 
       {/* Timeline Section */}
-      <div className="mt-10">
-        <h4 className="text-2xl font-bold text-pink-500 mb-6">Timeline</h4>
+      <div>
+        <h4 className="text-2xl font-bold text-pink-400 mb-6">Timeline</h4>
         <div className="space-y-6">
           {[1, 2, 3].map((timelineNum) => (
-            <div
-              key={timelineNum}
-              className="bg-gray-800 p-4 rounded-lg shadow-md"
-            >
+            <GlassCard key={timelineNum} className="bg-gray-800 text-gray-100">
               <img
                 src={instagramData[`timeline_${timelineNum}`]}
                 alt={`Timeline screenshot ${timelineNum}`}
                 className="w-full rounded-lg"
-                onError={(e) => {
-                  e.target.onerror = null;
-                  e.target.src =
-                    "https://via.placeholder.com/400x300?text=Timeline+Not+Available";
-                }}
               />
               <p className="text-pink-400 text-sm mt-2">
                 Timeline Screenshot {timelineNum}
               </p>
-            </div>
+            </GlassCard>
           ))}
         </div>
       </div>
 
       {/* Followers Section */}
-      <div className="mt-10">
+      <div>
         <button
           onClick={() => setShowFollowers(!showFollowers)}
-          className="flex items-center space-x-2 text-2xl font-bold text-pink-500 mb-4"
+          className="flex items-center space-x-2 text-2xl font-bold text-pink-400 mb-4"
         >
           <span>Followers</span>
           <ChevronDown
@@ -188,34 +175,25 @@ const RenderInstagramData = ({ instagramData }) => {
         {showFollowers && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {instagramData.followers.map((follower, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center space-y-2 bg-gray-800 p-4 rounded-lg"
-              >
-                <img
-                  src={follower.profilePicUrl}
-                  alt={follower.username}
-                  className="w-16 h-16 rounded-full"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src =
-                      "https://via.placeholder.com/64?text=Not+Available";
-                  }}
-                />
-                <span className="text-white text-sm text-center">
+              <GlassCard key={index} className="flex flex-col items-center space-y-2 bg-gray-800 text-gray-100">
+                <Avatar className="w-16 h-16">
+                  <AvatarImage src={follower.profilePicUrl} alt={follower.username} />
+                  <AvatarFallback><Users className="w-8 h-8 text-pink-400" /></AvatarFallback>
+                </Avatar>
+                <span className="text-gray-300 text-sm text-center">
                   {follower.username}
                 </span>
-              </div>
+              </GlassCard>
             ))}
           </div>
         )}
       </div>
 
       {/* Following Section */}
-      <div className="mt-10">
+      <div>
         <button
           onClick={() => setShowFollowing(!showFollowing)}
-          className="flex items-center space-x-2 text-2xl font-bold text-pink-500 mb-4"
+          className="flex items-center space-x-2 text-2xl font-bold text-pink-400 mb-4"
         >
           <span>Following</span>
           <ChevronDown
@@ -225,35 +203,28 @@ const RenderInstagramData = ({ instagramData }) => {
         {showFollowing && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
             {instagramData.following.map((following, index) => (
-              <div
-                key={index}
-                className="flex flex-col items-center space-y-2 bg-gray-800 p-4 rounded-lg"
-              >
-                <img
-                  src={following.profilePicUrl}
-                  alt={following.username}
-                  className="w-16 h-16 rounded-full"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src =
-                      "https://via.placeholder.com/64?text=Not+Available";
-                  }}
-                />
-                <span className="text-white text-sm text-center">
+              <GlassCard key={index} className="flex flex-col items-center space-y-2 bg-gray-800 text-gray-100">
+                <Avatar className="w-16 h-16">
+                  <AvatarImage src={following.profilePicUrl} alt={following.username} />
+                  <AvatarFallback><UserPlus className="w-8 h-8 text-pink-400" /></AvatarFallback>
+                </Avatar>
+                <span className="text-gray-300 text-sm text-center">
                   {following.username}
                 </span>
-              </div>
+              </GlassCard>
             ))}
           </div>
         )}
       </div>
-      <div className="mt-10">
-        <h4 className="text-2xl font-bold text-pink-500 mb-6">Chats</h4>
+
+      {/* Chats Section */}
+      <div>
+        <h4 className="text-2xl font-bold text-pink-400 mb-6">Chats</h4>
         <div className="space-y-6">
           {instagramData?.chats?.length > 0 ? (
             instagramData.chats.map((chat, index) => (
-              <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-md">
-                <p className="text-white text-sm">
+              <GlassCard key={index} className="bg-gray-800 text-gray-100">
+                <p className="text-gray-300 text-sm">
                   <span className="font-bold">Receiver: </span>
                   {chat.receiverUsername}
                 </p>
@@ -286,7 +257,7 @@ const RenderInstagramData = ({ instagramData }) => {
                               className="rounded-lg shadow-md w-full h-auto"
                             />
                           </a>
-                          <p className="text-white text-xs break-words">
+                          <p className="text-gray-300 text-xs break-words">
                             <span className="font-bold">Link: </span>
                             <a
                               href={screenshot}
@@ -302,16 +273,16 @@ const RenderInstagramData = ({ instagramData }) => {
                     </div>
                   </div>
                 )}
-              </div>
+              </GlassCard>
             ))
           ) : (
             <p className="text-gray-400">No chats available.</p>
           )}
         </div>
-      </div>  
-
+      </div>
     </div>
   );
 };
 
 export default InstagramUsersViewer;
+

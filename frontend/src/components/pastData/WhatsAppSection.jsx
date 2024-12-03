@@ -1,55 +1,72 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, X, Image as ImageIcon, ExternalLink } from "lucide-react";
+import { ChevronDown, ChevronUp, X, ImageIcon, ExternalLink, User } from 'lucide-react';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import GlassCard from '@/components/ui/Glass-Card';
 
-// Parent Component to Display All Users
 const WhatsAppChatsViewer = ({ apiData }) => {
-  const [selectedUserId, setSelectedUserId] = useState(null);
+  const [selectedUser, setSelectedUser] = useState(null);
 
   if (!apiData || apiData.length === 0) {
     return <p className="text-gray-400">No user data available.</p>;
   }
 
-  const handleUserSelect = (event) => {
-    setSelectedUserId(event.target.value);
-  };
-
-  const selectedUser = selectedUserId && apiData.find((user) => user._id === selectedUserId);
-
   return (
     <div className="space-y-8">
-      {/* Dropdown for User Selection */}
-      <div className="mb-6">
-        <label htmlFor="userDropdown" className="block text-gray-300 font-semibold mb-2">
-          Select User:
-        </label>
-        <select
-          id="userDropdown"
-          value={selectedUserId || ""}
-          onChange={handleUserSelect}
-          className="w-full bg-gray-800 text-gray-300 border border-gray-700 rounded-lg p-2"
-        >
-          <option value="" disabled>
-            Select a user
-          </option>
-          {apiData.map((user) => (
-            <option key={user._id} value={user._id}>
-              {user.username}
-            </option>
-          ))}
-        </select>
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        {apiData.map((user) => (
+          <UserCard key={user._id} user={user} onSelect={() => setSelectedUser(user)} />
+        ))}
       </div>
-
-      {/* Display Selected User's Chats */}
-      {selectedUser ? (
-        <WhatsAppChats chats={selectedUser.chats} />
-      ) : (
-        <p className="text-gray-400">Select a user to view their chats.</p>
+      {selectedUser && (
+        <Dialog open={!!selectedUser} onOpenChange={() => setSelectedUser(null)}>
+          <DialogContent className="max-w-4xl h-[90vh] bg-gray-900 text-gray-100 overflow-hidden">
+            <DialogHeader>
+              <DialogTitle className="text-2xl font-bold text-green-400">
+                {selectedUser.username}'s WhatsApp Chats
+              </DialogTitle>
+            </DialogHeader>
+            <ScrollArea className="h-[calc(90vh-80px)] overflow-y-auto pr-4">
+              <WhatsAppChats chats={selectedUser.chats} />
+            </ScrollArea>
+          </DialogContent>
+        </Dialog>
       )}
     </div>
   );
 };
 
-// Individual WhatsApp Chat Component
+const UserCard = ({ user, onSelect }) => {
+  return (
+    <GlassCard onClick={onSelect} className="cursor-pointer bg-gray-800 text-gray-100">
+      <div className="flex items-center mb-4">
+        <Avatar className="w-12 h-12 mr-4">
+          <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${user.username}`} alt={user.username} />
+          <AvatarFallback><User className="w-8 h-8 text-green-400" /></AvatarFallback>
+        </Avatar>
+        <div>
+          <h3 className="text-xl font-semibold text-gray-100">{user.username}</h3>
+          <p className="text-sm text-gray-400">WhatsApp User</p>
+        </div>
+      </div>
+      <div className="flex justify-between text-sm text-gray-400">
+        <span>Chats: {user.chats?.length || 0}</span>
+      </div>
+    </GlassCard>
+  );
+};
+
+const WhatsAppChats = ({ chats }) => {
+  return (
+    <div className="space-y-6">
+      {chats.map((chat, index) => (
+        <WhatsAppChat key={index} chat={chat} />
+      ))}
+    </div>
+  );
+};
+
 const WhatsAppChat = ({ chat }) => {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
@@ -59,14 +76,13 @@ const WhatsAppChat = ({ chat }) => {
   const closeImageViewer = () => setSelectedImage(null);
 
   return (
-    <div className="bg-gradient-to-br from-green-900 to-gray-800 p-6 rounded-xl shadow-lg mt-6 border border-green-700/20">
+    <GlassCard className="bg-gradient-to-br from-green-900 to-gray-800 text-gray-100">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">
-              {chat.receiverUsername.charAt(0).toUpperCase()}
-            </span>
-          </div>
+          <Avatar className="w-10 h-10">
+            <AvatarImage src={`https://api.dicebear.com/6.x/initials/svg?seed=${chat.receiverUsername}`} alt={chat.receiverUsername} />
+            <AvatarFallback>{chat.receiverUsername.charAt(0).toUpperCase()}</AvatarFallback>
+          </Avatar>
           <h3 className="text-xl font-bold text-white">{chat.receiverUsername}</h3>
         </div>
       </div>
@@ -152,21 +168,9 @@ const WhatsAppChat = ({ chat }) => {
           </div>
         </div>
       )}
-    </div>
-  );
-};
-
-// Parent WhatsAppChats Component
-const WhatsAppChats = ({ chats }) => {
-  return (
-    <div className="space-y-6">
-      {chats.map((chat, index) => (
-        <div key={index}>
-          <WhatsAppChat chat={chat} />
-        </div>
-      ))}
-    </div>
+    </GlassCard>
   );
 };
 
 export default WhatsAppChatsViewer;
+
