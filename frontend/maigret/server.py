@@ -31,9 +31,9 @@ def search_user():
 
     try:
         maigret_process = subprocess.Popen(
-            ['powershell.exe', '-Command', command],
+            ['/bin/bash', '-c', command],
             cwd=project_root,
-            shell=True,
+            shell=False,
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
