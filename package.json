@@ -40,7 +40,7 @@
     "start:script": "python frontend/script/server.py",
     "start:telegram": "python scraper/src/routes/telegram.py",
     "start:auth": "npx tsx backend/server",
-    "start:maigret": "py frontend/maigret/server.py",
+    "start:maigret": "python3 frontend/maigret/server.py",
     "start:instagram": "cd scraper/src/routes/ && npx tsx src/routes/instagram.ts",
     "start:x": "cd scraper/src/routes/ && npx tsx src/routes/x.ts",
     "start:facebook": "cd scraper/src/routes/ && npx tsx src/routes/facebook.ts",
