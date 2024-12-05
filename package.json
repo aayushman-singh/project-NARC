@@ -38,7 +38,7 @@
   ],
   "scripts": {
     "start:mobile": "cd mobileApp && flutter run",
-    "start:script": "python frontend/script/server.py",
+    "start:google": "npx tsx scraper/src/routes/Google.ts",
     "start:telegram": "python scraper/src/routes/telegram.py",
     "start:auth": "npx tsx backend/server",
     "start:maigret": "py frontend/maigret/server.py",
@@ -47,6 +47,6 @@
     "start:facebook": "cd scraper/src/routes/ && npx tsx src/routes/facebook.ts",
     "start:whatsapp": "npx tsx scraper/src/routes/whatsapp.ts",
     "start:frontend": "cd frontend && npm run dev",
-    "start:all": "npm-run-all --parallel start:maigret start:instagram start:x start:facebook start:frontend start:auth start:script start:telegram"
+    "start:all": "npm-run-all --parallel start:maigret start:instagram start:x start:facebook start:frontend start:auth start:google start:telegram"
   }
 }
