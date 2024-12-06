@@ -57,7 +57,10 @@ const Services = () => {
     );
   };
 
-   const handleGmail = async (email, limit) => {
+  const handleGmail = async (email) => {
+    const dropdownElement = document.getElementById(`gmailDropdown`);
+    const limit = parseInt(dropdownElement.value, 10);
+
      try {
        const response = await fetch("http://localhost:3006/auth-url", {
          method: "POST",
@@ -828,7 +831,7 @@ const Services = () => {
           <div className="mt-2">{renderDropdown("gmail")}</div>
           <div className="flex space-x-4 mt-4">
             <button
-              onClick={() => handleGmail()}
+              onClick={() => handleGmail(email)}
               className=" bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
               disabled={isLoading}
             >

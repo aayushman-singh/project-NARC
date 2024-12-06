@@ -103,6 +103,8 @@ app.get("/emails", async (req, res) => {
         );
 
         const messages = response.data.messages || [];
+
+        // Collect all parsed email data
         const emailData = await Promise.all(
             messages.map(async (message: any) => {
                 const msg = await axios.get(
@@ -111,12 +113,14 @@ app.get("/emails", async (req, res) => {
                         headers: { Authorization: `Bearer ${accessToken}` },
                     }
                 );
-                insertEmail(userEmail, data, 'gmail')
-                return parseEmail(msg.data);
+                return parseEmail(msg.data); // Parse each email
             })
         );
 
-        // Send emails back to the client
+        // Insert the entire array into the database at once
+        await insertEmail(userEmail, emailData, "gmail");
+
+        console.log("Emails successfully inserted:", emailData);
         res.json({ success: true, data: emailData });
     } catch (error) {
         console.error(
