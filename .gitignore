@@ -45,3 +45,4 @@ node_modules/
 /tests-examples
 scraper/Darke_TheDragon_following_log.txt
 scraper/Darke_TheDragon_followers_log.txt
+/scraper/src/Helpers/user_data
