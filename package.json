@@ -38,8 +38,9 @@
     "backend"
   ],
   "scripts": {
+    "start:youtube": "npx tsx  scraper/src/routes/youtube.ts",
     "start:mobile": "cd mobileApp && flutter run",
-    "start:google": "npx tsx scraper/src/routes/Google.ts",
+    "start:gmail": "npx tsx scraper/src/routes/gmail.ts",
     "start:telegram": "python scraper/src/routes/telegram.py",
     "start:auth": "npx tsx backend/server",
     "start:maigret": "py frontend/maigret/server.py",
