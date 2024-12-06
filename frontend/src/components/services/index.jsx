@@ -4,6 +4,7 @@ import {
   WhatsappLogo,
   FacebookLogo,
   TelegramLogo,
+  Envelope,
   TwitterLogo,
   FileCsv,
   FilePdf,
@@ -15,6 +16,7 @@ import { ChevronDown, ChevronUp } from "lucide-react";
 import "./style.css";
 import WhatsAppChats from "./Whatsapp";
 import TelegramChats from "./Telegram";
+import GmailChats from "./Gmail";
 
 import FacebookData from "./Facebook";
 import RenderInstagramData from "./Instagram";
@@ -26,7 +28,7 @@ const Services = () => {
   const [telegramData, setTelegramData] = useState(null);
   const [telegramChats, setTelegramChats] = useState([]);
   const [expandedChats, setExpandedChats] = useState({});
-
+  const [email, setEmail] = useState("");
   const [alert, setAlert] = useState({
     visible: false,
     message: "",
@@ -35,6 +37,7 @@ const Services = () => {
   const [whatsappData, setWhatsappData] = useState(null);
   const [xData, setXData] = useState(null);
   const [facebookData, setFacebookData] = useState(null);
+   const [gmailData, setGmailData] = useState(null);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTooltip, setShowTooltip] = useState({ messages: false, posts: false });
@@ -53,6 +56,22 @@ const Services = () => {
       3000,
     );
   };
+
+   const handleGmail = async (email, limit) => {
+     try {
+       const response = await fetch("http://localhost:3006/auth-url", {
+         method: "POST",
+         headers: { "Content-Type": "application/json" },
+         body: JSON.stringify({ email, limit }),
+       });
+
+       const data = await response.json();
+       window.open(data.authUrl, "_blank");
+     } catch (error) {
+       console.error("Error initiating Gmail flow:", error);
+     }
+  };
+  
   const handleShowDetails = async (platform, requiresPassword = false) => {
     const platformConfig = {
       whatsapp: 3004,
@@ -60,6 +79,7 @@ const Services = () => {
       x: 3003,
       telegram: 3005,
       instagram: 3001,
+      gmail: 3006
     };
 
     const port = platformConfig[platform];
@@ -107,6 +127,9 @@ const Services = () => {
           break;
         case "instagram":
           setInstagramData(data);
+          break;
+        case "gmail":
+          setGmailData(data);
           break;
         default:
           console.error("Unknown platform");
@@ -374,8 +397,8 @@ const Services = () => {
             alert.type === "success"
               ? "bg-green-50 text-green-800 border-l-4 border-green-500"
               : alert.type === "error"
-                ? "bg-red-50 text-red-800 border-l-4 border-red-500"
-                : "bg-blue-50 text-blue-800 border-l-4 border-blue-500"
+              ? "bg-red-50 text-red-800 border-l-4 border-red-500"
+              : "bg-blue-50 text-blue-800 border-l-4 border-blue-500"
           }`}
         >
           <div className="flex items-center justify-between">
@@ -458,7 +481,9 @@ const Services = () => {
             color={activeSection === "instagram" ? "#E1306C" : "#ccc"}
           />
           <span
-            className={`text-lg ${activeSection === "instagram" ? "text-pink-500" : "text-gray-400"}`}
+            className={`text-lg ${
+              activeSection === "instagram" ? "text-pink-500" : "text-gray-400"
+            }`}
           >
             Instagram
           </span>
@@ -473,12 +498,29 @@ const Services = () => {
             color={activeSection === "facebook" ? "#3b5998" : "#ccc"}
           />
           <span
-            className={`text-lg ${activeSection === "facebook" ? "text-blue-600" : "text-gray-400"}`}
+            className={`text-lg ${
+              activeSection === "facebook" ? "text-blue-600" : "text-gray-400"
+            }`}
           >
             Facebook
           </span>
         </button>
-
+        <button
+          onClick={() => handleSectionClick("gmail")}
+          className="flex items-center space-x-2"
+        >
+          <Envelope
+            size={32}
+            color={activeSection === "gmail" ? "#25D366" : "#ccc"}
+          />
+          <span
+            className={`text-lg ${
+              activeSection === "gmail" ? "text-green-500" : "text-gray-400"
+            }`}
+          >
+            Gmail
+          </span>
+        </button>
         <button
           onClick={() => handleSectionClick("x")}
           className="flex items-center space-x-2"
@@ -488,7 +530,9 @@ const Services = () => {
             color={activeSection === "x" ? "#1DA1F2" : "#ccc"}
           />
           <span
-            className={`text-lg ${activeSection === "x" ? "text-blue-500" : "text-gray-400"}`}
+            className={`text-lg ${
+              activeSection === "x" ? "text-blue-500" : "text-gray-400"
+            }`}
           >
             X
           </span>
@@ -503,7 +547,9 @@ const Services = () => {
             color={activeSection === "telegram" ? "#0088cc" : "#ccc"}
           />
           <span
-            className={`text-lg ${activeSection === "telegram" ? "text-blue-400" : "text-gray-400"}`}
+            className={`text-lg ${
+              activeSection === "telegram" ? "text-blue-400" : "text-gray-400"
+            }`}
           >
             Telegram
           </span>
@@ -518,7 +564,9 @@ const Services = () => {
             color={activeSection === "whatsapp" ? "#25D366" : "#ccc"}
           />
           <span
-            className={`text-lg ${activeSection === "whatsapp" ? "text-green-500" : "text-gray-400"}`}
+            className={`text-lg ${
+              activeSection === "whatsapp" ? "text-green-500" : "text-gray-400"
+            }`}
           >
             WhatsApp
           </span>
@@ -540,19 +588,19 @@ const Services = () => {
             placeholder="Enter Instagram password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
           />
-        <div className="flex items-center mt-4">
-    Max posts:
-    <span
-      className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
-      aria-label="tooltip"
-    >
-      ℹ️
-      <span className="absolute bottom-full   bg-gray-900 text-white text-sm rounded-md px-4 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-        Specify the maximum number of posts to retrieve.
-      </span>
-    </span>
-  </div>
-  <div className="mt-2">{renderDropdown("instagram")}</div>
+          <div className="flex items-center mt-4">
+            Max posts:
+            <span
+              className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+              aria-label="tooltip"
+            >
+              ℹ️
+              <span className="absolute bottom-full   bg-gray-900 text-white text-sm rounded-md px-4 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Specify the maximum number of posts to retrieve.
+              </span>
+            </span>
+          </div>
+          <div className="mt-2">{renderDropdown("instagram")}</div>
 
           <div className="flex space-x-4 mt-4">
             <button
@@ -607,19 +655,19 @@ const Services = () => {
             placeholder="Enter phone number"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-green-600"
           />
-         <div className="flex items-center">
-    Max messages:
-    <span
-      className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
-      aria-label="tooltip"
-    >
-      ℹ️
-      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-        Specify the maximum number of messages to retrieve.
-      </span>
-    </span>
-  </div>
-  <div className="mt-2">{renderDropdown("whatsapp")}</div>
+          <div className="flex items-center">
+            Max messages:
+            <span
+              className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+              aria-label="tooltip"
+            >
+              ℹ️
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Specify the maximum number of messages to retrieve.
+              </span>
+            </span>
+          </div>
+          <div className="mt-2">{renderDropdown("whatsapp")}</div>
           <div className="flex space-x-4 mt-4">
             <button
               onClick={() => handleSubmit("whatsapp")}
@@ -662,19 +710,19 @@ const Services = () => {
             placeholder="Enter X password"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
           />
-         <div className="flex items-center mt-4">
-    Max posts:
-    <span
-      className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
-      aria-label="tooltip"
-    >
-      ℹ️
-      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-        Specify the maximum number of posts to retrieve.
-      </span>
-    </span>
-  </div>
-  <div className="mt-2">{renderDropdown("x")}</div>
+          <div className="flex items-center mt-4">
+            Max posts:
+            <span
+              className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+              aria-label="tooltip"
+            >
+              ℹ️
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Specify the maximum number of posts to retrieve.
+              </span>
+            </span>
+          </div>
+          <div className="mt-2">{renderDropdown("x")}</div>
           {/* Assuming this renders the dropdown for the max posts */}
           <div className="flex space-x-4 mt-4">
             <button
@@ -692,15 +740,15 @@ const Services = () => {
             </button>
           </div>
           {showDetails && (
-  <div className="mt-6">
-    <h3 className="text-xl font-bold text-blue-400 mb-4">Tweets</h3>
-    {xData?.tweets?.length > 0 ? (
-      renderXTweets(xData.tweets, xData.timeline)
-    ) : (
-      <p className="text-gray-400">No tweets available</p>
-    )}
-  </div>
-)}
+            <div className="mt-6">
+              <h3 className="text-xl font-bold text-blue-400 mb-4">Tweets</h3>
+              {xData?.tweets?.length > 0 ? (
+                renderXTweets(xData.tweets, xData.timeline)
+              ) : (
+                <p className="text-gray-400">No tweets available</p>
+              )}
+            </div>
+          )}
         </div>
       )}
 
@@ -713,19 +761,19 @@ const Services = () => {
             placeholder="Enter Telegram phone number"
             className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
           />
-         <div className="flex items-center">
-    Max messages:
-    <span
-      className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
-      aria-label="tooltip"
-    >
-      ℹ️
-      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-        Specify the maximum number of messages to retrieve.
-      </span>
-    </span>
-  </div>
-  <div className="mt-2">{renderDropdown("telegram")}</div>
+          <div className="flex items-center">
+            Max messages:
+            <span
+              className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+              aria-label="tooltip"
+            >
+              ℹ️
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Specify the maximum number of messages to retrieve.
+              </span>
+            </span>
+          </div>
+          <div className="mt-2">{renderDropdown("telegram")}</div>
           <div className="flex space-x-4 mt-4">
             <button
               onClick={() => handleSubmit("telegram")}
@@ -752,72 +800,123 @@ const Services = () => {
         </div>
       )}
 
-{activeSection === "facebook" && (
-  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-    <h2 className="text-2xl font-bold text-blue-600">Facebook</h2>
-    <input
-      type="text"
-      id="facebookInput"
-      placeholder="Enter email or phone number"
-      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-    />
-    <input
-      type="password"
-      id="facebookPassword"
-      placeholder="Enter Facebook password"
-      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-    />
-    <input
-      type="pin"
-      id="facebookPin"
-      placeholder="Enter Facebook pin"
-      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-    />
-    <div className="mt-4">
-    <div className="flex items-center mt-4">
-    Max posts:
-    <span
-      className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
-      aria-label="tooltip"
-    >
-      ℹ️
-      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-        Specify the maximum number of posts to retrieve.
-      </span>
-    </span>
-  </div>
-  <div className="mt-2">{renderDropdown("facebook")}</div>
-    </div>
-    <p className="text-yellow-400 mt-4 mb-2 italic">
-      Warning: A CAPTCHA may be required for verification.
-    </p>
-    <div className="flex space-x-4 mt-4">
-      <button
-        onClick={() => handleSubmit("facebook")}
-        className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-        disabled={isLoading}
-      >
-        Submit
-      </button>
-      <button
-        onClick={() => handleShowDetails("facebook")}
-        className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-      >
-        Show Details
-      </button>
-    </div>
-    <div className="mt-8">
-      {facebookData ? (
-        <div>
-          <FacebookData facebookData={facebookData}/>
+      {activeSection === "gmail" && (
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-blue-400">Gmail</h2>
+          <div className="mt-4">
+            <label className="text-gray-400 text-sm">Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-center">
+            Max emails:
+            <span
+              className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+              aria-label="tooltip"
+            >
+              ℹ️
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Specify the maximum number of emails to retrieve.
+              </span>
+            </span>
+          </div>
+          <div className="mt-2">{renderDropdown("gmail")}</div>
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={() => handleGmail()}
+              className=" bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => handleShowDetails("gmail")}
+              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+            >
+              Show Details
+            </button>
+          </div>
+          {gmailData && showDetails && (
+            <div className="mt-6">
+              <h3 className="text-xl font-semibold text-blue-300 mb-4">
+                Chats
+              </h3>
+              <GmailChats chats={gmailData.chats} />
+            </div>
+          )}
         </div>
-      ) : (
-        <p className="text-gray-400">No Facebook data loaded yet.</p>
       )}
-    </div>
-  </div>
-)}
 
+      {activeSection === "facebook" && (
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-blue-600">Facebook</h2>
+          <input
+            type="text"
+            id="facebookInput"
+            placeholder="Enter email or phone number"
+            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+          <input
+            type="password"
+            id="facebookPassword"
+            placeholder="Enter Facebook password"
+            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+          <input
+            type="pin"
+            id="facebookPin"
+            placeholder="Enter Facebook pin"
+            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+          />
+          <div className="mt-4">
+            <div className="flex items-center mt-4">
+              Max posts:
+              <span
+                className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+                aria-label="tooltip"
+              >
+                ℹ️
+                <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                  Specify the maximum number of posts to retrieve.
+                </span>
+              </span>
+            </div>
+            <div className="mt-2">{renderDropdown("facebook")}</div>
+          </div>
+          <p className="text-yellow-400 mt-4 mb-2 italic">
+            Warning: A CAPTCHA may be required for verification.
+          </p>
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={() => handleSubmit("facebook")}
+              className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => handleShowDetails("facebook")}
+              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+            >
+              Show Details
+            </button>
+          </div>
+          <div className="mt-8">
+            {facebookData ? (
+              <div>
+                <FacebookData facebookData={facebookData} />
+              </div>
+            ) : (
+              <p className="text-gray-400">No Facebook data loaded yet.</p>
+            )}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
