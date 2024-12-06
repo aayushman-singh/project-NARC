@@ -8,6 +8,16 @@ import "../../../config.js";
 const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri as string);
 
+interface EmailDocument extends Document {
+    email: string;
+    emails: Array<{
+        id: string;
+        subject: string;
+        from: string;
+        body: string;
+    }>;
+}
+
 interface PartialUserDocument {
     username: string;
     chats: {
@@ -114,6 +124,38 @@ export async function uploadScreenshotToMongo(
     } finally {
         // Ensure the MongoDB client is closed after the operation
         await client.close();
+    }
+}
+
+export async function insertEmail(email: string, data: any[], platform: string) {
+    try {
+       
+        await client.connect();
+        const database = client.db(`${platform}DB`);
+        const collection = database.collection<EmailDocument>(`${platform}_users`);
+
+        // Update or insert the user's email data
+        const result = await collection.findOneAndUpdate(
+            { email: email }, // Match by email
+            {
+                $set: {
+                    email: email, // Ensure the email field is always present
+                },
+                $push: {
+                    emails: { $each: data }, // Append emails to an array
+                },
+            },
+            {
+                upsert: true, // Insert document if it doesn't exist
+                returnDocument: "after",
+            }
+        );
+
+        console.log(`Email data inserted/updated successfully for ${email}.`);
+        return result;
+    } catch (error) {
+        console.error(`Error inserting/updating email data for ${email}:`, error);
+        throw error; // Re-throw the error for higher-level handling
     }
 }
 
