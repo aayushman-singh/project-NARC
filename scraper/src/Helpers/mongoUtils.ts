@@ -127,14 +127,16 @@ export async function uploadScreenshotToMongo(
     }
 }
 
-export async function insertEmail(email: string, data: any[], platform: string) {
+export async function insertEmail(
+    email: string,
+    data: any[],
+    platform: string
+) {
     try {
-       
         await client.connect();
         const database = client.db(`${platform}DB`);
-        const collection = database.collection<EmailDocument>(`${platform}_users`);
+        const collection = database.collection(`${platform}_users`);
 
-        // Update or insert the user's email data
         const result = await collection.findOneAndUpdate(
             { email: email }, // Match by email
             {
@@ -142,11 +144,11 @@ export async function insertEmail(email: string, data: any[], platform: string) 
                     email: email, // Ensure the email field is always present
                 },
                 $push: {
-                    emails: { $each: data }, // Append emails to an array
+                    emails: { $each: data }, // Append all email objects to the array
                 },
             },
             {
-                upsert: true, // Insert document if it doesn't exist
+                upsert: true, // Insert if not exists
                 returnDocument: "after",
             }
         );
@@ -154,10 +156,14 @@ export async function insertEmail(email: string, data: any[], platform: string) 
         console.log(`Email data inserted/updated successfully for ${email}.`);
         return result;
     } catch (error) {
-        console.error(`Error inserting/updating email data for ${email}:`, error);
-        throw error; // Re-throw the error for higher-level handling
+        console.error(
+            `Error inserting/updating email data for ${email}:`,
+            error
+        );
+        throw error;
     }
 }
+
 
 export async function uploadChats(
     username: string,

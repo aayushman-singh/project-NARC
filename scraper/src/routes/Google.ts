@@ -72,15 +72,27 @@ app.get("/oauth2callback", async (req, res) => {
 
         // Save tokens
         fs.writeFileSync(TOKEN_PATH, JSON.stringify(response.data, null, 2));
-        res.send("Authorization successful! You can now fetch emails.");
+
+        // Trigger fetching emails (use full URL)
+        const emailFetchResponse = await axios.get(
+            "http://localhost:3006/emails"
+        );
+
+        // Return the fetched email data to the client
+        res.json({
+            success: true,
+            message: "Authorization successful! Emails have been fetched.",
+            emails: emailFetchResponse.data,
+        });
     } catch (error) {
         console.error(
-            "Error exchanging authorization code:",
+            "Error exchanging authorization code or fetching emails:",
             error.response?.data || error.message
         );
-        res.status(500).send("Error during token exchange.");
+        res.status(500).send("Error during token exchange or email fetching.");
     }
 });
+
 
 // Fetch emails endpoint
 app.get("/emails", async (req, res) => {
@@ -120,8 +132,8 @@ app.get("/emails", async (req, res) => {
         // Insert the entire array into the database at once
         await insertEmail(userEmail, emailData, "gmail");
 
-        console.log("Emails successfully inserted:", emailData);
-        res.json({ success: true, data: emailData });
+        console.log("Emails successfully inserted");
+        res.json({ success: true});
     } catch (error) {
         console.error(
             "Error fetching emails:",
