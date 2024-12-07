@@ -9,8 +9,7 @@ import { insertDriveInfo } from "../Helpers/mongoUtils";
 import { Request, Response } from "express";
 import GoogleDriveUser, { IGoogleDriveUser } from "../models/GoogleDriveUser";
 import mongoose from "mongoose";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { __dirname } from "../../../config";
 
 const CLIENT_ID =
     "218022995131-pkv99vvugfmhr73ua600lg44q362bbsj.apps.googleusercontent.com";
@@ -39,10 +38,13 @@ const connectDB = async () => {
     }
 };
 connectDB();
+
+let driveLimit = 10;
+
 // Endpoint to generate OAuth URL
 app.post("/auth-url", (req, res) => {
-    const { email } = req.body;
-
+    const { email, limit } = req.body;
+    driveLimit = limit;
     // Validate input
     if (!email) {
         return res
@@ -161,7 +163,7 @@ app.get("/drive-files", async (req, res) => {
                 headers: { Authorization: `Bearer ${accessToken}` },
                 params: {
                     fields: "files(id,name,mimeType,createdTime,size,webViewLink)",
-                    pageSize: 100, // Limit the number of files
+                    pageSize: driveLimit, // Limit the number of files
                 },
             }
         );
