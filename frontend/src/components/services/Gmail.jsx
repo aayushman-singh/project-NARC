@@ -1,134 +1,163 @@
-import React, { useState } from "react";
-import {
-  ChevronDown,
-  ChevronUp,
-  X,
-  ExternalLink,
-  Image as ImageIcon,
-} from "lucide-react";
+import React, { useState } from 'react';
+import DOMPurify from 'dompurify';
+import { ChevronDown, ChevronUp, ExternalLink, Mail, X, User } from 'lucide-react';
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Avatar } from "@/components/ui/avatar";
 
-// Component for displaying individual Gmail email
-const GmailChats = ({ email }) => {
-  const [isMediaExpanded, setIsMediaExpanded] = useState(false);
-  const [selectedImage, setSelectedImage] = useState(null);
+const formatDate = (dateString) => {
+  try {
+    const date = new Date(dateString);
+    return date.toLocaleString();
+  } catch (error) {
+    console.error('Error parsing date:', error);
+    return 'Invalid Date';
+  }
+};
 
-  const toggleMedia = () => setIsMediaExpanded(!isMediaExpanded);
-  const openImageViewer = (image) => setSelectedImage(image);
-  const closeImageViewer = () => setSelectedImage(null);
+const EmailCard = ({ email, onClick }) => {
+  return (
+    <div 
+      onClick={onClick}
+      className="bg-gray-800 p-4 rounded-lg shadow-lg border border-gray-700/40 hover:border-blue-500/50 transition-all duration-300 ease-in-out cursor-pointer"
+    >
+      <div className="flex items-center space-x-4">
+        <div className="p-3 rounded-full bg-gradient-to-br from-blue-500 to-purple-600">
+          <Mail className="w-6 h-6 text-white" />
+        </div>
+        <div className="flex-1 min-w-0">
+          <h4 className="text-white text-lg font-semibold truncate">
+            {email.subject}
+          </h4>
+          <p className="text-blue-400 text-sm">
+            {email.from}
+          </p>
+        </div>
+      </div>
+      <div className="mt-4 flex items-center justify-between">
+        <p className="text-gray-400 text-sm">
+          {formatDate(email.timestamp)}
+        </p>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            onClick();
+          }}
+          className="text-blue-400 hover:text-blue-300 transition-colors duration-200 text-sm font-medium flex items-center space-x-1"
+        >
+          <Mail className="w-4 h-4" />
+          <span>View Email</span>
+        </button>
+      </div>
+    </div>
+  );
+};
+
+const EmailViewer = ({ email, onClose }) => {
+  const sanitizedBody = DOMPurify.sanitize(email.body);
 
   return (
-    <div className="bg-gradient-to-br from-green-900 to-gray-800 p-6 rounded-xl shadow-lg mt-6 border border-green-700/20">
+    <div
+      className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-6"
+      onClick={onClose}
+    >
+      <div
+        className="bg-gray-900 p-6 rounded-lg relative max-w-4xl w-full text-white shadow-xl"
+        onClick={(e) => e.stopPropagation()}
+      >
+        <button
+          onClick={onClose}
+          className="absolute top-3 right-3 bg-blue-600 p-2 rounded-full hover:bg-blue-700 transition-colors duration-200 shadow-lg"
+          aria-label="Close viewer"
+        >
+          <X className="h-5 w-5 text-white" />
+        </button>
+        <h3 className="text-2xl font-bold mb-4">{email.subject}</h3>
+        <div className="space-y-2 mb-4">
+          <p className="text-sm flex items-center space-x-2">
+            <span className="font-semibold text-blue-400">From:</span>
+            <span>{email.from}</span>
+          </p>
+          <p className="text-sm flex items-center space-x-2">
+            <span className="font-semibold text-blue-400">Date:</span>
+            <span>{formatDate(email.timestamp)}</span>
+          </p>
+        </div>
+        <ScrollArea className="h-[60vh] mt-4">
+          <div 
+            className="email-body text-sm space-y-4 prose prose-invert max-w-none"
+            dangerouslySetInnerHTML={{ __html: sanitizedBody }}
+          />
+        </ScrollArea>
+      </div>
+    </div>
+  );
+};
+
+const GmailUserEmails = ({ user }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [selectedEmail, setSelectedEmail] = useState(null);
+
+  const toggleEmails = () => setIsExpanded(!isExpanded);
+
+  return (
+    <div className="bg-gradient-to-br from-gray-900 to-blue-900 p-6 rounded-xl shadow-lg border border-blue-700/30">
       <div className="flex items-center justify-between mb-6">
         <div className="flex items-center space-x-3">
-          <div className="w-10 h-10 rounded-full bg-green-500 flex items-center justify-center">
-            <span className="text-white font-bold text-lg">
-              {email.sender.charAt(0).toUpperCase()}
-            </span>
-          </div>
-          <h3 className="text-xl font-bold text-white">{email.sender}</h3>
+          <Avatar>
+            <img src={`https://api.dicebear.com/6.x/initials/svg?seed=${user.email}`} alt={user.email} />
+          </Avatar>
+          <h3 className="text-xl font-bold text-white">{user.email}</h3>
         </div>
-      </div>
-
-      <h4 className="text-lg text-white font-semibold mb-4">{email.subject}</h4>
-
-      <div className="space-y-4">
-        {email.attachments && email.attachments.length > 0 && (
-          <div className="bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
-            <button
-              onClick={toggleMedia}
-              className="flex items-center justify-between w-full text-green-400 hover:text-green-300 transition-all duration-200 group"
-              aria-expanded={isMediaExpanded}
-            >
-              <div className="flex items-center space-x-2">
-                <ImageIcon className="h-5 w-5" />
-                <span className="font-medium">
-                  Attachments ({email.attachments.length})
-                </span>
-              </div>
-              {isMediaExpanded ? (
-                <ChevronUp className="h-5 w-5 transition-transform duration-200" />
-              ) : (
-                <ChevronDown className="h-5 w-5 transition-transform duration-200" />
-              )}
-            </button>
-
-            <div
-              className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4 transition-all duration-300 ease-in-out ${
-                isMediaExpanded
-                  ? "opacity-100 max-h-[1000px]"
-                  : "opacity-0 max-h-0 overflow-hidden"
-              }`}
-            >
-              {email.attachments.map((attachment, idx) => (
-                <div
-                  key={idx}
-                  className="relative group rounded-lg overflow-hidden cursor-pointer bg-gray-700/50 aspect-square"
-                  onClick={() => openImageViewer(attachment)}
-                >
-                  <img
-                    src={attachment}
-                    alt={`Attachment ${idx + 1}`}
-                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
-                    loading="lazy"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end justify-center p-3">
-                    <span className="text-white text-sm font-medium">
-                      View Full
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
-        <div className="flex justify-between items-center">
-          <a
-            href={email.threadLink}
-            className="inline-flex items-center space-x-2 text-green-400 hover:text-green-300 transition-colors duration-200 group"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <span className="font-medium">View Full Email</span>
-            <ExternalLink className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-          </a>
-        </div>
-      </div>
-
-      {selectedImage && (
-        <div
-          className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
-          onClick={closeImageViewer}
+        <button
+          onClick={toggleEmails}
+          className="text-blue-400 hover:text-blue-300 flex items-center space-x-2 transition-colors duration-200"
         >
-          <div className="relative max-w-5xl w-full">
-            <img
-              src={selectedImage}
-              alt="Full-size attachment"
-              className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
-            />
-            <button
-              onClick={closeImageViewer}
-              className="absolute -top-2 -right-2 bg-green-600 text-white p-2 rounded-full hover:bg-green-700 transition-colors duration-200 shadow-lg"
-              aria-label="Close image viewer"
-            >
-              <X className="h-5 w-5" />
-            </button>
+          <span>{isExpanded ? "Hide Emails" : "Show Emails"}</span>
+          {isExpanded ? (
+            <ChevronUp className="w-5 h-5" />
+          ) : (
+            <ChevronDown className="w-5 h-5" />
+          )}
+        </button>
+      </div>
+
+      {isExpanded && (
+        <ScrollArea className="h-[400px] pr-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mt-4">
+            {user.emails.map((email, index) => (
+              <EmailCard 
+                key={index} 
+                email={email} 
+                onClick={() => setSelectedEmail(email)}
+              />
+            ))}
           </div>
-        </div>
+        </ScrollArea>
+      )}
+
+      {selectedEmail && (
+        <EmailViewer
+          email={selectedEmail}
+          onClose={() => setSelectedEmail(null)}
+        />
       )}
     </div>
   );
 };
 
-// Component to display a list of Gmail emails
-const GmailChatss = ({ emails }) => {
+const GmailUsers = ({ users }) => {
+  if (!users || !Array.isArray(users) || users.length === 0) {
+    return <p className="text-white">No email data available</p>;
+  }
+
   return (
     <div className="space-y-6">
-      {emails.map((email, index) => (
-        <GmailChats key={index} email={email} />
+      {users.map((user, index) => (
+        <GmailUserEmails key={index} user={user} />
       ))}
     </div>
   );
 };
 
-export default GmailChatss;
+export default GmailUsers;
+
