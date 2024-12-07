@@ -1048,7 +1048,7 @@ const Services = () => {
             type="text"
             id="telegramInput"
             placeholder="Enter Telegram phone number"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2  focus:ring-blue-400"
           />
           <div className="flex items-center">
             Max messages:
@@ -1187,10 +1187,11 @@ const Services = () => {
     </div>
     {googleDriveData && showDetails && (
       <div className="mt-6">
+        {console.log("Google Drive Data:", googleDriveData)}
         <h3 className="text-xl font-semibold text-blue-300 mb-4">
           Files
         </h3>
-        <GoogleDriveUsers users={googleDriveData} />
+        <GoogleDriveUsers users={[googleDriveData]} />
       </div>
     )}
   </div>
