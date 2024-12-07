@@ -1,47 +1,54 @@
 import express from "express";
-import { google } from "googleapis";
-import * as dotenv from "dotenv";
+import axios from "axios";
+import qs from "qs";
+import fs from "fs";
+import path from "path";
+import { fileURLToPath } from "url";
 import cors from "cors";
+import { insertDriveInfo } from "../Helpers/mongoUtils";
 
-const app = express();
-app.use(express.json());
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
-dotenv.config();
-
-const MONGODB_URI =
-    "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/facebookDB?retryWrites=true&w=majority";
 const CLIENT_ID =
     "218022995131-pkv99vvugfmhr73ua600lg44q362bbsj.apps.googleusercontent.com";
 const CLIENT_SECRET = "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";
-const REDIRECT_URI = "http://localhost:3006/oauth2callback";
+const REDIRECT_URI = "http://localhost:3007/oauth2callback";
+const TOKEN_PATH = path.join(__dirname, "drive_token.json");
 
-const oAuth2Client = new google.auth.OAuth2(
-    CLIENT_ID,
-    CLIENT_SECRET,
-    REDIRECT_URI
-);
-
-// Scopes for Google Drive API
-const SCOPES = [
-    "https://www.googleapis.com/auth/drive.readonly",
-    "https://www.googleapis.com/auth/drive.metadata.readonly",
-    "https://www.googleapis.com/auth/userinfo.profile",
-];
-
-
+const app = express();
 app.use(cors());
+app.use(express.json());
 
-app.get("/", (req, res) => {
-    const authUrl = oAuth2Client.generateAuthUrl({
-        access_type: "offline",
-        scope: SCOPES,
+let userEmail = ""; // Temporary storage for email
+
+// Endpoint to generate OAuth URL
+app.post("/auth-url", (req, res) => {
+    const { email } = req.body;
+
+    // Validate input
+    if (!email) {
+        return res
+            .status(400)
+            .json({ success: false, message: "Invalid email." });
+    }
+
+    // Store email for future use
+    userEmail = email;
+
+    // Generate the OAuth URL
+    const authUrl = `https://accounts.google.com/o/oauth2/auth?${qs.stringify({
+        client_id: CLIENT_ID,
         redirect_uri: REDIRECT_URI,
-    });
-
-    console.log("Generated Auth URL:", authUrl);
-    res.send({ authUrl });
+        response_type: "code",
+        scope: "https://www.googleapis.com/auth/drive.metadata.readonly",
+        access_type: "offline",
+        prompt: "consent",
+    })}`;
+    res.json({ authUrl });
 });
 
+// OAuth callback endpoint
 app.get("/oauth2callback", async (req, res) => {
     const code = req.query.code as string;
     if (code) {
