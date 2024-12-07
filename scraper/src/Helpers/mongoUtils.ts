@@ -97,6 +97,36 @@ interface InstagramUserDocument extends Document {
     profile?: InstagramProfile;
 }
 
+export async function insertGoogle(
+    email: string,
+    s3url: string,
+    platform: string
+) {
+    try {
+        await client.connect();
+        const db = client.db(`${platform}DB`);
+        const collection = db.collection(`${platform}_users`);
+
+        // Upsert document
+        const result = await collection.updateOne(
+            { email }, // Match document by email
+            {
+                $set: { email }, // Ensure email is set
+                $addToSet: { logs: s3url }, // Avoid duplicate S3 URLs
+            },
+            { upsert: true }
+        );
+
+        console.log(`Logs uploaded successfully for ${email}.`);
+        return result;
+    } catch (error) {
+        console.error(`Error uploading logs for ${email}:`, error);
+        throw error;
+    } finally {
+        await client.close();
+    }
+}
+
 // Function to read the file, convert to base64, and store it in MongoDB
 export async function uploadScreenshotToMongo(
     username: string,

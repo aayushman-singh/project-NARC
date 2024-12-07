@@ -7,7 +7,7 @@ import { insertGoogle, uploadToS3 } from "../mongoUtils.ts";
 const outputFile = path.join(__dirname, "/scraper/src/Helpers/Google/log.txt");
 const configFilePath = path.join(
     __dirname,
-    "/scraper/src/Helpers/Google/gconfig.json"
+    "/scraper/src/Helpers/Google/ytconfig.json"
 );
 
 // Read configuration
@@ -28,7 +28,7 @@ const endDate = new Date(endDateStr.split("-").reverse().join("-"));
 
         // Navigate to the target URL
         await page.goto(
-            "https://myactivity.google.com/activitycontrols/webandapp?hl=en",
+            "https://myactivity.google.com/product/youtube?hl=en",
             { waitUntil: "domcontentloaded" }
         );
 
