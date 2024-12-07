@@ -135,7 +135,7 @@ export async function insertEmail(
     try {
         await client.connect();
         const database = client.db(`${platform}DB`);
-        const collection = database.collection(`${platform}_users`);
+        const collection = database.collection<EmailDocument>(`${platform}_users`);
 
         const result = await collection.findOneAndUpdate(
             { email: email }, // Match by email
