@@ -13,22 +13,38 @@ import {
   Coins,
   X,
 } from "phosphor-react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import { FaGoogle } from "react-icons/fa";
 import "./style.css";
 import WhatsAppChats from "./Whatsapp";
 import TelegramChats from "./Telegram";
 import GmailChats from "./Gmail";
-
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { format } from "date-fns";
+import { CalendarIcon } from 'lucide-react';
+import GoogleDriveUsers from "./GoogleDrive"
 import FacebookData from "./Facebook";
 import RenderInstagramData from "./Instagram";
+
+import GoogleSection from "./GoogleSection"
 const Services = () => {
   const [activeSection, setActiveSection] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [instagramData, setInstagramData] = useState(null);
   const [telegramData, setTelegramData] = useState(null);
+  const [youtubeData, setYoutubeData] = useState(null);
   const [telegramChats, setTelegramChats] = useState([]);
   const [expandedChats, setExpandedChats] = useState({});
+  const [googleSearchData, setGoogleSearchData] = useState(null);
+  const [youtubeHistoryData, setYoutubeHistoryData] = useState(null);
+  const [showGoogleSearchDetails, setShowGoogleSearchDetails] = useState(false);
+  const [showYoutubeHistoryDetails, setShowYoutubeHistoryDetails] = useState(false);
+  const [googleSearchDateRange, setGoogleSearchDateRange] = useState({ from: null, to: null });
+  const [youtubeHistoryDateRange, setYoutubeHistoryDateRange] = useState({ from: null, to: null });
   const [email, setEmail] = useState("");
   const [alert, setAlert] = useState({
     visible: false,
@@ -101,39 +117,56 @@ const Services = () => {
       x: 3003,
       telegram: 3005,
       instagram: 3001,
-      gmail: 3006
+      gmail: 3006,
+      drive: 3009,
     };
-
+  
+    // Check if platform is valid
     const port = platformConfig[platform];
     if (!port) {
-      console.error("Unknown platform or port not configured");
+      console.error(`Platform "${platform}" is not supported or configured`);
       return;
     }
-
-    const username = document.getElementById(`${platform}Input`).value;
+  
+    // Retrieve the username based on the platform
+    let username;
+    if (platform === "drive") {
+      username = email; // Use email state for "drive"
+    } else {
+      const usernameInput = document.getElementById(`${platform}Input`);
+      username = usernameInput ? usernameInput.value : null;
+    }
+  
+    // Retrieve password if required
     const password = requiresPassword
-      ? document.getElementById(`${platform}Password`).value
+      ? document.getElementById(`${platform}Password`)?.value
       : null;
-
+  
+    if (!username) {
+      console.error(`Username is required for platform "${platform}"`);
+      showAlert("Please enter a username", "error");
+      return;
+    }
+  
     setIsLoading(true);
-
+  
     try {
       const queryParams =
         requiresPassword && password
           ? `?password=${encodeURIComponent(password)}`
           : "";
-
+  
       const response = await fetch(
-        `http://localhost:${port}/${platform}/users/${username}${queryParams}`,
+        `http://localhost:${port}/${platform}/users/${username}${queryParams}`
       );
-
+  
       if (!response.ok) {
-        throw new Error("User not found");
+        throw new Error(`Failed to fetch data for ${platform}`);
       }
-
+  
       const data = await response.json();
-
-      // Dynamically set the state based on the platform
+  
+      // Dynamically update the state based on the platform
       switch (platform) {
         case "whatsapp":
           setWhatsappData(data);
@@ -153,18 +186,23 @@ const Services = () => {
         case "gmail":
           setGmailData(data);
           break;
+        case "drive":
+          setGoogleDriveData(data);
+          break;
         default:
           console.error("Unknown platform");
       }
-
+  
       setShowDetails(true);
       showAlert("Data fetched successfully", "success");
     } catch (error) {
+      console.error(`Error fetching data for ${platform}:`, error);
       showAlert("Failed to fetch data. Please try again.", "error");
     } finally {
       setIsLoading(false);
     }
   };
+  
 
  
 
@@ -560,16 +598,16 @@ const Services = () => {
           </span>
         </button>
         <button
-    onClick={() => handleSectionClick("googleDrive")}
+    onClick={() => handleSectionClick("drive")}
     className="flex items-center space-x-2"
   >
     <FolderSimple
       size={32}
-      color={activeSection === "googleDrive" ? "#4285F4" : "#ccc"}
+      color={activeSection === "drive" ? "#4285F4" : "#ccc"}
     />
     <span
       className={`text-lg ${
-        activeSection === "googleDrive" ? "text-blue-500" : "text-gray-400"
+        activeSection === "drive" ? "text-blue-500" : "text-gray-400"
       }`}
     >
       Google Drive
@@ -591,7 +629,20 @@ const Services = () => {
             Telegram
           </span>
         </button>
-
+        <button
+  onClick={() => handleSectionClick("google")}
+  className="flex items-center space-x-2"
+>
+  <FaGoogle
+    size={32}
+    color={activeSection === "google" ? "#4285F4" : "#ccc"} // Google color when active
+  />
+  <span
+    className={`text-lg ${activeSection === "google" ? "text-blue-500" : "text-gray-400"}`}
+  >
+    Google
+  </span>
+</button>
         <button
           onClick={() => handleSectionClick("whatsapp")}
           className="flex items-center space-x-2"
@@ -789,6 +840,207 @@ const Services = () => {
         </div>
       )}
 
+{activeSection === "google" && (
+  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 className="text-2xl font-bold text-blue-500">Google</h2>
+    <Tabs defaultValue="search" className="w-full mt-4">
+      <TabsList className="grid w-full color-gray grid-cols-2">
+        <TabsTrigger value="search" className="text-white bg-gray-700 hover:bg-gray-600">
+          Google Search
+        </TabsTrigger>
+        <TabsTrigger value="youtube" className="text-white bg-gray-700 hover:bg-gray-600">
+          YouTube History
+        </TabsTrigger>
+      </TabsList>
+      <TabsContent value="search">
+        <input
+          type="email"
+          placeholder="Enter Google account email"
+          value={email}
+          onChange={(e) => setEmail(e.target.value)}
+          className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+        <div className="flex space-x-4 mt-4">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-[240px] justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {googleSearchDateRange.from ? (
+                  format(googleSearchDateRange.from, "dd-MM-yyyy")
+                ) : (
+                  <span className="text-blue-400">From Date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={googleSearchDateRange.from}
+                onSelect={(date) => setGoogleSearchDateRange({ ...googleSearchDateRange, from: date })}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-[240px] justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {googleSearchDateRange.to ? (
+                  format(googleSearchDateRange.to, "dd-MM-yyyy")
+                ) : (
+                  <span className="text-blue-400">To Date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={googleSearchDateRange.to}
+                onSelect={(date) => setGoogleSearchDateRange({ ...googleSearchDateRange, to: date })}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="flex items-center mt-4">
+          Max searches:
+          <span
+            className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+            aria-label="tooltip"
+          >
+            ℹ️
+            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+              Specify the maximum number of search results to retrieve.
+            </span>
+          </span>
+        </div>
+        <div className="mt-2">{renderDropdown("googleSearch")}</div>
+        <div className="flex space-x-4 mt-4">
+          <button
+            onClick={() => handleGoogleSearch(email, googleSearchDateRange)}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            disabled={isLoading}
+          >
+            Submit
+          </button>
+          <button
+            onClick={() => handleShowDetails("googleSearch")}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            disabled={isLoading}
+          >
+            Show Details
+          </button>
+        </div>
+        {googleSearchData && showDetails && (
+          <div className="mt-6">
+            <h3 className="text-xl font-bold text-blue-400">Google Search History</h3>
+            <GoogleSearchHistory data={googleSearchData} />
+          </div>
+        )}
+      </TabsContent>
+      <TabsContent value="youtube">
+        <input
+          type="email"
+          placeholder="Enter YouTube account email"
+          value={email}
+          onChange={(e) => setYoutubeEmail(e.target.value)}
+          className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
+        />
+        <div className="flex space-x-4 mt-4">
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-[240px] justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {youtubeHistoryDateRange.from ? (
+                  format(youtubeHistoryDateRange.from, "dd-MM-yyyy")
+                ) : (
+                  <span className="text-blue-400">From Date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={youtubeHistoryDateRange.from}
+                onSelect={(date) => setYoutubeHistoryDateRange({ ...youtubeHistoryDateRange, from: date })}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                className="w-[240px] justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
+              >
+                <CalendarIcon className="mr-2 h-4 w-4" />
+                {youtubeHistoryDateRange.to ? (
+                  format(youtubeHistoryDateRange.to, "dd-MM-yyyy")
+                ) : (
+                  <span className="text-blue-400">To Date</span>
+                )}
+              </Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="start">
+              <Calendar
+                mode="single"
+                selected={youtubeHistoryDateRange.to}
+                onSelect={(date) => setYoutubeHistoryDateRange({ ...youtubeHistoryDateRange, to: date })}
+                initialFocus
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+        <div className="flex items-center mt-4">
+          Max videos:
+          <span
+            className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+            aria-label="tooltip"
+          >
+            ℹ️
+            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+              Specify the maximum number of YouTube history videos to retrieve.
+            </span>
+          </span>
+        </div>
+        <div className="mt-2">{renderDropdown("youtubeHistory")}</div>
+        <div className="flex space-x-4 mt-4">
+          <button
+            onClick={() => handleYoutubeHistory(youtubeEmail, youtubeHistoryDateRange)}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            disabled={isLoading}
+          >
+            Submit
+          </button>
+          <button
+            onClick={() => handleShowDetails("youtubeHistory")}
+            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+            disabled={isLoading}
+          >
+            Show Details
+          </button>
+        </div>
+        {youtubeHistoryData && showDetails && (
+          <div className="mt-6">
+            <h3 className="text-xl font-bold text-blue-400">YouTube History</h3>
+            <YouTubeHistory data={youtubeHistoryData} />
+          </div>
+        )}
+      </TabsContent>
+    </Tabs>
+  </div>
+)}
+
+
       {activeSection === "telegram" && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-blue-400">Telegram</h2>
@@ -844,7 +1096,7 @@ const Services = () => {
             <label className="text-gray-400 text-sm">Email Address</label>
             <input
               type="email"
-              value={email}
+              
               onChange={(e) => setEmail(e.target.value)}
               placeholder="Enter your email"
               className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -888,7 +1140,7 @@ const Services = () => {
           )}
         </div>
       )}
-{activeSection === "googleDrive" && (
+{activeSection === "drive" && (
   <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
     <h2 className="text-2xl font-bold text-blue-400">Google Drive</h2>
     <div className="mt-4">
@@ -923,7 +1175,11 @@ const Services = () => {
         Submit
       </button>
       <button
-        onClick={() => handleShowDetails("googleDrive")}
+      
+        onClick={() => {
+    console.log("Email:", email); // Debugging
+    handleShowDetails("drive");
+  }}
         className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
       >
         Show Details
@@ -934,7 +1190,7 @@ const Services = () => {
         <h3 className="text-xl font-semibold text-blue-300 mb-4">
           Files
         </h3>
-        <GoogleDriveFiles files={googleDriveData.files} />
+        <GoogleDriveUsers users={googleDriveData} />
       </div>
     )}
   </div>
