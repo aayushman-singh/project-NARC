@@ -81,7 +81,7 @@ const Services = () => {
     const limit = parseInt(dropdownElement.value, 10);
   
     try {
-      const response = await fetch("http://localhost:3007/auth-url", {
+      const response = await fetch("http://localhost:3009/auth-url", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, limit }),
