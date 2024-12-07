@@ -17,6 +17,17 @@ interface EmailDocument extends Document {
         body: string;
     }>;
 }
+export interface DriveDocument {
+    email: string; // User's email address
+    driveFiles: {
+        id: string; // Unique file ID from Google Drive
+        name: string; // File name
+        mimeType: string; // MIME type of the file
+        createdTime: string; // Timestamp when the file was created
+        size?: number; // File size in bytes (optional)
+        webViewLink?: string; // URL to view the file in Google Drive (optional)
+    }[]; // Array of drive files
+}
 
 interface PartialUserDocument {
     username: string;
@@ -163,6 +174,43 @@ export async function insertEmail(
         throw error;
     }
 }
+export async function insertDriveInfo(
+    email: string,
+    files: DriveDocument["driveFiles"],
+    platform: string
+) {
+    try {
+        await client.connect();
+        const database = client.db(`${platform}DB`);
+        const collection = database.collection<DriveDocument>(`${platform}_users`);
+
+        const result = await collection.findOneAndUpdate(
+            { email: email }, // Match by email
+            {
+                $set: {
+                    email: email, // Ensure the email field is always present
+                },
+                $push: {
+                    driveFiles: { $each: files }, // Append all file objects to the array
+                },
+            },
+            {
+                upsert: true, // Insert if not exists
+                returnDocument: "after",
+            }
+        );
+
+        console.log(`Drive info inserted/updated successfully for ${email}.`);
+        return result;
+    } catch (error) {
+        console.error(
+            `Error inserting/updating Drive info for ${email}:`,
+            error
+        );
+        throw error;
+    }
+}
+
 
 
 export async function uploadChats(
