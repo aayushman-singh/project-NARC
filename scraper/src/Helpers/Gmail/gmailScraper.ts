@@ -32,8 +32,16 @@ class GmailOAuthAutomator {
     async authenticateGmailOAuth(email: string, password: string) {
         // Launch browser
         this.browser = await firefox.launch({
-            headless: false, // set to true for production
-            slowMo: 500, // slow down interactions for debugging
+            args: [
+                '--no-sandbox',         // May help in some environments
+      '--disable-web-security', // Not recommended for production use
+      '--disable-infobars',    // Prevent infobars
+      '--disable-extensions',   // Disable extensions
+      '--start-maximized',      // Start maximized
+      '--window-size=1280,720'  // Set a specific window size
+            ],
+            headless: false,
+            slowMo: 500, // Slow down interactions for debugging
         });
 
         try {
@@ -41,31 +49,32 @@ class GmailOAuthAutomator {
             this.context = await this.browser.newContext({
                 viewport: { width: 1280, height: 800 },
                 storageState: fs.existsSync(storageStatePath)
-                    ? storageStatePath
+                    ? JSON.parse(fs.readFileSync(storageStatePath, "utf8"))
                     : undefined,
             });
+
             this.page = await this.context.newPage();
 
-            // Navigate to the local OAuth endpoint
-            await this.page.goto("http://localhost:3006/");
-
-            // Wait for Google Sign-In page
-            await this.page.waitForURL("**/accounts.google.com/**", {
-                timeout: 15000,
-            });
+            // Navigate to Google sign-in
+            await this.page.goto(
+                "https://accounts.google.com/v3/signin/identifier?authuser=0",
+                {
+                    waitUntil: "domcontentloaded",
+                }
+            );
 
             // Enter email and click "Next"
             await this.page.fill('input[type="email"]', email);
             await this.page.click('button:has-text("Next")');
 
-            // Wait for password page and fill it in
+            // Wait for the password page and fill it in
             await this.page.waitForSelector('input[type="password"]', {
                 timeout: 10000,
             });
             await this.page.fill('input[type="password"]', password);
             await this.page.click('button:has-text("Next")');
 
-            // Wait for permissions page (if applicable)
+            // Wait for permissions page and click "Allow" if present
             try {
                 await this.page.waitForSelector('button:has-text("Allow")', {
                     timeout: 10000,
@@ -78,12 +87,10 @@ class GmailOAuthAutomator {
             // Wait for redirect back to localhost
             const response = await this.page.waitForURL(
                 "http://localhost:3006/oauth2callback*",
-                {
-                    timeout: 20000,
-                }
+                { timeout: 20000 }
             );
 
-            // Save the storage state for future use
+            // Save the storage state for future sessions
             await this.context.storageState({ path: storageStatePath });
 
             return {
@@ -166,5 +173,3 @@ function startAuthServer() {
 
 // Run the server
 startAuthServer();
-
-export { GmailOAuthAutomator };
