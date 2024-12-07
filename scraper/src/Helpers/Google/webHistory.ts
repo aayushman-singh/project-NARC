@@ -1,10 +1,7 @@
 import { chromium } from "playwright";
 import fs from "fs";
 import path from "path";
-import { fileURLToPath } from "url";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import {__dirname} from '../../../../config.ts';
 
 const outputFile = path.join(__dirname, "log.txt"); // Path for the log file
 
