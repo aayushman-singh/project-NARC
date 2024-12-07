@@ -28,7 +28,7 @@ import { CalendarIcon } from 'lucide-react';
 import GoogleDriveUsers from "./GoogleDrive"
 import FacebookData from "./Facebook";
 import RenderInstagramData from "./Instagram";
-
+import GmailUsers from "./Gmail";
 import GoogleSection from "./GoogleSection"
 const Services = () => {
   const [activeSection, setActiveSection] = useState("");
@@ -130,7 +130,7 @@ const Services = () => {
   
     // Retrieve the username based on the platform
     let username;
-    if (platform === "drive") {
+    if (platform === "drive" || platform ==="gmail") {
       username = email; // Use email state for "drive"
     } else {
       const usernameInput = document.getElementById(`${platform}Input`);
@@ -1135,7 +1135,7 @@ const Services = () => {
               <h3 className="text-xl font-semibold text-blue-300 mb-4">
                 Chats
               </h3>
-              <GmailChats chats={gmailData.chats} />
+              <GmailUsers users={[gmailData]} />
             </div>
           )}
         </div>
