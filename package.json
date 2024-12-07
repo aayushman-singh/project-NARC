@@ -38,6 +38,8 @@
     "backend"
   ],
   "scripts": {
+    "start:gdrive": "npx tsx  scraper/src/routes/gdrive.ts",
+    "start:google": "npx tsx  scraper/src/routes/google.ts",
     "start:youtube": "npx tsx  scraper/src/routes/youtube.ts",
     "start:mobile": "cd mobileApp && flutter run",
     "start:gmail": "npx tsx scraper/src/routes/gmail.ts",
@@ -49,6 +51,6 @@
     "start:facebook": "cd scraper/src/routes/ && npx tsx src/routes/facebook.ts",
     "start:whatsapp": "npx tsx scraper/src/routes/whatsapp.ts",
     "start:frontend": "cd frontend && npm run dev",
-    "start:all": "npm-run-all --parallel start:maigret start:instagram start:x start:facebook start:frontend start:auth start:google start:telegram"
+    "start:all": "npm-run-all --parallel start:maigret start:instagram start:x start:facebook start:frontend start:auth start:google start:gdrive start:youtube start:telegram"
   }
 }
