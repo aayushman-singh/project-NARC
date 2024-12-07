@@ -7,6 +7,7 @@ import {
   Envelope,
   TwitterLogo,
   FileCsv,
+  FolderSimple,
   FilePdf,
   CloudArrowUp,
   Coins,
@@ -38,6 +39,7 @@ const Services = () => {
   const [xData, setXData] = useState(null);
   const [facebookData, setFacebookData] = useState(null);
    const [gmailData, setGmailData] = useState(null);
+   const [googleDriveData, setGoogleDriveData] = useState(null);
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
   const [showTooltip, setShowTooltip] = useState({ messages: false, posts: false });
@@ -73,6 +75,23 @@ const Services = () => {
      } catch (error) {
        console.error("Error initiating Gmail flow:", error);
      }
+  };
+  const handleGoogleDrive = async (email) => {
+    const dropdownElement = document.getElementById(`googleDriveDropdown`);
+    const limit = parseInt(dropdownElement.value, 10);
+  
+    try {
+      const response = await fetch("http://localhost:3007/auth-url", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, limit }),
+      });
+  
+      const data = await response.json();
+      window.open(data.authUrl, "_blank");
+    } catch (error) {
+      console.error("Error initiating Google Drive flow:", error);
+    }
   };
   
   const handleShowDetails = async (platform, requiresPassword = false) => {
@@ -540,7 +559,22 @@ const Services = () => {
             X
           </span>
         </button>
-
+        <button
+    onClick={() => handleSectionClick("googleDrive")}
+    className="flex items-center space-x-2"
+  >
+    <FolderSimple
+      size={32}
+      color={activeSection === "googleDrive" ? "#4285F4" : "#ccc"}
+    />
+    <span
+      className={`text-lg ${
+        activeSection === "googleDrive" ? "text-blue-500" : "text-gray-400"
+      }`}
+    >
+      Google Drive
+    </span>
+  </button>
         <button
           onClick={() => handleSectionClick("telegram")}
           className="flex items-center space-x-2"
@@ -854,6 +888,57 @@ const Services = () => {
           )}
         </div>
       )}
+{activeSection === "googleDrive" && (
+  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 className="text-2xl font-bold text-blue-400">Google Drive</h2>
+    <div className="mt-4">
+      <label className="text-gray-400 text-sm">Email Address</label>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter your email"
+        className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+    <div className="flex items-center">
+      Max files:
+      <span
+        className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+        aria-label="tooltip"
+      >
+        ℹ️
+        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+          Specify the maximum number of files to retrieve.
+        </span>
+      </span>
+    </div>
+    <div className="mt-2">{renderDropdown("googleDrive")}</div>
+    <div className="flex space-x-4 mt-4">
+      <button
+        onClick={() => handleGoogleDrive(email)}
+        className="bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
+        disabled={isLoading}
+      >
+        Submit
+      </button>
+      <button
+        onClick={() => handleShowDetails("googleDrive")}
+        className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+      >
+        Show Details
+      </button>
+    </div>
+    {googleDriveData && showDetails && (
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold text-blue-300 mb-4">
+          Files
+        </h3>
+        <GoogleDriveFiles files={googleDriveData.files} />
+      </div>
+    )}
+  </div>
+)}
 
       {activeSection === "facebook" && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">

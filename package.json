@@ -41,6 +41,7 @@
     "start:youtube": "npx tsx  scraper/src/routes/youtube.ts",
     "start:mobile": "cd mobileApp && flutter run",
     "start:gmail": "npx tsx scraper/src/routes/gmail.ts",
+    "start:drive": "npx tsx scraper/src/routes/gdrive.ts",
     "start:telegram": "python scraper/src/routes/telegram.py",
     "start:auth": "npx tsx backend/server",
     "start:maigret": "py frontend/maigret/server.py",
