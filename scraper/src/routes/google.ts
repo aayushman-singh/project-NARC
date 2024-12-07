@@ -1,10 +1,12 @@
 import express from "express";
 import { exec } from "child_process";
 import path from "path";
+import cors from 'cors';
+import '../../../config.js';
 
 const app = express();
 const PORT = 3007;
-
+app.use(cors());
 app.post("/trigger-scraping", (req, res) => {
     console.log("Triggering Chrome with remote debugging...");
 
@@ -28,8 +30,8 @@ app.post("/trigger-scraping", (req, res) => {
         console.log("Running Playwright script...");
 
         // Step 3: Run the Playwright script
-        const playwrightScript = path.join(__dirname, "playwrightScript.js");
-        const nodeCommand = `node "${playwrightScript}"`;
+        const playwrightScript = path.join(__dirname, "../Helpers/Google","webHistory.ts");
+        const nodeCommand = `npx tsx "${playwrightScript}"`;
 
         exec(nodeCommand, (error, stdout, stderr) => {
             if (error) {
