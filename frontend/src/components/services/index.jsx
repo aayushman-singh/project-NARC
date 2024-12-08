@@ -46,6 +46,7 @@ const Services = () => {
   const [googleSearchDateRange, setGoogleSearchDateRange] = useState({ from: null, to: null });
   const [youtubeHistoryDateRange, setYoutubeHistoryDateRange] = useState({ from: null, to: null });
   const [email, setEmail] = useState("");
+  const[youtubeEmail, setYoutubeEmail] = useState("");
   const [alert, setAlert] = useState({
     visible: false,
     message: "",
@@ -74,6 +75,79 @@ const Services = () => {
       3000,
     );
   };
+
+  const handleSubmitG = async (platform) => {
+    console.log(`Submitting for platform: ${platform}`);
+  
+    const emailInputElement = document.getElementById(`${platform}Input`);
+    const dropdownElement = document.getElementById(`${platform}Dropdown`);
+  
+    if (!emailInputElement || !emailInputElement.value.trim()) {
+      console.error(`${platform} email input not found or empty`);
+      showAlert(`Please enter a valid ${platform} email`);
+      return;
+    }
+  
+    const dateRange = platform === "googleSearch" 
+      ? googleSearchDateRange 
+      : youtubeHistoryDateRange;
+  
+    if (!dateRange.from || !dateRange.to) {
+      console.error(`Invalid date range for ${platform}:`, dateRange);
+      showAlert("Please select both from and to dates");
+      return;
+    }
+  
+    const payload = {
+      email: emailInputElement.value.trim(),
+      range: {
+        from: format(dateRange.from, "dd-MM-yyyy"),
+        to: format(dateRange.to, "dd-MM-yyyy"),
+      },
+      limit: parseInt(dropdownElement?.value, 10),
+    };
+  
+    console.log(`Payload for ${platform}:`, payload);
+  
+    const platformPorts = {
+      googleSearch: 3007,
+      youtube : 3008,
+    };
+  
+    const port = platformPorts[platform];
+    if (!port) {
+      console.error("Unsupported platform:", platform);
+      showAlert("Unsupported platform");
+      return;
+    }
+  
+    setIsLoading(true);
+  
+    try {
+      const response = await fetch(`http://localhost:${port}/trigger-scraping`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+  
+      if (!response.ok) {
+        const errorDetails = await response.json();
+        console.error(`Error details:`, errorDetails);
+        throw new Error(`Request failed for ${platform}: ${response.statusText}`);
+      }
+  
+      console.log(`Scraping request successful for ${platform}`);
+      showAlert(`Scraping for ${platform} completed successfully`);
+      emailInputElement.value = "";
+    } catch (error) {
+      console.error(`Error submitting ${platform}:`, error);
+      showAlert(`Failed to scrape ${platform}. Please try again.`);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+  
+
 
   const handleGmail = async (email) => {
     const dropdownElement = document.getElementById(`gmailDropdown`);
@@ -565,22 +639,7 @@ const Services = () => {
             Facebook
           </span>
         </button>
-        <button
-          onClick={() => handleSectionClick("gmail")}
-          className="flex items-center space-x-2"
-        >
-          <Envelope
-            size={32}
-            color={activeSection === "gmail" ? "#25D366" : "#ccc"}
-          />
-          <span
-            className={`text-lg ${
-              activeSection === "gmail" ? "text-green-500" : "text-gray-400"
-            }`}
-          >
-            Gmail
-          </span>
-        </button>
+       
         <button
           onClick={() => handleSectionClick("x")}
           className="flex items-center space-x-2"
@@ -597,22 +656,7 @@ const Services = () => {
             X
           </span>
         </button>
-        <button
-    onClick={() => handleSectionClick("drive")}
-    className="flex items-center space-x-2"
-  >
-    <FolderSimple
-      size={32}
-      color={activeSection === "drive" ? "#4285F4" : "#ccc"}
-    />
-    <span
-      className={`text-lg ${
-        activeSection === "drive" ? "text-blue-500" : "text-gray-400"
-      }`}
-    >
-      Google Drive
-    </span>
-  </button>
+       
         <button
           onClick={() => handleSectionClick("telegram")}
           className="flex items-center space-x-2"
@@ -842,203 +886,333 @@ const Services = () => {
 
 {activeSection === "google" && (
   <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-    <h2 className="text-2xl font-bold text-blue-500">Google</h2>
-    <Tabs defaultValue="search" className="w-full mt-4">
-      <TabsList className="grid w-full color-gray grid-cols-2">
+    <h2 className="text-2xl font-bold text-blue-400 mb-4 text-center">Google Services</h2>
+    <Tabs defaultValue="search" className="w-full">
+      <TabsList className="grid w-full grid-cols-4 mb-4">
         <TabsTrigger value="search" className="text-white bg-gray-700 hover:bg-gray-600">
           Google Search
         </TabsTrigger>
         <TabsTrigger value="youtube" className="text-white bg-gray-700 hover:bg-gray-600">
           YouTube History
         </TabsTrigger>
+        <TabsTrigger value="gmail" className="text-white bg-gray-700 hover:bg-gray-600">
+          Gmail
+        </TabsTrigger>
+        <TabsTrigger value="drive" className="text-white bg-gray-700 hover:bg-gray-600">
+          Google Drive
+        </TabsTrigger>
       </TabsList>
-      <TabsContent value="search">
-        <input
-          type="email"
-          placeholder="Enter Google account email"
-          value={email}
-          onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
-        <div className="flex space-x-4 mt-4">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-[240px] justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {googleSearchDateRange.from ? (
-                  format(googleSearchDateRange.from, "dd-MM-yyyy")
-                ) : (
-                  <span className="text-blue-400">From Date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={googleSearchDateRange.from}
-                onSelect={(date) => setGoogleSearchDateRange({ ...googleSearchDateRange, from: date })}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-[240px] justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {googleSearchDateRange.to ? (
-                  format(googleSearchDateRange.to, "dd-MM-yyyy")
-                ) : (
-                  <span className="text-blue-400">To Date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={googleSearchDateRange.to}
-                onSelect={(date) => setGoogleSearchDateRange({ ...googleSearchDateRange, to: date })}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="flex items-center mt-4">
-          Max searches:
-          <span
-            className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
-            aria-label="tooltip"
-          >
-            ℹ️
-            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-              Specify the maximum number of search results to retrieve.
-            </span>
-          </span>
-        </div>
-        <div className="mt-2">{renderDropdown("googleSearch")}</div>
-        <div className="flex space-x-4 mt-4">
-          <button
-            onClick={() => handleGoogleSearch(email, googleSearchDateRange)}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            disabled={isLoading}
-          >
-            Submit
-          </button>
-          <button
-            onClick={() => handleShowDetails("googleSearch")}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            disabled={isLoading}
-          >
-            Show Details
-          </button>
-        </div>
-        {googleSearchData && showDetails && (
-          <div className="mt-6">
-            <h3 className="text-xl font-bold text-blue-400">Google Search History</h3>
-            <GoogleSearchHistory data={googleSearchData} />
+      
+      {/* Google Search Tab */}
+      <TabsContent value="search" className="space-y-4">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-blue-400 mb-4">Google Search</h2>
+          <div className="mt-4">
+            <label className="text-gray-400 text-sm">Google Search Email</label>
+            <input
+               type="text"
+            id="googleSearchInput"
+              placeholder="Enter your Google Search email"
+              className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
-        )}
+          
+          <div className="flex space-x-4 mt-4">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {googleSearchDateRange.from ? (
+                    format(googleSearchDateRange.from, "dd-MM-yyyy")
+                  ) : (
+                    <span className="text-gray-400">From Date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={googleSearchDateRange.from}
+                  onSelect={(date) => setGoogleSearchDateRange({ ...googleSearchDateRange, from: date })}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {googleSearchDateRange.to ? (
+                    format(googleSearchDateRange.to, "dd-MM-yyyy")
+                  ) : (
+                    <span className="text-gray-400">To Date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={googleSearchDateRange.to}
+                  onSelect={(date) => setGoogleSearchDateRange({ ...googleSearchDateRange, to: date })}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <div className="flex items-center mt-4">
+            Max searches:
+            <span className="ml-2 text-gray-400 cursor-pointer relative group text-lg" aria-label="tooltip">
+              ℹ️
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Specify the maximum number of search results to retrieve.
+              </span>
+            </span>
+          </div>
+          
+          <div className="mt-2 flex justify-between items-center">
+           
+            {renderDropdown("googleSearch")}
+          </div>
+          
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={() => handleSubmitG("googleSearch")}
+              className="flex-1 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => handleShowDetails("googleSearch")}
+              className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Show Details
+            </button>
+          </div>
+          
+          {googleSearchData && showDetails && (
+            <div className="mt-6">
+              <h3 className="text-xl font-semibold text-blue-300 mb-4">Search History</h3>
+              <GoogleSearchHistory data={googleSearchData} />
+            </div>
+          )}
+        </div>
       </TabsContent>
-      <TabsContent value="youtube">
-        <input
-          type="email"
-          placeholder="Enter YouTube account email"
-          value={email}
-          onChange={(e) => setYoutubeEmail(e.target.value)}
-          className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-600"
-        />
-        <div className="flex space-x-4 mt-4">
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-[240px] justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {youtubeHistoryDateRange.from ? (
-                  format(youtubeHistoryDateRange.from, "dd-MM-yyyy")
-                ) : (
-                  <span className="text-blue-400">From Date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={youtubeHistoryDateRange.from}
-                onSelect={(date) => setYoutubeHistoryDateRange({ ...youtubeHistoryDateRange, from: date })}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                className="w-[240px] justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
-              >
-                <CalendarIcon className="mr-2 h-4 w-4" />
-                {youtubeHistoryDateRange.to ? (
-                  format(youtubeHistoryDateRange.to, "dd-MM-yyyy")
-                ) : (
-                  <span className="text-blue-400">To Date</span>
-                )}
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={youtubeHistoryDateRange.to}
-                onSelect={(date) => setYoutubeHistoryDateRange({ ...youtubeHistoryDateRange, to: date })}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <div className="flex items-center mt-4">
-          Max videos:
-          <span
-            className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
-            aria-label="tooltip"
-          >
-            ℹ️
-            <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-              Specify the maximum number of YouTube history videos to retrieve.
-            </span>
-          </span>
-        </div>
-        <div className="mt-2">{renderDropdown("youtubeHistory")}</div>
-        <div className="flex space-x-4 mt-4">
-          <button
-            onClick={() => handleYoutubeHistory(youtubeEmail, youtubeHistoryDateRange)}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            disabled={isLoading}
-          >
-            Submit
-          </button>
-          <button
-            onClick={() => handleShowDetails("youtubeHistory")}
-            className="bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
-            disabled={isLoading}
-          >
-            Show Details
-          </button>
-        </div>
-        {youtubeHistoryData && showDetails && (
-          <div className="mt-6">
-            <h3 className="text-xl font-bold text-blue-400">YouTube History</h3>
-            <YouTubeHistory data={youtubeHistoryData} />
+      
+      {/* YouTube History Tab */}
+      <TabsContent value="youtube" className="space-y-4">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-blue-400 mb-4">YouTube History</h2>
+          <div className="mt-4">
+            <label className="text-gray-400 text-sm">YouTube Email</label>
+            <input
+              type="text"
+            id="youtubeInput"
+              placeholder="Enter your YouTube email"
+              className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
           </div>
-        )}
+          
+          <div className="flex space-x-4 mt-4">
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {youtubeHistoryDateRange.from ? (
+                    format(youtubeHistoryDateRange.from, "dd-MM-yyyy")
+                  ) : (
+                    <span className="text-gray-400">From Date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={youtubeHistoryDateRange.from}
+                  onSelect={(date) => setYoutubeHistoryDateRange({ ...youtubeHistoryDateRange, from: date })}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+            
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="w-full justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
+                >
+                  <CalendarIcon className="mr-2 h-4 w-4" />
+                  {youtubeHistoryDateRange.to ? (
+                    format(youtubeHistoryDateRange.to, "dd-MM-yyyy")
+                  ) : (
+                    <span className="text-gray-400">To Date</span>
+                  )}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-auto p-0" align="start">
+                <Calendar
+                  mode="single"
+                  selected={youtubeHistoryDateRange.to}
+                  onSelect={(date) => setYoutubeHistoryDateRange({ ...youtubeHistoryDateRange, to: date })}
+                  initialFocus
+                />
+              </PopoverContent>
+            </Popover>
+          </div>
+          
+          <div className="flex items-center mt-4">
+            Max videos:
+            <span className="ml-2 text-gray-400 cursor-pointer relative group text-lg" aria-label="tooltip">
+              ℹ️
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Specify the maximum number of YouTube history videos to retrieve.
+              </span>
+            </span>
+          </div>
+          
+          <div className="mt-2 flex justify-between items-center">
+          
+            {renderDropdown("youtube")}
+          </div>
+          
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={() => handleSubmitG("youtube")}
+              className="flex-1 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => handleShowDetails("youtube")}
+              className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Show Details
+            </button>
+          </div>
+          
+          {youtubeHistoryData && showDetails && (
+            <div className="mt-6">
+              <h3 className="text-xl font-semibold text-blue-300 mb-4">YouTube History</h3>
+              <YouTubeHistory data={youtubeHistoryData} />
+            </div>
+          )}
+        </div>
+      </TabsContent>
+
+      {/* Gmail Tab */}
+      <TabsContent value="gmail">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-blue-400">Gmail</h2>
+          <div className="mt-4">
+            <label className="text-gray-400 text-sm">Email Address</label>
+            <input
+              type="email"
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-center">
+            Max emails:
+            <span className="ml-2 text-gray-400 cursor-pointer relative group text-lg" aria-label="tooltip">
+              ℹ️
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Specify the maximum number of emails to retrieve.
+              </span>
+            </span>
+          </div>
+          <div className="mt-2">{renderDropdown("gmail")}</div>
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={() => handleGmail(email)}
+              className="bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => handleShowDetails("gmail")}
+              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+            >
+              Show Details
+            </button>
+          </div>
+          {gmailData && showDetails && (
+            <div className="mt-6">
+              <h3 className="text-xl font-semibold text-blue-300 mb-4">Chats</h3>
+              <GmailUsers users={[gmailData]} />
+            </div>
+          )}
+        </div>
+      </TabsContent>
+      {/* Google Drive Tab */}
+      <TabsContent value="drive">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-blue-400">Google Drive</h2>
+          <div className="mt-4">
+            <label className="text-gray-400 text-sm">Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-center">
+            Max files:
+            <span className="ml-2 text-gray-400 cursor-pointer relative group text-lg" aria-label="tooltip">
+              ℹ️
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Specify the maximum number of files to retrieve.
+              </span>
+            </span>
+          </div>
+          <div className="mt-2">{renderDropdown("googleDrive")}</div>
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={() => handleGoogleDrive(email)}
+              className="bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => {
+                console.log("Email:", email); // Debugging
+                handleShowDetails("drive");
+              }}
+              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+            >
+              Show Details
+            </button>
+          </div>
+          {googleDriveData && showDetails && (
+            <div className="mt-6">
+              <h3 className="text-xl font-semibold text-blue-300 mb-4">Google Drive Data</h3>
+              <GoogleDriveUsers users={[googleDriveData]} />
+            </div>
+          )}
+        </div>
       </TabsContent>
     </Tabs>
   </div>
 )}
+
 
 
       {activeSection === "telegram" && (
@@ -1089,113 +1263,7 @@ const Services = () => {
         </div>
       )}
 
-      {activeSection === "gmail" && (
-        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-          <h2 className="text-2xl font-bold text-blue-400">Gmail</h2>
-          <div className="mt-4">
-            <label className="text-gray-400 text-sm">Email Address</label>
-            <input
-              type="email"
-              
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email"
-              className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
-          </div>
-          <div className="flex items-center">
-            Max emails:
-            <span
-              className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
-              aria-label="tooltip"
-            >
-              ℹ️
-              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                Specify the maximum number of emails to retrieve.
-              </span>
-            </span>
-          </div>
-          <div className="mt-2">{renderDropdown("gmail")}</div>
-          <div className="flex space-x-4 mt-4">
-            <button
-              onClick={() => handleGmail(email)}
-              className=" bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
-              disabled={isLoading}
-            >
-              Submit
-            </button>
-            <button
-              onClick={() => handleShowDetails("gmail")}
-              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-            >
-              Show Details
-            </button>
-          </div>
-          {gmailData && showDetails && (
-            <div className="mt-6">
-              <h3 className="text-xl font-semibold text-blue-300 mb-4">
-                Chats
-              </h3>
-              <GmailUsers users={[gmailData]} />
-            </div>
-          )}
-        </div>
-      )}
-{activeSection === "drive" && (
-  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-    <h2 className="text-2xl font-bold text-blue-400">Google Drive</h2>
-    <div className="mt-4">
-      <label className="text-gray-400 text-sm">Email Address</label>
-      <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        placeholder="Enter your email"
-        className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-      />
-    </div>
-    <div className="flex items-center">
-      Max files:
-      <span
-        className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
-        aria-label="tooltip"
-      >
-        ℹ️
-        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-          Specify the maximum number of files to retrieve.
-        </span>
-      </span>
-    </div>
-    <div className="mt-2">{renderDropdown("googleDrive")}</div>
-    <div className="flex space-x-4 mt-4">
-      <button
-        onClick={() => handleGoogleDrive(email)}
-        className="bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
-        disabled={isLoading}
-      >
-        Submit
-      </button>
-      <button
       
-        onClick={() => {
-    console.log("Email:", email); // Debugging
-    handleShowDetails("drive");
-  }}
-        className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-      >
-        Show Details
-      </button>
-    </div>
-    {googleDriveData && showDetails && (
-      <div className="mt-6">
-        {console.log("Google Drive Data:", googleDriveData)}
-        <h3 className="text-xl font-semibold text-blue-300 mb-4">
-          Files
-        </h3>
-        <GoogleDriveUsers users={[googleDriveData]} />
-      </div>
-    )}
-  </div>
-)}
 
       {activeSection === "facebook" && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
