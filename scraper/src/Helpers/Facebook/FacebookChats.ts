@@ -1,10 +1,8 @@
 import { Page } from "playwright";
-import path, { dirname } from "path";
+import fs from "fs";
+import path from "path";
 import { uploadChats, uploadToS3 } from "../mongoUtils";
-import { fileURLToPath } from "url";
-import fs from 'fs';
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { __dirname } from "../../../../config";
 
 export async function scrapeFacebookChats(
     page: Page,
@@ -14,7 +12,6 @@ export async function scrapeFacebookChats(
     try {
         // Navigate to Facebook Messages
         await page.goto("https://facebook.com/messages", { timeout: 8000 });
-
         await page.waitForTimeout(5000);
 
         // Enter PIN if prompted
@@ -30,12 +27,13 @@ export async function scrapeFacebookChats(
         }
 
         // Wait for the Chats container to load
-        await page.waitForSelector('div[aria-label="Chats"]');
+        const chatsSelector = 'div[aria-label="Chats"]';
+        await page.waitForSelector(chatsSelector);
         console.log("Chats container loaded.");
 
         // Find all chat links
         const chatLinks = await page.$$eval(
-            'div[aria-label="Chats"] a[aria-current]',
+            `${chatsSelector} a[aria-current]`,
             (links) =>
                 Array.from(links).map((link) => link.getAttribute("href"))
         );
@@ -46,65 +44,80 @@ export async function scrapeFacebookChats(
         }
 
         console.log(`Found ${chatLinks.length} chat link(s).`);
-
         for (let i = 0; i < chatLinks.length; i++) {
             const chatLink = chatLinks[i];
+            const fullChatLink = chatLink?.startsWith("http")
+                ? chatLink
+                : `https://facebook.com${chatLink}`;
 
-           const fullChatLink = chatLink.startsWith("http")
-               ? chatLink
-               : `https://facebook.com${chatLink}`;
+            await page.goto(fullChatLink, { waitUntil: "domcontentloaded" });
+            await page.waitForTimeout(3000);
 
-           // Navigate to the chat
-           await page.goto(fullChatLink, { waitUntil: "load" });
-           console.log(`Navigated to chat: ${fullChatLink}`);
-            console.log(`Navigated to chat ${i + 1}.`);
+            console.log(`Navigated to chat: ${fullChatLink}`);
 
             // Wait for messages to load
-            await page.waitForSelector("#\\:ree\\: > div > div > div");
-            console.log("Messages container loaded.");
+            const messageContainerSelector =
+                'div[aria-label^="Messages in conversation with"]';
+            await page.waitForSelector(messageContainerSelector);
 
-            // Extract and log messages
-            const messagesData = await page.$$eval(
-                "#\\:ree\\: > div > div > div > div > div > div:nth-child(2)",
-                (messageElements) => {
-                    return Array.from(messageElements).map((element) => {
+            const ariaLabel = await page.getAttribute(
+                messageContainerSelector,
+                "aria-label"
+            );
+            const receiverUsername = ariaLabel
+                ?.replace("Messages in conversation with ", "")
+                .trim();
+            console.log(
+                `Processing messages for ${receiverUsername || "unknown user"}`
+            );
+
+            const messages = await page.$$eval(
+                `${messageContainerSelector} div > div:nth-child(2)`,
+                (messageElements) =>
+                    Array.from(messageElements).map((element) => {
                         const messageDiv =
                             element.querySelector("div:nth-child(1)");
                         const timestampSpan = element.querySelector(
                             "div:nth-child(2) > span"
                         );
 
-                        const messageText =
-                            messageDiv?.textContent?.trim() || "No text";
-                        const timestamp =
-                            timestampSpan?.textContent?.trim() ||
-                            "No timestamp";
-
-                        return { messageText, timestamp };
-                    });
-                }
+                        return {
+                            messageText:
+                                messageDiv?.textContent?.trim() || "No text",
+                            timestamp:
+                                timestampSpan?.textContent?.trim() ||
+                                "No timestamp",
+                        };
+                    })
             );
 
-            if (messagesData.length === 0) {
-                console.log(`No messages found for chat ${i + 1}.`);
-                continue;
-            }
+            // Filter messages to remove unwanted rows
+            const filteredMessages = messages.filter(
+                ({ messageText, timestamp }) =>
+                    !(
+                        (timestamp === "No timestamp" &&
+                            (messageText === "No text" ||
+                                messageText === "Enter")) ||
+                        timestamp === "No timestamp"
+                    )
+            );
 
             console.log(
-                `Extracted ${messagesData.length} messages for chat ${i + 1}.`
+                `Filtered ${filteredMessages.length} messages for chat ${
+                    i + 1
+                }.`
             );
 
-            const screenshotPaths: string[] = [];
-            const receiverUsername = `receiver_${i + 1}`; // Replace this with actual receiver extraction logic if needed
+            const screenshotPaths = [];
 
-            // Scroll to each message and take screenshots every third message
-            for (let j = 0; j < messagesData.length; j++) {
-                const { messageText, timestamp } = messagesData[j];
+            // Iterate over messages to take screenshots
+            for (let j = 0; j < filteredMessages.length; j++) {
+                const { messageText, timestamp } = filteredMessages[j];
 
-                // Scroll to message
+                // Scroll to the message
                 await page.evaluate((index) => {
                     const element = document.querySelectorAll(
-                        "#\\:ree\\: > div > div > div > div > div > div:nth-child(2)"
+                        'div[aria-label^="Messages in conversation with"] div > div:nth-child(2)'
                     )[index];
                     element.scrollIntoView({
                         behavior: "smooth",
@@ -112,14 +125,13 @@ export async function scrapeFacebookChats(
                     });
                 }, j);
 
-                console.log(`Message ${j + 1}: ${messageText}`);
-                console.log(`Timestamp: ${timestamp}`);
-
                 // Take a screenshot every third message
                 if ((j + 1) % 3 === 0) {
                     const screenshotPath = path.join(
                         __dirname,
-                        `chat_${i + 1}_message_${j + 1}.png`
+                        `scraper/src/Helpers/Facebook/chat_${
+                            receiverUsername || `receiver_${i + 1}`
+                        }_message_${j + 1}.png`
                     );
                     await page.screenshot({ path: screenshotPath });
                     screenshotPaths.push(screenshotPath);
@@ -129,34 +141,42 @@ export async function scrapeFacebookChats(
                         }: ${screenshotPath}`
                     );
                 }
-
-                await page.waitForTimeout(1000); // Delay for smooth scrolling
             }
 
-            // Save chat logs to a file
-            const chatLogPath = path.join(__dirname, `chat_${i + 1}_logs.txt`);
-            const chatLogs = messagesData
+            // Save filtered chat logs to a file
+            const chatLogPath = path.join(
+                __dirname,
+                "scraper/src/Helpers/Facebook",
+                `chat_${receiverUsername}_logs.txt`
+            );
+            const chatLogs = filteredMessages
                 .map(
                     ({ messageText, timestamp }) =>
                         `${timestamp}: ${messageText}`
                 )
                 .join("\n");
             fs.writeFileSync(chatLogPath, chatLogs);
-            console.log(`Chat logs saved to ${chatLogPath}.`);
+
+            console.log(`Filtered chat logs saved to ${chatLogPath}.`);
 
             // Upload logs and screenshots
-            const chatLogS3Key = `${username}/${receiverUsername}/chat_logs.txt`;
+            const chatLogS3Key = `${username}/${
+                receiverUsername || `receiver_${i + 1}`
+            }/chat_logs.txt`;
             const chatLogUrl = await uploadToS3(chatLogPath, chatLogS3Key);
 
             await uploadChats(
                 username,
-                receiverUsername,
+                receiverUsername || `receiver_${i + 1}`,
                 screenshotPaths,
                 chatLogUrl,
                 "facebook"
             );
+
             console.log(
-                `Chat logs and metadata uploaded for chat ${receiverUsername}.`
+                `Chat logs and metadata uploaded for chat ${
+                    receiverUsername || `receiver_${i + 1}`
+                }.`
             );
 
             // Clean up local files
@@ -164,7 +184,11 @@ export async function scrapeFacebookChats(
             for (const path of screenshotPaths) {
                 fs.unlinkSync(path);
             }
-            console.log(`Cleaned up local files for chat ${receiverUsername}.`);
+            console.log(
+                `Cleaned up local files for chat ${
+                    receiverUsername || `receiver_${i + 1}`
+                }.`
+            );
         }
     } catch (error) {
         console.error("Error during Facebook chat processing:", error);
