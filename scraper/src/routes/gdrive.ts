@@ -157,6 +157,7 @@ app.get("/drive-files", async (req, res) => {
     const accessToken = tokens.access_token;
 
     try {
+        // Add query parameter to exclude Google Docs
         const response = await axios.get(
             "https://www.googleapis.com/drive/v3/files",
             {
@@ -164,6 +165,7 @@ app.get("/drive-files", async (req, res) => {
                 params: {
                     fields: "files(id,name,mimeType,createdTime,size,webViewLink)",
                     pageSize: driveLimit, // Limit the number of files
+                    q: "mimeType != 'application/vnd.google-apps.folder' and mimeType != 'application/vnd.google-apps.document'",
                 },
             }
         );
@@ -183,6 +185,7 @@ app.get("/drive-files", async (req, res) => {
         res.status(500).send("Error fetching Drive files.");
     }
 });
+
 
 const PORT = 3009;
 app.listen(PORT, () =>
