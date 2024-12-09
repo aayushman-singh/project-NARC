@@ -100,7 +100,7 @@ const endDate = new Date(endDateStr.split("-").reverse().join("-"));
          }
 
         console.log(`Final log written to ${outputFile}`);
-        const s3url = await uploadToS3(outputFile, `activity`);
+        const s3url = await uploadToS3(outputFile, `${email}_activity_google`);
         fs.unlinkSync(outputFile);
         
         await insertGoogle(email, s3url, "google");
