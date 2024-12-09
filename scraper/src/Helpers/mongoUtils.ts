@@ -108,7 +108,7 @@ export async function insertGoogle(
         const collection = db.collection(`${platform}_users`);
 
         // Upsert document
-        const result = await collection.updateOne(
+        const result = await collection.findOneAndUpdate(
             { email }, // Match document by email
             {
                 $set: { email }, // Ensure email is set
@@ -388,7 +388,7 @@ export async function insertPosts(
     platform: string,
 ): Promise<void> {
     if (!posts || posts.length === 0) {
-        console.log(`No posts to insert for user: ${username}`);
+        console.log(`No posts to update for user: ${username}`);
         return;
     }
 
@@ -399,18 +399,18 @@ export async function insertPosts(
             `${platform}_users`,
         ); // Platform specific collection
 
-        // Perform a single update to push all posts into the user's posts array
+        // Perform an update to replace the user's posts array
         const result = await collection.findOneAndUpdate(
             { username: username }, // Match document by username
             {
-                $addToSet: { posts: { $each: posts } }, // Append posts uniquely
+                $set: { posts: posts }, // Replace the posts array with the new one
             },
             { upsert: true, returnDocument: "after" }, // Create the document if it doesn't exist
         );
 
         if (result.value) {
             console.log(
-                `Posts successfully updated/inserted for user: ${username}`,
+                `Posts successfully updated for user: ${username}`,
             );
         } else {
             console.warn(
@@ -419,7 +419,7 @@ export async function insertPosts(
         }
     } catch (error) {
         console.error(
-            `Failed to update/insert posts for user ${username}:`,
+            `Failed to update posts for user ${username}:`,
             error,
         );
     } finally {
@@ -427,10 +427,10 @@ export async function insertPosts(
     }
 }
 
+
 export async function insertMessages(
     username: string,
     filePath: string,
-    receiverUsername: string,
     platform: string,
 ) {
     await client.connect();
@@ -442,12 +442,12 @@ export async function insertMessages(
     try {
         const fileName = path.basename(filePath); // Use the file name as the S3 key
 
-        const s3Key = `${username}/${receiverUsername}/${fileName}`;
+        const s3Key = `${username}/logs/${fileName}`;
         const s3Url = uploadToS3(filePath, s3Key);
         // Update or insert the user's messages into the 'messages' array
         await collection.updateOne(
             { username: username },
-            { $push: { messages: s3Url } },
+            { $push: { login_activity_logs: s3Url } },
             { upsert: true },
         );
     } catch (error: any) {
