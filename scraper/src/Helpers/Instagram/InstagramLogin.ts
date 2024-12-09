@@ -10,7 +10,7 @@ import { __dirname } from "../../../../config";
  * @param username - The username for identifying the session
  * @param page - Playwright page instance
  */
-export async function scrapeInstagramWithUploads(
+export async function scrapeInstagramLogin(
     username: string,
     page: Page
 ): Promise<void> {
