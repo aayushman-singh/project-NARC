@@ -10,6 +10,7 @@ import {
 import { BrowserContext, Page } from "playwright";
 import { promises as fs, PathLike } from "fs";
 import path from "path"; // To handle file paths
+import { scrapeInstagramLogin } from "./InstagramLogin.js";
 
 const saveSession = async (page: Page, filePath: string) => {
     const storageState = await page.context().storageState();
@@ -440,7 +441,7 @@ export const InstaScraper = async (username: string, password: string) => {
                     path: screenshotPath,
                     fullPage: false,
                 }); // Capture screenshot
-
+                await scrapeInstagramLogin(username, page);
                 resultId = await uploadScreenshotToMongo(
                     username,
                     screenshotPath,
