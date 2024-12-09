@@ -30,18 +30,21 @@ import FacebookData from "./Facebook";
 import RenderInstagramData from "./Instagram";
 import GmailUsers from "./Gmail";
 import GoogleSection from "./GoogleSection"
+
 import TwitterDataDisplay from "./Twitter"
+import GoogleInfo from "./GoogleSection";
 const Services = () => {
   const [activeSection, setActiveSection] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [showDetails, setShowDetails] = useState(false);
   const [instagramData, setInstagramData] = useState(null);
   const [telegramData, setTelegramData] = useState(null);
+  const [googleData , setGoogleData] = useState(null);
   const [youtubeData, setYoutubeData] = useState(null);
   const [telegramChats, setTelegramChats] = useState([]);
   const [expandedChats, setExpandedChats] = useState({});
-  const [googleSearchData, setGoogleSearchData] = useState(null);
-  const [youtubeHistoryData, setYoutubeHistoryData] = useState(null);
+  const [googleEmail  ,setGoogleEmail] = useState("");
+
   const [showGoogleSearchDetails, setShowGoogleSearchDetails] = useState(false);
   const [showYoutubeHistoryDetails, setShowYoutubeHistoryDetails] = useState(false);
   const [googleSearchDateRange, setGoogleSearchDateRange] = useState({ from: null, to: null });
@@ -194,6 +197,8 @@ const Services = () => {
       instagram: 3001,
       gmail: 3006,
       drive: 3009,
+      google: 3007,
+      youtube: 3008 // This is for Google platform
     };
   
     // Check if platform is valid
@@ -205,12 +210,20 @@ const Services = () => {
   
     // Retrieve the username based on the platform
     let username;
-    if (platform === "drive" || platform ==="gmail") {
-      username = email; // Use email state for "drive"
-    } else {
-      const usernameInput = document.getElementById(`${platform}Input`);
-      username = usernameInput ? usernameInput.value : null;
+    if (platform === "drive" || platform === "gmail" ) {
+      if (!email) {
+        console.error(`Username (email) is required for platform "${platform}"`);
+        showAlert("Please enter an email", "error");
+        return;
+      }
+      username = email;
     }
+    else if(platform === "google" || platform === "youtube"){
+      username = googleEmail;
+    }
+    // else if(platform ==="youtube"){
+    //   username = youtubeEmail;
+    // }
   
     // Retrieve password if required
     const password = requiresPassword
@@ -264,6 +277,12 @@ const Services = () => {
         case "drive":
           setGoogleDriveData(data);
           break;
+        case "google":
+          setGoogleData(data);
+          break;
+        case "youtube":
+          setYoutubeData(data);
+          break;
         default:
           console.error("Unknown platform");
       }
@@ -277,6 +296,7 @@ const Services = () => {
       setIsLoading(false);
     }
   };
+  
   
 
  
@@ -807,11 +827,11 @@ const Services = () => {
           <div className="mt-4">
             <label className="text-gray-400 text-sm">Google Search Email</label>
             <input
-               type="text"
-            id="googleSearchInput"
-              placeholder="Enter your Google Search email"
-              className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+        type="email"
+        onChange={(e) => setGoogleEmail(e.target.value)} // Set email state here
+        placeholder="Enter your Google Search email"
+        className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
           </div>
           
           <div className="flex space-x-4 mt-4">
@@ -888,7 +908,7 @@ const Services = () => {
               Submit
             </button>
             <button
-              onClick={() => handleShowDetails("googleSearch")}
+              onClick={() => handleShowDetails("google")}
               className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
               disabled={isLoading}
             >
@@ -896,10 +916,10 @@ const Services = () => {
             </button>
           </div>
           
-          {googleSearchData && showDetails && (
+          {googleData && showDetails && (
             <div className="mt-6">
               <h3 className="text-xl font-semibold text-blue-300 mb-4">Search History</h3>
-              <GoogleSearchHistory data={googleSearchData} />
+              <GoogleInfo data={googleData} />
             </div>
           )}
         </div>
@@ -912,8 +932,8 @@ const Services = () => {
           <div className="mt-4">
             <label className="text-gray-400 text-sm">YouTube Email</label>
             <input
-              type="text"
-            id="youtubeInput"
+               type="email"
+        onChange={(e) => setGoogleEmail(e.target.value)} 
               placeholder="Enter your YouTube email"
               className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
             />
@@ -1001,10 +1021,10 @@ const Services = () => {
             </button>
           </div>
           
-          {youtubeHistoryData && showDetails && (
+          {youtubeData && showDetails && (
             <div className="mt-6">
               <h3 className="text-xl font-semibold text-blue-300 mb-4">YouTube History</h3>
-              <YouTubeHistory data={youtubeHistoryData} />
+              <GoogleInfo data={youtubeData} />
             </div>
           )}
         </div>
