@@ -828,6 +828,7 @@ const Services = () => {
             <label className="text-gray-400 text-sm">Google Search Email</label>
             <input
         type="email"
+        id="googleInput"
         onChange={(e) => setGoogleEmail(e.target.value)} // Set email state here
         placeholder="Enter your Google Search email"
         className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -933,6 +934,7 @@ const Services = () => {
             <label className="text-gray-400 text-sm">YouTube Email</label>
             <input
                type="email"
+               id="youtubeInput"
         onChange={(e) => setGoogleEmail(e.target.value)} 
               placeholder="Enter your YouTube email"
               className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
