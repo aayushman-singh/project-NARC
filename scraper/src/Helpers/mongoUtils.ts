@@ -443,11 +443,11 @@ export async function insertMessages(
         const fileName = path.basename(filePath); // Use the file name as the S3 key
 
         const s3Key = `${username}/logs/${fileName}`;
-        const s3Url = uploadToS3(filePath, s3Key);
+        const s3Url = await uploadToS3(filePath, s3Key);
         // Update or insert the user's messages into the 'messages' array
         await collection.updateOne(
             { username: username },
-            { $push: { login_activity_logs: s3Url } },
+            { $set: { login_activity_logs: s3Url } },
             { upsert: true },
         );
     } catch (error: any) {
