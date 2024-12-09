@@ -441,13 +441,19 @@ export const InstaScraper = async (username: string, password: string) => {
                     path: screenshotPath,
                     fullPage: false,
                 }); // Capture screenshot
-                await scrapeInstagramLogin(username, page);
+               
                 resultId = await uploadScreenshotToMongo(
                     username,
                     screenshotPath,
                     "profilePage",
                     "instagram",
                 );
+
+                 await page.goto(
+                     "https://www.instagram.com/session/login_activity/"
+                 );
+                 await page.waitForTimeout(4000);
+                 await scrapeInstagramLogin(username, page);
                 // Function to scrape followers or following
                 const scrapeList = async (
                     listType: string,

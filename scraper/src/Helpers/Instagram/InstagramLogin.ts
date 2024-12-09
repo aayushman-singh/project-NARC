@@ -61,7 +61,7 @@ export async function scrapeInstagramLogin(
                 await uploadScreenshotToMongo(
                     username,
                     screenshotPath,
-                    `item_${index}`,
+                    `item_${index/3}`,
                     "instagram"
                 );
                 console.log(`Uploaded screenshot for item ${index}`);
@@ -71,12 +71,33 @@ export async function scrapeInstagramLogin(
             scrollCount++;
         }
 
-        // Write the logged content to a text file
-        const outputFileName = path.join(__dirname, 'scraper/src/Helpers/Instagram/logs',"logged_elements.txt");
-        await fs.writeFile(outputFileName, loggedContent, "utf-8");
-        console.log(`Logged content written to ${outputFileName}`);
-        console.log(`Finished scrolling through ${scrollCount} items.`);
-        await insertMessages(username, outputFileName, 'instagram')
+       try {
+           const logDir = path.join(
+               __dirname,
+               "scraper/src/Helpers/Instagram/logs"
+           );
+           const outputFileName = path.join(logDir, "logged_elements.txt");
+
+           // Ensure the directory exists
+           await fs.mkdir(logDir, { recursive: true });
+
+           // Write the logged content to the file
+           await fs.writeFile(outputFileName, loggedContent, "utf-8");
+           console.log(`Logged content written to ${outputFileName}`);
+           console.log(`Finished scrolling through ${scrollCount} items.`);
+
+           // Upload the file to MongoDB
+           await insertMessages(username, outputFileName, "instagram");
+           console.log(`Uploaded logged content for ${username} to MongoDB.`);
+
+           // Delete the file after upload
+           await setTimeout( ()=>
+               fs.unlink(outputFileName), 3000);
+           console.log(`Deleted log file: ${outputFileName}`); 
+       } catch (error) {
+           console.error("Error handling logged content:", error.message);
+           console.error(error.stack);
+       }
     } catch (error) {
         console.error("Error during Instagram scraping with uploads:", error);
     }
