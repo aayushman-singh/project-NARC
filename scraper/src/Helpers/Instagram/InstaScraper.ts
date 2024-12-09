@@ -10,7 +10,7 @@ import {
 import { BrowserContext, Page } from "playwright";
 import { promises as fs, PathLike } from "fs";
 import path from "path"; // To handle file paths
-import { scrapeInstagramLogin } from "./InstagramLogin.js";
+import { scrapeInstagramLogin } from "./InstagramLogin";
 
 const saveSession = async (page: Page, filePath: string) => {
     const storageState = await page.context().storageState();
