@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:tattletale/screens/auth_page.dart';
-import 'package:tattletale/structure/appbar.dart';
 
 class OnboardingPage extends StatelessWidget {
   const OnboardingPage({super.key});

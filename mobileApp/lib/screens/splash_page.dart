@@ -10,7 +10,7 @@ class SplashPage extends StatelessWidget {
   const SplashPage({super.key});
 
   Future<void> checkUserStatus(BuildContext context) async {
-    final storage = const FlutterSecureStorage();
+    const storage = FlutterSecureStorage();
     final token = await storage.read(key: 'token');
 
     // Check if onboarding has been completed
@@ -22,7 +22,7 @@ class SplashPage extends StatelessWidget {
       Navigator.pushReplacement(
         context,
         MaterialPageRoute(
-          builder: (_) => PersistentStructure(),
+          builder: (_) => const PersistentStructure(),
         ),
       );
     } else if (showOnboarding) {
