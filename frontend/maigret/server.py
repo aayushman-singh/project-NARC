@@ -15,7 +15,6 @@ if not os.path.exists(reports_dir):
 
 def sanitize_filename(filename):
     return ''.join([c if c.isalnum() else '_' for c in filename]).lower()
-
 @app.route('/api/search', methods=['POST'])
 def search_user():
     data = request.get_json()
@@ -29,11 +28,17 @@ def search_user():
 
     command = f'maigret {username} --json ndjson --timeout 7 --no-recursion --top-sites 20 --retries 0'
 
+    # Determine the shell to use based on the OS
+    if os.name == 'nt':  # Windows
+        shell_command = ['cmd', '/c', command]
+    else:  # Unix-based systems (Linux, macOS)
+        shell_command = ['/bin/bash', '-c', command]
+
     try:
         maigret_process = subprocess.Popen(
-            ['/bin/bash', '-c', command],
+            shell_command,
             cwd=project_root,
-            shell=False,
+            shell=False,  # Ensure this is False since we specify the shell explicitly
             stdout=subprocess.PIPE,
             stderr=subprocess.PIPE,
             text=True,
@@ -43,7 +48,7 @@ def search_user():
         output_data = []
         error_data = []
 
-        # Capture output and parse URLs
+        # Read stdout and stderr streams
         for line in maigret_process.stdout:
             output_data.append(line.strip())
             print(f'Maigret Output: {line.strip()}')
@@ -55,14 +60,13 @@ def search_user():
         maigret_process.wait()
 
         if maigret_process.returncode == 0:
-            # Parse URLs from output
+            # Extract URLs from output
             urls = []
-            url_pattern = re.compile(r'(https?://\S+)')  # Simple URL matching regex
+            url_pattern = re.compile(r'(https?://\S+)')
             for line in output_data:
                 found_urls = url_pattern.findall(line)
                 urls.extend(found_urls)
             print("Extracted URLs:", urls)
-            # Return URLs in the JSON response
             return jsonify({
                 'message': 'Maigret finished successfully',
                 'urls': urls
@@ -73,9 +77,14 @@ def search_user():
                 'details': "\n".join(error_data)
             }), 500
 
+    except FileNotFoundError:
+        print("Maigret command not found. Ensure it is installed and in PATH.")
+        return jsonify({'error': 'Maigret command not found. Ensure it is installed and in PATH.'}), 500
     except Exception as e:
+        print(f"Unexpected error: {e}")
         return jsonify({'error': str(e)}), 500
 
 if __name__ == '__main__':
     port = 5000
-    app.run(host='0.0.0.0', port=port)
+    print(f"Starting server on port {port}")
+    app.run(host='0.0.0.0', port=port, debug=True)  # Enable debug for better 
