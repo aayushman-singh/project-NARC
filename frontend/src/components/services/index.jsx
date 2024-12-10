@@ -201,31 +201,65 @@ const Services = () => {
       youtube: 3008 // This is for Google platform
     };
   
-    // Check if platform is valid
     const port = platformConfig[platform];
     if (!port) {
       console.error(`Platform "${platform}" is not supported or configured`);
       return;
     }
   
-    // Retrieve the username based on the platform
     let username;
-    if (platform === "drive" || platform === "gmail" ) {
+    if (platform === "instagram") {
+      const instagramInput = document.getElementById("instagramInput");
+      if (!instagramInput || !instagramInput.value) {
+        console.error("Username is required for platform 'instagram'");
+        showAlert("Please enter an Instagram username", "error");
+        return;
+      }
+      username = instagramInput.value;
+    } else if (platform === "telegram") {
+      const telegramInput = document.getElementById("telegramInput");
+      if (!telegramInput || !telegramInput.value) {
+        console.error("Phone number is required for platform 'telegram'");
+        showAlert("Please enter a Telegram phone number", "error");
+        return;
+      }
+      username = telegramInput.value;
+    } else if (platform === "x") {
+      const xInput = document.getElementById("xInput");
+      if (!xInput || !xInput.value) {
+        console.error("Username or phone number is required for platform 'x'");
+        showAlert("Please enter a username or phone number for X", "error");
+        return;
+      }
+      username = xInput.value;
+    } else if (platform === "whatsapp") {
+      const whatsappInput = document.getElementById("whatsappInput");
+      if (!whatsappInput || !whatsappInput.value) {
+        console.error("Phone number is required for platform 'whatsapp'");
+        showAlert("Please enter a WhatsApp phone number", "error");
+        return;
+      }
+      username = whatsappInput.value;
+    } else if (platform === "facebook") {
+      const facebookInput = document.getElementById("facebookInput");
+      if (!facebookInput || !facebookInput.value) {
+        console.error("Email or phone number is required for platform 'facebook'");
+        showAlert("Please enter an email or phone number for Facebook", "error");
+        return;
+      }
+      username = facebookInput.value;
+    }
+     else if (platform === "drive" || platform === "gmail") {
       if (!email) {
         console.error(`Username (email) is required for platform "${platform}"`);
         showAlert("Please enter an email", "error");
         return;
       }
       username = email;
-    }
-    else if(platform === "google" || platform === "youtube"){
+    } else if (platform === "google" || platform === "youtube") {
       username = googleEmail;
     }
-    // else if(platform ==="youtube"){
-    //   username = youtubeEmail;
-    // }
   
-    // Retrieve password if required
     const password = requiresPassword
       ? document.getElementById(`${platform}Password`)?.value
       : null;
