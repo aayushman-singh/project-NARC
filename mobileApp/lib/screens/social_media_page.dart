@@ -331,7 +331,7 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
       ];
 
       return StatefulBuilder(builder: (context, setState) {
-        Future<void> _selectDate(
+        Future<void> selectDate(
             BuildContext context, bool isBeforeDate) async {
           final DateTime? picked = await showDatePicker(
             context: context,
@@ -350,7 +350,7 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
           }
         }
 
-        Future<void> _submit() async {
+        Future<void> submit() async {
           final email = tagController!.text;
           if (selectedService == 'Google Drive' || selectedService == 'Gmail') {
             await BackendService.sendRequest(
@@ -370,7 +370,7 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
           }
         }
 
-        Future<void> _showGoogleDetails() async {
+        Future<void> showGoogleDetails() async {
           final email = tagController!.text;
           await BackendService.sendRequest(
             serviceName: selectedService,
@@ -390,12 +390,12 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
               // Email field
               TextField(
                 controller: tagController,
-                decoration: InputDecoration(
+                decoration: const InputDecoration(
                   labelText: 'Email Address',
                   labelStyle: TextStyle(color: Colors.white),
                   border: OutlineInputBorder(),
                 ),
-                style: TextStyle(color: Colors.white),
+                style: const TextStyle(color: Colors.white),
               ),
               const SizedBox(height: 16),
 
@@ -419,7 +419,7 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
                         ),
                         const SizedBox(width: 8),
                         Text(service['name']!,
-                            style: TextStyle(color: Colors.white)),
+                            style: const TextStyle(color: Colors.white)),
                       ],
                     ),
                   );
@@ -442,10 +442,10 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
                       maxValues.map<DropdownMenuItem<String>>((String value) {
                     return DropdownMenuItem<String>(
                       value: value,
-                      child: Text(value, style: TextStyle(color: Colors.white)),
+                      child: Text(value, style: const TextStyle(color: Colors.white)),
                     );
                   }).toList(),
-                  hint: Text('Select Max Items',
+                  hint: const Text('Select Max Items',
                       style: TextStyle(color: Colors.white)),
                   dropdownColor: Colors.grey[800],
                 ),
@@ -456,15 +456,15 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
                     Expanded(
                       child: TextField(
                         readOnly: true,
-                        onTap: () => _selectDate(context, true),
-                        decoration: InputDecoration(
+                        onTap: () => selectDate(context, true),
+                        decoration: const InputDecoration(
                           labelText: 'Before',
                           labelStyle: TextStyle(color: Colors.white),
                           border: OutlineInputBorder(),
                           suffixIcon:
                               Icon(Icons.calendar_today, color: Colors.white),
                         ),
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                         controller: TextEditingController(
                           text: beforeDate != null
                               ? "${beforeDate!.year}-${beforeDate!.month.toString().padLeft(2, '0')}-${beforeDate!.day.toString().padLeft(2, '0')}"
@@ -476,15 +476,15 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
                     Expanded(
                       child: TextField(
                         readOnly: true,
-                        onTap: () => _selectDate(context, false),
-                        decoration: InputDecoration(
+                        onTap: () => selectDate(context, false),
+                        decoration: const InputDecoration(
                           labelText: 'After',
                           labelStyle: TextStyle(color: Colors.white),
                           border: OutlineInputBorder(),
                           suffixIcon:
                               Icon(Icons.calendar_today, color: Colors.white),
                         ),
-                        style: TextStyle(color: Colors.white),
+                        style: const TextStyle(color: Colors.white),
                         controller: TextEditingController(
                           text: afterDate != null
                               ? "${afterDate!.year}-${afterDate!.month.toString().padLeft(2, '0')}-${afterDate!.day.toString().padLeft(2, '0')}"
@@ -499,12 +499,12 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
 
               // Submit Button
               ElevatedButton(
-                onPressed: _submit,
-                child: Text('Submit'),
+                onPressed: submit,
+                child: const Text('Submit'),
               ),
               ElevatedButton(
-                onPressed: _showGoogleDetails,
-                child: Text('Show details'),
+                onPressed: showGoogleDetails,
+                child: const Text('Show details'),
               ),
             ],
           ),

@@ -6,6 +6,8 @@ import 'package:provider/provider.dart';
 import 'package:tattletale/provider/user.dart';
 
 class ProfilePage extends StatefulWidget {
+  const ProfilePage({super.key});
+
   @override
   _ProfilePageState createState() => _ProfilePageState();
 }
@@ -126,9 +128,9 @@ class _ProfilePageState extends State<ProfilePage> {
   @override
   Widget build(BuildContext context) {
     if (loading) {
-      return Scaffold(
+      return const Scaffold(
         backgroundColor: Colors.black,
-        body: const Center(
+        body: Center(
           child: CircularProgressIndicator(),
         ),
       );
@@ -191,7 +193,7 @@ class _ProfilePageState extends State<ProfilePage> {
                     Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Container(
+                        SizedBox(
                           height: 100,
                           width: 150,
                           child: TextField(

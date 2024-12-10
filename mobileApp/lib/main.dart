@@ -27,8 +27,7 @@ void main() async {
 class TattletaleApp extends StatelessWidget {
   final bool showOnboarding;
 
-  const TattletaleApp({Key? key, required this.showOnboarding})
-      : super(key: key);
+  const TattletaleApp({super.key, required this.showOnboarding});
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +39,7 @@ class TattletaleApp extends StatelessWidget {
         visualDensity: VisualDensity.adaptivePlatformDensity,
       ),
       // Start with the splash screen
-      home: SplashPage(),
+      home: const SplashPage(),
     );
   }
 }
