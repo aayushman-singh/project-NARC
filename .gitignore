@@ -47,3 +47,4 @@ scraper/Darke_TheDragon_following_log.txt
 scraper/Darke_TheDragon_followers_log.txt
 package-lock.json
 /scraper/src/Helpers/user_data
+.DS_Store
