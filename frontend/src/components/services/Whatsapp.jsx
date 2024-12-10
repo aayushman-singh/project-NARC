@@ -10,10 +10,40 @@ import {
 const WhatsAppChat = ({ chat, index }) => {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [chatLogs, setChatLogs] = useState(null); // Stores chat logs
+  const [isLogsLoading, setIsLogsLoading] = useState(false); // Indicates loading state
+  const [isChatLogsVisible, setIsChatLogsVisible] = useState(false); // Controls visibility of chat logs
 
   const toggleMedia = () => setIsMediaExpanded(!isMediaExpanded);
   const openImageViewer = (image) => setSelectedImage(image);
   const closeImageViewer = () => setSelectedImage(null);
+
+  const fetchChatLogs = async () => {
+    if (isChatLogsVisible) {
+      // Close chat logs if already open
+      setIsChatLogsVisible(false);
+      return;
+    }
+
+    try {
+      setIsLogsLoading(true);
+      const response = await fetch(chat.chats);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch chat logs: ${response.statusText}`);
+      }
+
+      const text = await response.text();
+      setChatLogs(text);
+      setIsChatLogsVisible(true); // Make logs visible
+    } catch (error) {
+      console.error(error.message);
+      setChatLogs("Failed to load chat logs.");
+      setIsChatLogsVisible(true);
+    } finally {
+      setIsLogsLoading(false);
+    }
+  };
 
   return (
     <div className="bg-gradient-to-br from-green-900 to-gray-800 p-6 rounded-xl shadow-lg mt-6 border border-green-700/20">
@@ -82,17 +112,28 @@ const WhatsAppChat = ({ chat, index }) => {
         )}
 
         <div className="flex justify-between items-center">
-          <a
-            href={chat.chats}
+          <button
+            onClick={fetchChatLogs}
             className="inline-flex items-center space-x-2 text-green-400 hover:text-green-300 transition-colors duration-200 group"
-            target="_blank"
-            rel="noopener noreferrer"
           >
-            <span className="font-medium">View Chat History</span>
+            <span className="font-medium">
+              {isChatLogsVisible ? "Close Chat History" : "View Chat History"}
+            </span>
             <ExternalLink className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-          </a>
+          </button>
         </div>
       </div>
+
+      {/* Chat logs viewer */}
+      {isChatLogsVisible && (
+        <div className="bg-gray-800/50 rounded-xl p-4 mt-4 overflow-auto max-h-64">
+          {isLogsLoading ? (
+            <p className="text-green-300">Loading chat logs...</p>
+          ) : (
+            <pre className="text-gray-300 whitespace-pre-wrap">{chatLogs}</pre>
+          )}
+        </div>
+      )}
 
       {selectedImage && (
         <div

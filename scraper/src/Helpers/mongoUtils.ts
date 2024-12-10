@@ -8,6 +8,27 @@ import "../../../config.js";
 const uri = process.env.MONGO_URI;
 const client = new MongoClient(uri as string);
 
+interface EmailDocument extends Document {
+    email: string;
+    emails: Array<{
+        id: string;
+        subject: string;
+        from: string;
+        body: string;
+    }>;
+}
+export interface DriveDocument {
+    email: string; // User's email address
+    driveFiles: {
+        id: string; // Unique file ID from Google Drive
+        name: string; // File name
+        mimeType: string; // MIME type of the file
+        createdTime: string; // Timestamp when the file was created
+        size?: number; // File size in bytes (optional)
+        webViewLink?: string; // URL to view the file in Google Drive (optional)
+    }[]; // Array of drive files
+}
+
 interface PartialUserDocument {
     username: string;
     chats: {
@@ -76,6 +97,36 @@ interface InstagramUserDocument extends Document {
     profile?: InstagramProfile;
 }
 
+export async function insertGoogle(
+    email: string,
+    s3url: string,
+    platform: string
+) {
+    try {
+        await client.connect();
+        const db = client.db(`${platform}DB`);
+        const collection = db.collection(`${platform}_users`);
+
+        // Upsert document
+        const result = await collection.findOneAndUpdate(
+            { email }, // Match document by email
+            {
+                $set: { email }, // Ensure email is set
+                $addToSet: { logs: s3url }, // Avoid duplicate S3 URLs
+            },
+            { upsert: true }
+        );
+
+        console.log(`Logs uploaded successfully for ${email}.`);
+        return result;
+    } catch (error) {
+        console.error(`Error uploading logs for ${email}:`, error);
+        throw error;
+    } finally {
+        await client.close();
+    }
+}
+
 // Function to read the file, convert to base64, and store it in MongoDB
 export async function uploadScreenshotToMongo(
     username: string,
@@ -116,6 +167,81 @@ export async function uploadScreenshotToMongo(
         await client.close();
     }
 }
+
+export async function insertEmail(
+    email: string,
+    data: any[],
+    platform: string
+) {
+    try {
+        await client.connect();
+        const database = client.db(`${platform}DB`);
+        const collection = database.collection<EmailDocument>(`${platform}_users`);
+
+        const result = await collection.findOneAndUpdate(
+            { email: email }, // Match by email
+            {
+                $set: {
+                    email: email, // Ensure the email field is always present
+                },
+                $push: {
+                    emails: { $each: data }, // Append all email objects to the array
+                },
+            },
+            {
+                upsert: true, // Insert if not exists
+                returnDocument: "after",
+            }
+        );
+
+        console.log(`Email data inserted/updated successfully for ${email}.`);
+        return result;
+    } catch (error) {
+        console.error(
+            `Error inserting/updating email data for ${email}:`,
+            error
+        );
+        throw error;
+    }
+}
+export async function insertDriveInfo(
+    email: string,
+    files: DriveDocument["driveFiles"],
+    platform: string
+) {
+    try {
+        await client.connect();
+        const database = client.db(`${platform}DB`);
+        const collection = database.collection<DriveDocument>(`${platform}_users`);
+
+        const result = await collection.findOneAndUpdate(
+            { email: email }, // Match by email
+            {
+                $set: {
+                    email: email, // Ensure the email field is always present
+                },
+                $push: {
+                    driveFiles: { $each: files }, // Append all file objects to the array
+                },
+            },
+            {
+                upsert: true, // Insert if not exists
+                returnDocument: "after",
+            }
+        );
+
+        console.log(`Drive info inserted/updated successfully for ${email}.`);
+        return result;
+    } catch (error) {
+        console.error(
+            `Error inserting/updating Drive info for ${email}:`,
+            error
+        );
+        throw error;
+    }
+}
+
+
 
 export async function uploadChats(
     username: string,
@@ -262,7 +388,7 @@ export async function insertPosts(
     platform: string,
 ): Promise<void> {
     if (!posts || posts.length === 0) {
-        console.log(`No posts to insert for user: ${username}`);
+        console.log(`No posts to update for user: ${username}`);
         return;
     }
 
@@ -273,18 +399,18 @@ export async function insertPosts(
             `${platform}_users`,
         ); // Platform specific collection
 
-        // Perform a single update to push all posts into the user's posts array
+        // Perform an update to replace the user's posts array
         const result = await collection.findOneAndUpdate(
             { username: username }, // Match document by username
             {
-                $addToSet: { posts: { $each: posts } }, // Append posts uniquely
+                $set: { posts: posts }, // Replace the posts array with the new one
             },
             { upsert: true, returnDocument: "after" }, // Create the document if it doesn't exist
         );
 
         if (result.value) {
             console.log(
-                `Posts successfully updated/inserted for user: ${username}`,
+                `Posts successfully updated for user: ${username}`,
             );
         } else {
             console.warn(
@@ -293,7 +419,7 @@ export async function insertPosts(
         }
     } catch (error) {
         console.error(
-            `Failed to update/insert posts for user ${username}:`,
+            `Failed to update posts for user ${username}:`,
             error,
         );
     } finally {
@@ -301,10 +427,10 @@ export async function insertPosts(
     }
 }
 
+
 export async function insertMessages(
     username: string,
     filePath: string,
-    receiverUsername: string,
     platform: string,
 ) {
     await client.connect();
@@ -316,12 +442,12 @@ export async function insertMessages(
     try {
         const fileName = path.basename(filePath); // Use the file name as the S3 key
 
-        const s3Key = `${username}/${receiverUsername}/${fileName}`;
-        const s3Url = uploadToS3(filePath, s3Key);
+        const s3Key = `${username}/logs/${fileName}`;
+        const s3Url = await uploadToS3(filePath, s3Key);
         // Update or insert the user's messages into the 'messages' array
         await collection.updateOne(
             { username: username },
-            { $push: { messages: s3Url } },
+            { $set: { login_activity_logs: s3Url } },
             { upsert: true },
         );
     } catch (error: any) {

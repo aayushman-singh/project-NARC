@@ -5,13 +5,15 @@ import Header from "./components/header";
 import Home from "./components/home";
 import ServicesMain from "./components/servicesMain";
 import SearchPage from "./components/servicesOsint";
+import { GoogleOAuthProvider } from '@react-oauth/google';
 import InstagramDataDisplay from "./components/pastData";
 import DataAnalysisPage from "./components/analysis";
 // import CursorFollower from "./components/cursor";
 import { AuthProvider } from "./contexts/authContext";
+import GoogleDriveFileExplorer from "./components/services/GoogleDrive"
 import { useRoutes } from "react-router-dom";
 import ProfilePage from "./components/profile";
-
+import ChatbotAvatar from "./components/chatbot/chatbotAvatar"
 function App() {
   const routesArray = [
     {
@@ -53,7 +55,12 @@ function App() {
     {
       path: "/profilePage",
       element: <ProfilePage/>,
-    }
+    },
+    {
+      path: "/google",
+      element: <GoogleDriveFileExplorer/>,
+    },
+   
   ];
 
   let routesElement = useRoutes(routesArray);
@@ -61,11 +68,14 @@ function App() {
   return (
     <>
       {/* <CursorFollower/> */}
+      <GoogleOAuthProvider clientId="218022995131-pkv99vvugfmhr73ua600lg44q362bbsj.apps.googleusercontent.com">
       <Header />
       {/* Full screen height minus header with flex column */}
       <div className="w-full flex-grow flex flex-col pt-16 bg-gray-700">
         {routesElement}
       </div>
+      <ChatbotAvatar />
+      </GoogleOAuthProvider>
     </>
   );
 }
