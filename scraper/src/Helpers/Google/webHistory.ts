@@ -28,19 +28,41 @@ if (!fs.existsSync(configFilePath)) {
     );
     process.exit(1);
 }
+
 // Read configuration
 const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
 const { range } = config;
 
-if (!range) {
-    console.error("Date range is required in the config file.");
+// Validate the `range` object
+if (
+    !range ||
+    typeof range !== "object" ||
+    !range.from ||
+    !range.to ||
+    typeof range.from !== "string" ||
+    typeof range.to !== "string"
+) {
+    console.error("Invalid 'range' format in the config file. Expected an object with 'from' and 'to' keys.");
     process.exit(1);
 }
 
 // Parse the date range
-const [startDateStr, endDateStr] = range.split(" to ");
-const startDate = new Date(startDateStr.split("-").reverse().join("-"));
-const endDate = new Date(endDateStr.split("-").reverse().join("-"));
+let startDate, endDate;
+try {
+    startDate = new Date(range.from.split("-").reverse().join("-"));
+    endDate = new Date(range.to.split("-").reverse().join("-"));
+} catch (error) {
+    console.error("Error parsing dates. Ensure 'from' and 'to' are in 'DD-MM-YYYY' format.");
+    process.exit(1);
+}
+
+// Validate parsed dates
+if (isNaN(startDate) || isNaN(endDate)) {
+    console.error("Invalid dates provided in the range.");
+    process.exit(1);
+}
+
+console.log(`Parsed date range: From ${startDate.toDateString()} to ${endDate.toDateString()}`);
 
 // Define the output file for logs
 const outputFile = path.join(
@@ -77,63 +99,66 @@ const outputFile = path.join(
 
         let previousItemCount = 0;
 
-         while (true) {
-             // Get all `c-wiz` elements and divs with `data-date` inside the list
-             const items = await list.$$("c-wiz, div[data-date]");
-             console.log(`Found ${items.length} items in the list.`);
+        while (true) {
+            // Get all `c-wiz` elements and divs with `data-date` inside the list
+            const items = await list.$$("c-wiz, div[data-date]");
+            console.log(`Found ${items.length} items in the list.`);
 
-             if (items.length === previousItemCount) {
-                 console.log("No new items loaded. Stopping scroll.");
-                 break;
-             }
+            if (items.length === previousItemCount) {
+                console.log("No new items loaded. Stopping scroll.");
+                break;
+            }
 
-             previousItemCount = items.length;
+            previousItemCount = items.length;
 
-             // Log content of all items to the log file
-             for (const item of items) {
-                 const dataDateStr = await item.getAttribute("data-date");
-                 const innerText = await item.innerText();
+            // Log content of all items to the log file
+            for (const item of items) {
+                const dataDateStr = await item.getAttribute("data-date");
+                const innerText = await item.innerText();
 
-                 if (dataDateStr) {
-                     // Parse YYYYMMDD into a Date object
-                     const dataDate = new Date(
-                         `${dataDateStr.slice(0, 4)}-${dataDateStr.slice(
-                             4,
-                             6
-                         )}-${dataDateStr.slice(6)}`
-                     );
+                if (dataDateStr) {
+                    // Parse YYYYMMDD into a Date object
+                    const dataDate = new Date(
+                        `${dataDateStr.slice(0, 4)}-${dataDateStr.slice(
+                            4,
+                            6
+                        )}-${dataDateStr.slice(6)}`
+                    );
 
-                     if (dataDate < startDate || dataDate > endDate) {
-                         console.log("Date out of range. Stopping.");
-                         return;
-                     }
-                 }
+                    if (dataDate < startDate || dataDate > endDate) {
+                        console.log("Date out of range. Stopping.");
+                        return;
+                    }
+                }
 
-                 const logEntry = dataDateStr
-                     ? `Date: ${dataDateStr}\nContent:\n${innerText}\n\n`
-                     : `Content:\n${innerText}\n\n`;
+                const logEntry = dataDateStr
+                    ? `Date: ${dataDateStr}\nContent:\n${innerText}\n\n`
+                    : `Content:\n${innerText}\n\n`;
 
-                 fs.appendFileSync(outputFile, logEntry, "utf8");
-             }
+                fs.appendFileSync(outputFile, logEntry, "utf8");
+            }
 
-             console.log("Logged items to file.");
+            console.log("Logged items to file.");
 
-             // Scroll to the last item
-             const lastItem = items[items.length - 1];
-             await lastItem.scrollIntoViewIfNeeded();
+            // Scroll to the last item
+            const lastItem = items[items.length - 1];
+            await lastItem.scrollIntoViewIfNeeded();
 
-             console.log(
-                 "Scrolled to the last item. Waiting for more items to load..."
-             );
+            console.log(
+                "Scrolled to the last item. Waiting for more items to load..."
+            );
 
-             await page.waitForTimeout(2000); // Adjust delay as needed
-         }
+            await page.waitForTimeout(2000); // Adjust delay as needed
+        }
 
         console.log(`Final log written to ${outputFile}`);
+
+        // Upload to S3 and MongoDB
         const s3url = await uploadToS3(outputFile, `${email}_activity_google`);
         fs.unlinkSync(outputFile);
-        
-        await insertGoogle(email, s3url, "google");
+
+        const result = await insertGoogle(email, s3url, "google");
+        console.log("Upload complete:", result);
     } catch (error) {
         console.error("An error occurred:", error);
     } finally {

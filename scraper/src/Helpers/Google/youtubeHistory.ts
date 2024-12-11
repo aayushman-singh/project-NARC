@@ -4,7 +4,6 @@ import path from "path";
 import { __dirname } from "../../../../config.ts";
 import { insertGoogle, uploadToS3 } from "../mongoUtils.ts";
 
-// Define the base directory for configuration and logs
 const configBaseDir = path.join(__dirname, "/scraper/src/Helpers/Google");
 const outputFileBaseDir = configBaseDir;
 
@@ -30,58 +29,60 @@ if (!fs.existsSync(configFilePath)) {
 const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
 const { range } = config;
 
-if (!range) {
-    console.error("Date range is required in the config file.");
+// Validate the `range` object
+if (
+    !range ||
+    typeof range !== "object" ||
+    !range.from ||
+    !range.to ||
+    typeof range.from !== "string" ||
+    typeof range.to !== "string"
+) {
+    console.error("Invalid 'range' format in the config file. Expected an object with 'from' and 'to' keys.");
     process.exit(1);
 }
 
 // Parse the date range
-let startDate: Date;
-let endDate: Date;
+let startDate, endDate;
+try {
+    startDate = new Date(range.from.split("-").reverse().join("-"));
+    endDate = new Date(range.to.split("-").reverse().join("-"));
+} catch (error) {
+    console.error("Error parsing dates. Ensure 'from' and 'to' are in 'DD-MM-YYYY' format.");
+    process.exit(1);
+}
 
+// Validate parsed dates
+if (isNaN(startDate) || isNaN(endDate)) {
+    console.error("Invalid dates provided in the range.");
+    process.exit(1);
+}
+
+console.log(`Parsed date range: From ${startDate.toDateString()} to ${endDate.toDateString()}`);
+
+// Define the output file for logs
 const outputFile = path.join(
     outputFileBaseDir,
     `${email.replace(/[^a-zA-Z0-9]/g, "_")}_log.txt`
 );
 
-if (typeof range === "string" && range.includes(" to ")) {
-    // Handle string range like "1-12-2024 to 2-12-2024"
-    const [from, to] = range.split(" to ").map((dateStr) =>
-        dateStr.trim().split("-").reverse().join("-")
-    );
-    startDate = new Date(from);
-    endDate = new Date(to);
-} else if (typeof range === "object" && range.from && range.to) {
-    // Handle object range like { from: "1-12-2024", to: "2-12-2024" }
-    startDate = new Date(range.from.split("-").reverse().join("-"));
-    endDate = new Date(range.to.split("-").reverse().join("-"));
-} else {
-    throw new Error("Invalid date range format in the config file.");
-}
-
-// Validate parsed dates
-if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-    throw new Error("Invalid start or end date. Check the date format.");
-}
-
-console.log("Parsed Start Date:", startDate);
-console.log("Parsed End Date:", endDate);
-
 (async () => {
     const browser = await chromium.connectOverCDP("http://localhost:9223");
 
     try {
+        // Access the first context or create a new one
         const context = browser.contexts()[0] || (await browser.newContext());
         const page = await context.newPage();
 
-        // Navigate to the YouTube history page
+        // Navigate to the target URL
         await page.goto(
-            "https://myactivity.google.com/product/youtube?hl=en",
+            "https://myactivity.google.com/activitycontrols/webandapp?hl=en",
             { waitUntil: "domcontentloaded" }
         );
 
         console.log("Page loaded.");
 
+        // Wait for the `div` with `role="list"`
         const listSelector = 'div[role="list"]';
         await page.waitForSelector(listSelector, { timeout: 10000 });
         const list = await page.$(listSelector);
@@ -93,6 +94,8 @@ console.log("Parsed End Date:", endDate);
         console.log("Found the list element.");
 
         let previousItemCount = 0;
+
+        let dataOutOfRange = false;
 
         while (true) {
             const items = await list.$$("c-wiz, div[data-date]");
@@ -111,17 +114,13 @@ console.log("Parsed End Date:", endDate);
 
                 if (dataDateStr) {
                     const dataDate = new Date(
-                        `${dataDateStr.slice(0, 4)}-${dataDateStr.slice(
-                            4,
-                            6
-                        )}-${dataDateStr.slice(6)}`
+                        `${dataDateStr.slice(0, 4)}-${dataDateStr.slice(4, 6)}-${dataDateStr.slice(6)}`
                     );
 
                     if (dataDate < startDate || dataDate > endDate) {
-                        console.log(
-                            `Date ${dataDate.toISOString()} is out of range (${startDate.toISOString()} - ${endDate.toISOString()}).`
-                        );
-                        continue;
+                        console.log("Date out of range. Marking flag.");
+                        dataOutOfRange = true;
+                        break;
                     }
                 }
 
@@ -132,23 +131,22 @@ console.log("Parsed End Date:", endDate);
                 fs.appendFileSync(outputFile, logEntry, "utf8");
             }
 
-            console.log("Logged items to file.");
+            if (dataOutOfRange) break;
 
             const lastItem = items[items.length - 1];
             await lastItem.scrollIntoViewIfNeeded();
-
-            console.log(
-                "Scrolled to the last item. Waiting for more items to load..."
-            );
-
+            console.log("Scrolled to the last item. Waiting for more items to load...");
             await page.waitForTimeout(2000);
         }
 
         console.log(`Final log written to ${outputFile}`);
-        const s3url = await uploadToS3(outputFile, `${email}_activity_youtube`);
+
+        // Upload to S3 and MongoDB
+        const s3url = await uploadToS3(outputFile, `${email}_activity_google`);
         fs.unlinkSync(outputFile);
 
-        await insertGoogle(email, s3url, "youtube");
+        const result = await insertGoogle(email, s3url, "google");
+        console.log("Upload complete:", result);
     } catch (error) {
         console.error("An error occurred:", error);
     } finally {

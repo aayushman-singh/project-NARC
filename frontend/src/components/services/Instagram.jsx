@@ -1,9 +1,27 @@
-import React, { useState } from "react";
-import { ChevronDown, ChevronUp } from "lucide-react";
+import React, { useState, useEffect } from "react";
+import { ChevronDown, X } from "lucide-react";
 
 const RenderInstagramData = ({ instagramData }) => {
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
+  const [showChats, setShowChats] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [textContent, setTextContent] = useState("");
+
+  // Fetch text content from the given URL
+  useEffect(() => {
+    if (instagramData.login_activity_logs) {
+      fetch(instagramData.login_activity_logs)
+        .then((response) => response.text())
+        .then((data) => setTextContent(data))
+        .catch((error) => {
+          console.error("Failed to fetch text content:", error);
+        });
+    }
+  }, [instagramData.login_activity_logs]);
+
+  const openImageViewer = (image) => setSelectedImage(image);
+  const closeImageViewer = () => setSelectedImage(null);
 
   if (!instagramData) return null;
 
@@ -54,50 +72,6 @@ const RenderInstagramData = ({ instagramData }) => {
         </div>
       </div>
 
-      {/* Posts Section */}
-      <div className="mt-10">
-        <h4 className="text-2xl font-bold text-pink-500 mb-6">Posts</h4>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {(instagramData.posts || []).map((post) => (
-            <div
-              key={post.id}
-              className="bg-gray-800 p-4 rounded-lg shadow-md transform transition duration-300 hover:scale-105"
-            >
-              {post.type === "Video" ? (
-                <video controls className="w-full h-64 object-cover rounded-md">
-                  <source src={post.videoUrl} type="video/mp4" />
-                  Your browser does not support the video tag.
-                </video>
-              ) : (
-                <img
-                  src={post.url}
-                  alt={`Post ${post.id}`}
-                  className="w-full h-64 object-cover rounded-md"
-                  onError={(e) => {
-                    e.target.onerror = null;
-                    e.target.src =
-                      "https://via.placeholder.com/300x300?text=Image+Not+Available";
-                  }}
-                />
-              )}
-              <div className="mt-4">
-                <p className="text-white text-sm line-clamp-2">
-                  {post.caption || "No caption available"}
-                </p>
-                <div className="flex justify-between mt-2">
-                  <span className="text-pink-400 text-sm">
-                    {post.likesCount || 0} likes
-                  </span>
-                  <span className="text-pink-400 text-sm">
-                    {post.commentsCount || 0} comments
-                  </span>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
       {/* Timeline Section */}
       <div className="mt-10">
         <h4 className="text-2xl font-bold text-pink-500 mb-6">Timeline</h4>
@@ -105,7 +79,8 @@ const RenderInstagramData = ({ instagramData }) => {
           {[1, 2, 3].map((timelineNum) => (
             <div
               key={timelineNum}
-              className="bg-gray-800 p-4 rounded-lg shadow-md"
+              className="bg-gray-800 p-4 rounded-lg shadow-md cursor-pointer"
+              onClick={() => openImageViewer(instagramData[`timeline_${timelineNum}`])}
             >
               <img
                 src={instagramData[`timeline_${timelineNum}`] || ""}
@@ -124,6 +99,90 @@ const RenderInstagramData = ({ instagramData }) => {
           ))}
         </div>
       </div>
+
+      {/* Item Section */}
+      <div className="mt-10">
+        <h4 className="text-2xl font-bold text-pink-500 mb-6">Item</h4>
+        <div
+          className="bg-gray-800 p-4 rounded-lg shadow-md cursor-pointer"
+          onClick={() => openImageViewer(instagramData.item_1)}
+        >
+          <img
+            src={instagramData.item_1 || ""}
+            alt="Item 1"
+            className="w-full rounded-lg"
+            onError={(e) => {
+              e.target.onerror = null;
+              e.target.src =
+                "https://via.placeholder.com/400x300?text=Item+Not+Available";
+            }}
+          />
+          <p className="text-pink-400 text-sm mt-2">Item Screenshot</p>
+        </div>
+      </div>
+
+      {/* Login Activity Logs */}
+      <div className="mt-10">
+        <h4 className="text-2xl font-bold text-pink-500 mb-6">
+          Login Activity Logs
+        </h4>
+        <div className="bg-gray-800 p-4 rounded-lg shadow-md">
+          {textContent ? (
+            <pre className="text-gray-300 whitespace-pre-wrap">{textContent}</pre>
+          ) : (
+            <p className="text-gray-400">Loading activity logs...</p>
+          )}
+          <a
+            href={instagramData.login_activity_logs}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-blue-400 mt-2 inline-block hover:underline"
+          >
+            Download Full Log
+          </a>
+        </div>
+      </div>
+
+  {/* Posts Section */}
+<div className="mt-10">
+  <h4 className="text-2xl font-bold text-pink-500 mb-6">Posts</h4>
+  <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
+    {(instagramData.posts || []).map((post, index) => (
+      <div
+        key={index}
+        className="bg-gray-800 p-4 rounded-lg shadow-md cursor-pointer"
+        onClick={() => openImageViewer(`https://cors-anywhere.herokuapp.com/${post.displayUrl}`)}
+      >
+        <img
+          src={`https://cors-anywhere.herokuapp.com/${post.displayUrl}`}
+          alt={`Post ${index + 1}`}
+          className="w-full rounded-lg"
+          onError={(e) => {
+            e.target.onerror = null;
+            e.target.src =
+              "https://via.placeholder.com/400x300?text=Post+Not+Available";
+          }}
+        />
+        <div className="mt-2">
+          <p className="text-pink-400 text-sm">
+            {post.caption || "No caption available"}
+          </p>
+          <p className="text-gray-300 text-sm mt-1">
+            <strong>Likes:</strong> {post.likesCount || 0}
+          </p>
+          <p className="text-gray-300 text-sm mt-1">
+            <strong>Comments:</strong> {post.commentsCount || 0}
+          </p>
+          <p className="text-gray-300 text-sm mt-1">
+            <strong>Timestamp:</strong>{" "}
+            {new Date(post.timestamp).toLocaleString() || "N/A"}
+          </p>
+        </div>
+      </div>
+    ))}
+  </div>
+</div>
+
 
       {/* Followers Section */}
       <div className="mt-10">
@@ -202,6 +261,80 @@ const RenderInstagramData = ({ instagramData }) => {
           </div>
         )}
       </div>
+
+      {/* Chats Section */}
+      <div className="mt-10">
+        <button
+          onClick={() => setShowChats(!showChats)}
+          className="flex items-center space-x-2 text-2xl font-bold text-pink-500 mb-4"
+        >
+          <span>Chats</span>
+          <ChevronDown
+            className={`w-6 h-6 transform transition-transform ${
+              showChats ? "rotate-180" : ""
+            }`}
+          />
+        </button>
+        {showChats && (
+          <div className="space-y-4">
+            {(instagramData.chats || []).map((chat, index) => (
+              <div
+                key={index}
+                className="bg-gray-800 p-4 rounded-lg shadow-md"
+              >
+                <h5 className="text-lg font-bold text-pink-400">
+                  Chat with {chat.receiverUsername}
+                </h5>
+                <div className="mt-2">
+                  <img
+                    src={chat.screenshots?.[0] || ""}
+                    alt={`Screenshot of chat with ${chat.receiverUsername}`}
+                    className="w-full rounded-md cursor-pointer"
+                    onClick={() => openImageViewer(chat.screenshots?.[0])}
+                    onError={(e) => {
+                      e.target.onerror = null;
+                      e.target.src =
+                        "https://via.placeholder.com/300x300?text=Screenshot+Not+Available";
+                    }}
+                  />
+                  <p className="text-blue-400 text-sm mt-2">
+                    <a
+                      href={chat.chats}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                    >
+                      View Chat Log
+                    </a>
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Image Viewer */}
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
+          onClick={closeImageViewer}
+        >
+          <div className="relative max-w-5xl w-full">
+            <img
+              src={selectedImage}
+              alt="Full size media"
+              className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
+            />
+            <button
+              onClick={closeImageViewer}
+              className="absolute -top-2 -right-2 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors duration-200 shadow-lg"
+              aria-label="Close image viewer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
