@@ -9,7 +9,7 @@ import mongoose from "mongoose";
 import YoutubeUser, { IYoutubeUser } from "../models/YoutubeUser.js";
 
 const app = express();
-const PORT = 3007;
+const PORT = 3008;
 
 const connectDB = async () => {
     try {
@@ -57,7 +57,7 @@ app.get("/youtube/users/:email", async (req: Request, res: Response) => {
 
     try {
         console.log(`Fetching user with email: ${email}`);
-        const user: IYouTubeUser | null = await YouTubeUser.findOne({
+        const user: IYoutubeUser | null = await YoutubeUser.findOne({
             email,
         }).lean();
 
@@ -120,7 +120,7 @@ app.post("/youtube/trigger-scraping", (req, res) => {
     });
 
     // Step 3: Ensure the config directory exists and write email and range to a temporary config file
-    const dirPath = path.join(__dirname, "scraper/src/Helpers/YouTube");
+    const dirPath = path.join(__dirname, "scraper/src/Helpers/Google");
     const configFilePath = path.join(
         dirPath,
         `${email.replace(/[^a-zA-Z0-9]/g, "_")}_ytconfig.json`
