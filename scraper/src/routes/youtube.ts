@@ -67,7 +67,7 @@ app.get("/youtube/users/:email", async (req: Request, res: Response) => {
         res.status(500).json({ error: (error as Error).message });
     }
 });
-app.post("/trigger-scraping", (req, res) => {
+app.post("/youtube/trigger-scraping", (req, res) => {
     const { email, range } = req.body;
 
     if (!email || !range) {
@@ -80,7 +80,7 @@ app.post("/trigger-scraping", (req, res) => {
     console.log("Triggering Chrome with remote debugging...");
 
     // Step 1: Launch Chrome in debugging mode
-    const chromeCommand = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\\Temp\\ChromeProfile"`;
+    const chromeCommand = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\\Temp\\${email}"`;
 
     const chromeProcess = exec(chromeCommand, (error) => {
         if (error) {
@@ -95,7 +95,7 @@ app.post("/trigger-scraping", (req, res) => {
 
     // Step 3: Ensure directory exists and write email and range to a temporary config file
     const dirPath = path.join(__dirname, "scraper/src/Helpers/Google");
-    const configFilePath = path.join(dirPath, "ytconfig.json");
+    const configFilePath = path.join(dirPath, `${email}_ytconfig.json`);
 
     // Check if the directory exists, create if not
     if (!fs.existsSync(dirPath)) {

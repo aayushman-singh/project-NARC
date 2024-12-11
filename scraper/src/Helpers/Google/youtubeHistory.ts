@@ -14,19 +14,40 @@ const configFilePath = path.join(
 const { email, range } = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
 
 // Parse the date range
-const [startDateStr, endDateStr] = range.split(" to ");
-const startDate = new Date(startDateStr.split("-").reverse().join("-"));
-const endDate = new Date(endDateStr.split("-").reverse().join("-"));
+let startDate: Date;
+let endDate: Date;
+
+if (typeof range === "string" && range.includes(" to ")) {
+    // Handle string range like "1-12-2024 to 2-12-2024"
+    const [from, to] = range.split(" to ").map((dateStr) =>
+        dateStr.trim().split("-").reverse().join("-")
+    );
+    startDate = new Date(from);
+    endDate = new Date(to);
+} else if (typeof range === "object" && range.from && range.to) {
+    // Handle object range like { from: "1-12-2024", to: "2-12-2024" }
+    startDate = new Date(range.from.split("-").reverse().join("-"));
+    endDate = new Date(range.to.split("-").reverse().join("-"));
+} else {
+    throw new Error("Invalid date range format in the config file.");
+}
+
+// Validate parsed dates
+if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
+    throw new Error("Invalid start or end date. Check the date format.");
+}
+
+console.log("Parsed Start Date:", startDate);
+console.log("Parsed End Date:", endDate);
 
 (async () => {
     const browser = await chromium.connectOverCDP("http://localhost:9223");
 
     try {
-        // Access the first context or create a new one
         const context = browser.contexts()[0] || (await browser.newContext());
         const page = await context.newPage();
 
-        // Navigate to the target URL
+        // Navigate to the YouTube history page
         await page.goto(
             "https://myactivity.google.com/product/youtube?hl=en",
             { waitUntil: "domcontentloaded" }
@@ -34,7 +55,6 @@ const endDate = new Date(endDateStr.split("-").reverse().join("-"));
 
         console.log("Page loaded.");
 
-        // Wait for the `div` with `role="list"`
         const listSelector = 'div[role="list"]';
         await page.waitForSelector(listSelector, { timeout: 10000 });
         const list = await page.$(listSelector);
@@ -47,62 +67,60 @@ const endDate = new Date(endDateStr.split("-").reverse().join("-"));
 
         let previousItemCount = 0;
 
-         while (true) {
-             // Get all `c-wiz` elements and divs with `data-date` inside the list
-             const items = await list.$$("c-wiz, div[data-date]");
-             console.log(`Found ${items.length} items in the list.`);
+        while (true) {
+            const items = await list.$$("c-wiz, div[data-date]");
+            console.log(`Found ${items.length} items in the list.`);
 
-             if (items.length === previousItemCount) {
-                 console.log("No new items loaded. Stopping scroll.");
-                 break;
-             }
+            if (items.length === previousItemCount) {
+                console.log("No new items loaded. Stopping scroll.");
+                break;
+            }
 
-             previousItemCount = items.length;
+            previousItemCount = items.length;
 
-             // Log content of all items to the log file
-             for (const item of items) {
-                 const dataDateStr = await item.getAttribute("data-date");
-                 const innerText = await item.innerText();
+            for (const item of items) {
+                const dataDateStr = await item.getAttribute("data-date");
+                const innerText = await item.innerText();
 
-                 if (dataDateStr) {
-                     // Parse YYYYMMDD into a Date object
-                     const dataDate = new Date(
-                         `${dataDateStr.slice(0, 4)}-${dataDateStr.slice(
-                             4,
-                             6
-                         )}-${dataDateStr.slice(6)}`
-                     );
+                if (dataDateStr) {
+                    const dataDate = new Date(
+                        `${dataDateStr.slice(0, 4)}-${dataDateStr.slice(
+                            4,
+                            6
+                        )}-${dataDateStr.slice(6)}`
+                    );
 
-                     if (dataDate < startDate || dataDate > endDate) {
-                         console.log("Date out of range. Stopping.");
-                         return;
-                     }
-                 }
+                    if (dataDate < startDate || dataDate > endDate) {
+                        console.log(
+                            `Date ${dataDate.toISOString()} is out of range (${startDate.toISOString()} - ${endDate.toISOString()}).`
+                        );
+                        continue;
+                    }
+                }
 
-                 const logEntry = dataDateStr
-                     ? `Date: ${dataDateStr}\nContent:\n${innerText}\n\n`
-                     : `Content:\n${innerText}\n\n`;
+                const logEntry = dataDateStr
+                    ? `Date: ${dataDateStr}\nContent:\n${innerText}\n\n`
+                    : `Content:\n${innerText}\n\n`;
 
-                 fs.appendFileSync(outputFile, logEntry, "utf8");
-             }
+                fs.appendFileSync(outputFile, logEntry, "utf8");
+            }
 
-             console.log("Logged items to file.");
+            console.log("Logged items to file.");
 
-             // Scroll to the last item
-             const lastItem = items[items.length - 1];
-             await lastItem.scrollIntoViewIfNeeded();
+            const lastItem = items[items.length - 1];
+            await lastItem.scrollIntoViewIfNeeded();
 
-             console.log(
-                 "Scrolled to the last item. Waiting for more items to load..."
-             );
+            console.log(
+                "Scrolled to the last item. Waiting for more items to load..."
+            );
 
-             await page.waitForTimeout(2000); // Adjust delay as needed
-         }
+            await page.waitForTimeout(2000);
+        }
 
         console.log(`Final log written to ${outputFile}`);
         const s3url = await uploadToS3(outputFile, `${email}_activity_youtube`);
         fs.unlinkSync(outputFile);
-        
+
         await insertGoogle(email, s3url, "youtube");
     } catch (error) {
         console.error("An error occurred:", error);
