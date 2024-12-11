@@ -168,7 +168,7 @@ app.post("/googleSearch/trigger-scraping", (req, res) => {
                 console.log(`Config file removed: ${configFilePath}`);
             }
         });
-    }, 25000); // 10-second delay
+    }, 35000); 
 });
 
 // Start the server

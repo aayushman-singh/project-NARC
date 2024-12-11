@@ -4,14 +4,36 @@ import path from "path";
 import { __dirname } from "../../../../config.ts";
 import { insertGoogle, uploadToS3 } from "../mongoUtils.ts";
 
-const outputFile = path.join(__dirname, "/scraper/src/Helpers/Google/log.txt");
-const configFilePath = path.join(
-    __dirname,
-    "/scraper/src/Helpers/Google/ytconfig.json"
-);
+// Define the base directory for configuration and logs
+const configBaseDir = path.join(__dirname, "/scraper/src/Helpers/Google");
+const outputFileBaseDir = configBaseDir;
+
+const args = process.argv.slice(2);
+const email = args[0];
+
+if (!email) {
+    console.error("Email is required. Pass it as an environment variable or argument.");
+    process.exit(1);
+}
+
+// Construct the config file path based on the email
+const configFileName = `${email.replace(/[^a-zA-Z0-9]/g, "_")}_ytconfig.json`;
+const configFilePath = path.join(configBaseDir, configFileName);
+
+// Ensure configuration file exists
+if (!fs.existsSync(configFilePath)) {
+    console.error(`Config file not found for email ${email} at ${configFilePath}`);
+    process.exit(1);
+}
 
 // Read configuration
-const { email, range } = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
+const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
+const { range } = config;
+
+if (!range) {
+    console.error("Date range is required in the config file.");
+    process.exit(1);
+}
 
 // Parse the date range
 let startDate: Date;
