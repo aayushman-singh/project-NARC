@@ -95,7 +95,7 @@ app.post("/youtube/trigger-scraping", (req, res) => {
 
     // Step 3: Ensure directory exists and write email and range to a temporary config file
     const dirPath = path.join(__dirname, "scraper/src/Helpers/Google");
-    const configFilePath = path.join(dirPath, `${email}_ytconfig.json`);
+    const configFilePath = path.join(dirPath, `${email.replace(/[^a-zA-Z0-9]/g, "_")}_ytconfig.json`);
 
     // Check if the directory exists, create if not
     if (!fs.existsSync(dirPath)) {
@@ -122,7 +122,7 @@ app.post("/youtube/trigger-scraping", (req, res) => {
             "scraper/src/Helpers/Google",
             "youtubeHistory.ts"
         );
-        const nodeCommand = `npx tsx "${playwrightScript}"`;
+        const nodeCommand = `npx tsx "${playwrightScript}" ${email}`;
 
         exec(nodeCommand, (error, stdout, stderr) => {
             if (error) {
@@ -144,7 +144,7 @@ app.post("/youtube/trigger-scraping", (req, res) => {
             // Cleanup: Remove the config file after use
             fs.unlinkSync(configFilePath);
         });
-    }, 10000); // 30-second delay
+    }, 35000); // 35-second delay
 });
 
 // Start the server
