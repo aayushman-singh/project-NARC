@@ -68,7 +68,7 @@ app.get("/google/users/:email", async (req: Request, res: Response) => {
     }
 });
 
-app.post("/trigger-scraping", (req, res) => {
+app.post("/googleSearch/trigger-scraping", (req, res) => {
     const { email, range } = req.body;
 
     if (!email || !range) {

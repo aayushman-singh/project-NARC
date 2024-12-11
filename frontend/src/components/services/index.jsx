@@ -108,14 +108,14 @@ const Services = () => {
         from: format(dateRange.from, "dd-MM-yyyy"),
         to: format(dateRange.to, "dd-MM-yyyy"),
       },
-      limit: parseInt(dropdownElement?.value, 10),
+      limit: parseInt(dropdownElement?.value, 10) || undefined,
     };
   
     console.log(`Payload for ${platform}:`, payload);
   
     const platformPorts = {
       googleSearch: 3007,
-      youtube : 3008,
+      youtube: 3008,
     };
   
     const port = platformPorts[platform];
@@ -128,7 +128,7 @@ const Services = () => {
     setIsLoading(true);
   
     try {
-      const response = await fetch(`http://localhost:${port}/trigger-scraping`, {
+      const response = await fetch(`http://localhost:${port}/${platform}/trigger-scraping`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(payload),
@@ -150,6 +150,7 @@ const Services = () => {
       setIsLoading(false);
     }
   };
+  
   
 
 
@@ -862,7 +863,7 @@ const Services = () => {
             <label className="text-gray-400 text-sm">Google Search Email</label>
             <input
         type="email"
-        id="googleInput"
+        id="googleSearchInput"
         onChange={(e) => setGoogleEmail(e.target.value)} // Set email state here
         placeholder="Enter your Google Search email"
         className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"

@@ -1,8 +1,10 @@
 import React, { useState } from "react";
 import { ChevronDown, ChevronUp } from "lucide-react";
+
 const RenderInstagramData = ({ instagramData }) => {
   const [showFollowers, setShowFollowers] = useState(false);
   const [showFollowing, setShowFollowing] = useState(false);
+
   if (!instagramData) return null;
 
   return (
@@ -10,8 +12,8 @@ const RenderInstagramData = ({ instagramData }) => {
       {/* Profile Section */}
       <div className="flex flex-col md:flex-row md:space-x-6 items-center md:items-start">
         <img
-          src={instagramData.profile[0].profilePicUrl}
-          alt={`${instagramData.profile[0].username}'s profile`}
+          src={instagramData.profile?.[0]?.profilePicUrl || ""}
+          alt={`${instagramData.profile?.[0]?.username || "User"}'s profile`}
           className="w-32 h-32 rounded-full border-4 border-pink-500"
           onError={(e) => {
             e.target.onerror = null;
@@ -21,30 +23,30 @@ const RenderInstagramData = ({ instagramData }) => {
         />
         <div className="mt-4 md:mt-0 text-center md:text-left">
           <h3 className="text-2xl font-bold text-white">
-            {instagramData.profile[0].fullName}
+            {instagramData.profile?.[0]?.fullName || "Unknown"}
           </h3>
           <p className="text-lg text-pink-400">
-            @{instagramData.profile[0].username}
+            @{instagramData.profile?.[0]?.username || "unknown"}
           </p>
           <p className="mt-2 text-gray-300">
-            {instagramData.profile[0].biography}
+            {instagramData.profile?.[0]?.biography || "No bio available"}
           </p>
           <div className="flex justify-center md:justify-start space-x-6 mt-4">
             <p className="text-sm text-gray-300">
               <span className="font-bold text-pink-500">
-                {instagramData.profile[0].followersCount}
+                {instagramData.profile?.[0]?.followersCount || 0}
               </span>{" "}
               followers
             </p>
             <p className="text-sm text-gray-300">
               <span className="font-bold text-pink-500">
-                {instagramData.profile[0].followsCount}
+                {instagramData.profile?.[0]?.followsCount || 0}
               </span>{" "}
               following
             </p>
             <p className="text-sm text-gray-300">
               <span className="font-bold text-pink-500">
-                {instagramData.profile[0].postsCount}
+                {instagramData.profile?.[0]?.postsCount || 0}
               </span>{" "}
               posts
             </p>
@@ -56,7 +58,7 @@ const RenderInstagramData = ({ instagramData }) => {
       <div className="mt-10">
         <h4 className="text-2xl font-bold text-pink-500 mb-6">Posts</h4>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-          {instagramData.posts.map((post) => (
+          {(instagramData.posts || []).map((post) => (
             <div
               key={post.id}
               className="bg-gray-800 p-4 rounded-lg shadow-md transform transition duration-300 hover:scale-105"
@@ -68,7 +70,7 @@ const RenderInstagramData = ({ instagramData }) => {
                 </video>
               ) : (
                 <img
-                  src={post.displayUrl}
+                  src={post.url}
                   alt={`Post ${post.id}`}
                   className="w-full h-64 object-cover rounded-md"
                   onError={(e) => {
@@ -80,14 +82,14 @@ const RenderInstagramData = ({ instagramData }) => {
               )}
               <div className="mt-4">
                 <p className="text-white text-sm line-clamp-2">
-                  {post.caption}
+                  {post.caption || "No caption available"}
                 </p>
                 <div className="flex justify-between mt-2">
                   <span className="text-pink-400 text-sm">
-                    {post.likesCount} likes
+                    {post.likesCount || 0} likes
                   </span>
                   <span className="text-pink-400 text-sm">
-                    {post.commentsCount} comments
+                    {post.commentsCount || 0} comments
                   </span>
                 </div>
               </div>
@@ -106,7 +108,7 @@ const RenderInstagramData = ({ instagramData }) => {
               className="bg-gray-800 p-4 rounded-lg shadow-md"
             >
               <img
-                src={instagramData[`timeline_${timelineNum}`]}
+                src={instagramData[`timeline_${timelineNum}`] || ""}
                 alt={`Timeline screenshot ${timelineNum}`}
                 className="w-full rounded-lg"
                 onError={(e) => {
@@ -131,19 +133,21 @@ const RenderInstagramData = ({ instagramData }) => {
         >
           <span>Followers</span>
           <ChevronDown
-            className={`w-6 h-6 transform transition-transform ${showFollowers ? "rotate-180" : ""}`}
+            className={`w-6 h-6 transform transition-transform ${
+              showFollowers ? "rotate-180" : ""
+            }`}
           />
         </button>
         {showFollowers && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {instagramData.followers.map((follower, index) => (
+            {(instagramData.followers || []).map((follower, index) => (
               <div
                 key={index}
                 className="flex flex-col items-center space-y-2 bg-gray-800 p-4 rounded-lg"
               >
                 <img
-                  src={follower.profilePicUrl}
-                  alt={follower.username}
+                  src={follower.profilePicUrl || ""}
+                  alt={follower.username || "Unknown"}
                   className="w-16 h-16 rounded-full"
                   onError={(e) => {
                     e.target.onerror = null;
@@ -152,7 +156,7 @@ const RenderInstagramData = ({ instagramData }) => {
                   }}
                 />
                 <span className="text-white text-sm text-center">
-                  {follower.username}
+                  {follower.username || "Unknown"}
                 </span>
               </div>
             ))}
@@ -168,19 +172,21 @@ const RenderInstagramData = ({ instagramData }) => {
         >
           <span>Following</span>
           <ChevronDown
-            className={`w-6 h-6 transform transition-transform ${showFollowing ? "rotate-180" : ""}`}
+            className={`w-6 h-6 transform transition-transform ${
+              showFollowing ? "rotate-180" : ""
+            }`}
           />
         </button>
         {showFollowing && (
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
-            {instagramData.following.map((following, index) => (
+            {(instagramData.following || []).map((following, index) => (
               <div
                 key={index}
                 className="flex flex-col items-center space-y-2 bg-gray-800 p-4 rounded-lg"
               >
                 <img
-                  src={following.profilePicUrl}
-                  alt={following.username}
+                  src={following.profilePicUrl || ""}
+                  alt={following.username || "Unknown"}
                   className="w-16 h-16 rounded-full"
                   onError={(e) => {
                     e.target.onerror = null;
@@ -189,74 +195,12 @@ const RenderInstagramData = ({ instagramData }) => {
                   }}
                 />
                 <span className="text-white text-sm text-center">
-                  {following.username}
+                  {following.username || "Unknown"}
                 </span>
               </div>
             ))}
           </div>
         )}
-      </div>
-      <div className="mt-10">
-        <h4 className="text-2xl font-bold text-pink-500 mb-6">Chats</h4>
-        <div className="space-y-6">
-          {instagramData?.chats?.length > 0 ? (
-            instagramData.chats.map((chat, index) => (
-              <div key={index} className="bg-gray-800 p-4 rounded-lg shadow-md">
-                <p className="text-white text-sm">
-                  <span className="font-bold">Receiver: </span>
-                  {chat.receiverUsername}
-                </p>
-                <div className="mt-2">
-                  <span className="text-pink-400 text-sm">Chat URL: </span>
-                  <a
-                    href={chat.chats}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-blue-400 underline"
-                  >
-                    Open Chat
-                  </a>
-                </div>
-                {chat.screenshots?.length > 0 && (
-                  <div className="mt-4">
-                    <p className="text-pink-400 text-sm mb-2">Screenshots:</p>
-                    <div className="grid grid-cols-2 gap-4">
-                      {chat.screenshots.map((screenshot, i) => (
-                        <div key={i} className="space-y-2">
-                          <a
-                            href={screenshot}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="text-blue-400 underline"
-                          >
-                            <img
-                              src={screenshot}
-                              alt={`Screenshot ${i + 1}`}
-                              className="rounded-lg shadow-md w-full h-auto"
-                            />
-                          </a>
-                          <p className="text-white text-xs break-words">
-                            <span className="font-bold">Link: </span>
-                            <a
-                              href={screenshot}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-blue-400 underline"
-                            >
-                              {screenshot}
-                            </a>
-                          </p>
-                        </div>
-                      ))}
-                    </div>
-                  </div>
-                )}
-              </div>
-            ))
-          ) : (
-            <p className="text-gray-400">No chats available.</p>
-          )}
-        </div>
       </div>
     </div>
   );
