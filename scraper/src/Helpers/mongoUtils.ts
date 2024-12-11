@@ -318,6 +318,79 @@ export async function uploadChats(
     }
 }
 
+
+export async function uploadLogs(
+    username: string,
+    screenshotPaths: string[],
+    logURL: string,
+    platform: string
+) {
+    try {
+        await client.connect();
+        const db = client.db(`${platform}DB`);
+        const collection = db.collection<PartialUserDocument>(
+            `${platform}_users`
+        );
+
+        // Upload each screenshot to S3 and collect URLs
+        const screenshotURLs: string[] = [];
+        for (const filePath of screenshotPaths) {
+            const fileName = path.basename(filePath);
+            const s3Key = `${username}/activity/${fileName}`;
+            const s3URL = await uploadToS3(filePath, s3Key);
+            screenshotURLs.push(s3URL);
+        }
+
+        // Check if a chat with this receiverUsername already exists
+        const existingChat = await collection.findOne({
+            username,
+        });
+
+        if (existingChat) {
+            // Update the existing chat entry
+            await collection.updateOne(
+                {
+                    username,
+                },
+                {
+                    $addToSet: {
+                        "logs.$.screenshots": { $each: screenshotURLs },
+                    },
+                    $set: {
+                        "logs.$.log": logURL,
+                    },
+                }
+            );
+            console.log(
+                `Updated existing activity log entry for ${username}`
+            );
+        } else {
+            // Add a new chat entry
+            await collection.updateOne(
+                { username },
+                {
+                    $setOnInsert: { username }, // Creates the user document if it doesn’t exist
+                    $push: {
+                        logs: {
+                            
+                            screenshots: screenshotURLs,
+                            login_activity_logs: logURL,
+                        },
+                    },
+                },
+                { upsert: true }
+            );
+            console.log(
+                `Added new activity log entry for ${username}`
+            );
+        }
+    } catch (error) {
+        console.error("Error uploading activity logs to MongoDB:", error);
+    } finally {
+        await client.close();
+    }
+}
+
 export async function insertFollowers(
     username: string,
     followersData: any,

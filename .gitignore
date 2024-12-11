@@ -49,3 +49,5 @@ package-lock.json
 /scraper/src/Helpers/user_data
 .DS_Store
 
+/scraper/fb_context/Default
+/scraper/fb_context

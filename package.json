@@ -15,7 +15,8 @@
     "puppeteer": "^23.7.1",
     "react-oauth": "^0.0.1",
     "rollup": "^4.21.2",
-    "uuid": "^11.0.3"
+    "uuid": "^11.0.3",
+    "webdriverio": "^9.4.1"
   },
   "devDependencies": {
     "@playwright/test": "^1.49.0",

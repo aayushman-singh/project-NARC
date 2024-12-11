@@ -1,83 +1,110 @@
-import { Page } from 'playwright';
-import fs from 'fs';
-import path from 'path';
+import { ElementHandle, Page } from "playwright";
+import fs from "fs";
+import path from "path";
+import { __dirname } from "../../../../config";
 
-export async function logSanitizedMessages(page: Page, recipientName: string): Promise<string | null> {
+export async function scrapeFacebookActivity(page: Page) {
     try {
-        console.log(`Fetching conversation with ${recipientName}...`);
+        // Define the log directory and file
+        const logDir = path.join(
+            __dirname,
+            "scraper/src/Helpers/Facebook/logs"
+        );
+        const logFile = path.join(logDir, "activity_log.txt");
+        const errorLogFile = path.join(logDir, "error_log.txt");
 
-        // Locate the container for messages using `aria-label` with "Messages in..."
-        const messagesContainer = await page.locator('div[aria-label^="Messages in"]');
+        // Ensure the log directory exists
+        fs.mkdirSync(logDir, { recursive: true });
 
-        if (!(await messagesContainer.count())) {
-            console.error('Messages container with "Messages in..." not found.');
-            return null;
-        }
+        // Function to append logs to the file
+        const writeLog = (message: string) => {
+            fs.appendFileSync(logFile, `${message}\n`, "utf8");
+        };
 
-        console.log('Messages container found.');
-
-        // Select all direct child div elements within the container
-        const rows = await messagesContainer.locator('div[role="row"]').all();
-
-        if (rows.length === 0) {
-            console.error('No message rows found within the container.');
-            return null;
-        }
-
-        console.log(`Total rows found in container: ${rows.length}`);
-
-        let lastSender = ''; // Keep track of the last sender to group messages
-        const groupedMessages: { sender: string; messages: string[] }[] = []; // Collect grouped messages
-
-        for (const row of rows) {
-            const rowContent = (await row.textContent()).replace(/Enter/g, '').trim(); // Remove "Enter"
-
-            // Ignore empty messages after cleaning
-            if (!rowContent) {
-                continue;
-            }
-
-            // Extract the sender (e.g., "You sent" or recipient's name)
-            const senderMatch = rowContent.match(/^(You sent|[\w\s]+):?/);
-            const sender = senderMatch ? senderMatch[1].trim() : 'Unknown';
-
-            // Extract the message content
-            const message = senderMatch
-                ? rowContent.replace(senderMatch[0], '').trim()
-                : rowContent;
-
-            // Group messages by sender
-            if (sender !== lastSender) {
-                groupedMessages.push({ sender, messages: [message] });
-                lastSender = sender;
-            } else {
-                groupedMessages[groupedMessages.length - 1].messages.push(message);
-            }
-        }
-
-        // Prepare the file content
-        const fileContent = [`Conversation with ${recipientName}:\n`];
-        groupedMessages.forEach((group, index) => {
-            const senderLabel = group.sender === 'You sent' ? 'You' : recipientName;
-            fileContent.push(`${index + 1}. ${senderLabel}:\n`);
-            group.messages.forEach((msg, idx) => {
-                fileContent.push(`   ${idx + 1}. ${msg}\n`);
-            });
+        console.log("Navigating to Facebook login activity...");
+        writeLog("Navigating to Facebook login activity...");
+        await page.goto("https://facebook.com/login_activity", {
+            waitUntil: "domcontentloaded",
         });
 
-        // Write the log to a file
-        const logsDirectory = path.resolve('./logs');
-        if (!fs.existsSync(logsDirectory)) {
-            fs.mkdirSync(logsDirectory, { recursive: true });
+        // Generalized CSS selector for the target element
+        const buttonSelector =
+            'div[id^="mount_"] div > div:nth-child(3) div > div:nth-child(2) div > div > div:nth-child(11) [role="button"]';
+
+        console.log("Waiting for the target button...");
+        writeLog("Waiting for the target button...");
+        const buttonLocator = page.locator(buttonSelector);
+
+        if (await buttonLocator.isVisible()) {
+            console.log("Clicking the button...");
+            writeLog("Clicking the button...");
+            await buttonLocator.click();
+            console.log("Button clicked successfully.");
+            writeLog("Button clicked successfully.");
+        } else {
+            const buttonError = "Button not found or not visible.";
+            console.error(buttonError);
+            writeLog(buttonError);
         }
 
-        const filePath = path.join(logsDirectory, `chat_log_${recipientName.replace(/\s+/g, '_')}.txt`);
-        fs.writeFileSync(filePath, fileContent.join(''), 'utf-8');
-        console.log(`Chat log written to: ${filePath}`);
+        // CSS selector for the parent element containing all children
+        const parentSelector =
+            'div[id^="mount_"] div > div:nth-child(3) div > div:nth-child(2) div > div > div';
 
-        return filePath;
+        console.log("Waiting for the parent element...");
+        writeLog("Waiting for the parent element...");
+        const parentLocator = page.locator(parentSelector);
+
+        if (!(await parentLocator.isVisible())) {
+            throw new Error("Parent element not found or not visible.");
+        }
+
+        // Get all child divs inside the parent element
+        const childDivs = parentLocator.locator(":scope > div");
+        const childCount = await childDivs.count();
+
+        if (childCount === 0) {
+            throw new Error("No child divs found in the parent element.");
+        }
+
+        console.log(`Found ${childCount} child divs.`);
+        writeLog(`Found ${childCount} child divs.`);
+
+        // Iterate over each child div and log its details
+        for (let i = 0; i < childCount; i++) {
+            const child = childDivs.nth(i);
+
+            console.log(`Scraping details for child ${i + 1}...`);
+            writeLog(`Scraping details for child ${i + 1}...`);
+
+            // Scrape specific details (e.g., text content)
+            const details =
+                (await child.textContent())?.trim() ||
+                "No text content available";
+            console.log(`Text Content: ${details}`);
+            writeLog(`Text Content: ${details}`);
+
+            // Log any specific attributes if needed
+            const attributes = await child.evaluate((node) =>
+                Array.from(node.attributes).map((attr) => ({
+                    name: attr.name,
+                    value: attr.value,
+                }))
+            );
+
+            console.log(`Attributes: ${JSON.stringify(attributes)}`);
+            writeLog(`Attributes: ${JSON.stringify(attributes)}`);
+        }
     } catch (error) {
-        console.error('An error occurred while logging messages:', error);
-        return null;
+        const errorMessage = `Error during scraping: ${error.message}`;
+        console.error(errorMessage);
+
+        const logDir = path.join(
+            __dirname,
+            "scraper/src/Helpers/Facebook/logs"
+        );
+        const errorLogFile = path.join(logDir, "error_log.txt");
+
+        fs.appendFileSync(errorLogFile, `${errorMessage}\n`, "utf8");
     }
 }
