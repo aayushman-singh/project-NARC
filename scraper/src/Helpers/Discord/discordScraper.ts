@@ -1,81 +1,149 @@
-import { chromium } from 'playwright';
+import { chromium } from "playwright";
+import { __dirname } from "../../../../config.js";
+import fs from "fs";
+import path from "path";
+import { uploadChats } from "../mongoUtils"; // Ensure this is correctly defined elsewhere
 
-(async () => {
-    // Launch the browser
-    const browser = await chromium.launch({ headless: false }); // Set to true for headless mode
-    const context = await browser.newContext();
-    const page = await context.newPage();
-
-    // Navigate to Discord login page
-    await page.goto("https://discord.com/login");
-
-    // Wait for the email/phone number input field to appear
-    await page.waitForSelector('input[name="email"]');
-
-    // Enter the hardcoded email or phone number
-    const emailOrPhoneNumber = "kremzylo@gmail.com";
-    const password = "trash027"; // Replace with your password
-
-    await page.fill('input[name="email"]', emailOrPhoneNumber);
-
-    // Wait for the password input field to appear and enter the password
-    await page.waitForSelector('input[name="password"]');
-    await page.fill('input[name="password"]', password);
-
-    // Click the Login button
-    await page.click('button[type="submit"]');
-
-    // Wait for navigation or a specific element to confirm successful login
+export const scrapeDiscord = async (username:string, password:string) => {
     try {
-        await page.waitForNavigation({ timeout: 10000 }); // Adjust timeout if necessary
-        console.log("Login successful");
-    } catch (e) {
-        console.error("Login failed or took too long");
-    }
+        const outputDir = path.join(__dirname, "scraper/src/Helpers/Discord");
 
-    // Look through DMs
-    await page.waitForSelector('ul[role="list"][aria-label="Direct Messages"]');
-    const dmsList = await page.$(
-        'ul[role="list"][aria-label="Direct Messages"]'
-    );
+        // Launch the browser with a persistent context
+        const browser = await chromium.launchPersistentContext("./discord", {
+            headless: false, // Set to true for headless mode
+            slowMo: 500,
+        });
 
-    if (dmsList) {
-        const dmItems = await dmsList.$$("li");
-        for (let i = 2; i < dmItems.length; i++) {
-            // Skip the first two items
-            const dmItem = dmItems[i];
-            const link = await dmItem.$("a[aria-label]");
+        const page = browser.pages()[0] || (await browser.newPage());
 
-            if (link) {
-                const recipientUsername = await link.getAttribute("aria-label");
-                const chatLink = await link.getAttribute("href");
-                console.log("Recipient username:", recipientUsername);
-                console.log("Chat link:", chatLink);
+        // Navigate to Discord login
+        await page.goto("https://discord.com/login");
+        await page.waitForTimeout(3000);
+
+        // Log in if needed
+        const currentURL = page.url();
+        if (currentURL === "https://discord.com/login") {
+            await page.fill('input[name="email"]', username);
+            await page.fill('input[name="password"]', password);
+            await page.click('button[type="submit"]');
+            await page.waitForNavigation({ timeout: 10000 }).catch(() => {
+                console.error("Login failed or took too long.");
+            });
+        } else {
+            console.log("Already logged in.");
+        }
+
+        // Wait for the DM list
+        await page.waitForSelector(
+            'ul[role="list"][aria-label="Direct Messages"]'
+        );
+        const dmList = await page.$(
+            'ul[role="list"][aria-label="Direct Messages"]'
+        );
+
+        if (dmList) {
+            const dmItems = await dmList.$$('li[role="listitem"]');
+            for (let i = 2; i < dmItems.length; i++) {
+                try {
+                    const dmItem = await dmList.$(`li:nth-child(${i + 1})`);
+                    if (!dmItem) continue;
+
+                    const link = await dmItem.$("a[aria-label]");
+                    if (!link) continue;
+
+                    const recipientUsername = await link.getAttribute(
+                        "aria-label"
+                    );
+                    const chatLink = await link.getAttribute("href");
+
+                    const logFilePath = path.join(
+                        outputDir,
+                        `${recipientUsername}_chat_logs.txt`
+                    );
+                    const screenshotPaths = [];
+
+                    if (!fs.existsSync(outputDir)) {
+                        fs.mkdirSync(outputDir, { recursive: true });
+                    }
+
+                    await link.click();
+                    await page.waitForSelector('ol[role="list"]');
+
+                    let messageCount = 0;
+                    const scrollerSelector = 'ol[role="list"]';
+                    let direction = -1000; // Start by scrolling upward
+                    let lastMessageCount = 0;
+                    let noNewItems = false;
+
+                    while (!noNewItems) {
+                        const messages = await page.$$(
+                            scrollerSelector + " > li"
+                        );
+
+                        if (messages.length > lastMessageCount) {
+                            lastMessageCount = messages.length;
+
+                            for (let j = 2; j < messages.length; j++) {
+                                const content = await messages[j].innerText();
+                                fs.appendFileSync(
+                                    logFilePath,
+                                    `Message: ${content}\n`,
+                                    "utf-8"
+                                );
+                                messageCount++;
+
+                                if (messageCount % 5 === 0) {
+                                    const screenshotPath = path.join(
+                                        outputDir,
+                                        `${recipientUsername}_screenshot_${messageCount}.png`
+                                    );
+                                    await page.screenshot({
+                                        path: screenshotPath,
+                                    });
+                                    screenshotPaths.push(screenshotPath);
+                                }
+                            }
+                        } else {
+                            // No new items loaded, switch direction
+                            if (direction === -1000) {
+                                direction = 1000; // Start scrolling downward
+                            } else {
+                                noNewItems = true; // Stop scrolling
+                            }
+                        }
+
+                        await page.evaluate(
+                            ({ selector, direction }) => {
+                                const scroller =
+                                    document.querySelector(selector);
+                                if (scroller) scroller.scrollTop += direction;
+                            },
+                            { selector: scrollerSelector, direction }
+                        );
+
+                        await page.waitForTimeout(1000);
+                    }
+
+                    await uploadChats(
+                        username,
+                        recipientUsername!,
+                        screenshotPaths,
+                        logFilePath,
+                        "discord"
+                    );
+
+                    fs.unlinkSync(logFilePath);
+                    for (const screenshotPath of screenshotPaths) {
+                        fs.unlinkSync(screenshotPath);
+                    }
+                } catch (err) {
+                    console.error(`Error processing DM:`, err);
+                }
             }
         }
+
+        await browser.close();
+    } catch (error) {
+        console.error("Error in scrapeDiscord:", error);
     }
-
-    // Select the "Servers" section
-    await page.waitForSelector('div[aria-label="Servers"]');
-    const serversSection = await page.$('div[aria-label="Servers"]');
-
-    // Iterate through each child div with role "listitem"
-    const serverItems = await serversSection.$$('div[role="listitem"]');
-    for (const serverItem of serverItems) {
-        // Extract and log the img src
-        const img = await serverItem.$("img");
-        if (img) {
-            const src = await img.getAttribute("src");
-            console.log("Server image src:", src);
-        }
-
-        // Click on the server item
-        await serverItem.click();
-
-        // Add a small delay to observe the click action (if needed)
-        await page.waitForTimeout(500);
-    }
-
-    // Close the browser
-    await browser.close();
-})();
+};
