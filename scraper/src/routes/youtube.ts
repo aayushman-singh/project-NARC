@@ -144,7 +144,7 @@ app.post("/youtube/trigger-scraping", (req, res) => {
         // Run the Playwright script
         const playwrightScript = path.join(
             __dirname,
-            "scraper/src/Helpers/YouTube",
+            "scraper/src/Helpers/Google",
             "youtubeHistory.ts"
         );
         const nodeCommand = `npx tsx "${playwrightScript}" ${email}`;
