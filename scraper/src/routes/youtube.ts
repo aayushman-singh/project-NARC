@@ -7,8 +7,10 @@ import { __dirname } from "../../../config.js";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
 import YoutubeUser, { IYoutubeUser } from "../models/YoutubeUser.js";
+
 const app = express();
-const PORT = 3008;
+const PORT = 3007;
+
 const connectDB = async () => {
     try {
         await mongoose.connect(
@@ -16,7 +18,7 @@ const connectDB = async () => {
             {
                 useNewUrlParser: true,
                 useUnifiedTopology: true,
-            } as mongoose.ConnectOptions,
+            } as mongoose.ConnectOptions
         );
         console.log("MongoDB connected successfully");
     } catch (error) {
@@ -26,8 +28,11 @@ const connectDB = async () => {
 };
 
 connectDB();
+
 app.use(cors());
 app.use(express.json()); // Middleware to parse JSON bodies
+
+// Get all YouTube users
 app.get("/youtube/users", async (req: Request, res: Response) => {
     try {
         console.log("Fetching users from database...");
@@ -46,13 +51,14 @@ app.get("/youtube/users", async (req: Request, res: Response) => {
     }
 });
 
+// Get a specific YouTube user by email
 app.get("/youtube/users/:email", async (req: Request, res: Response) => {
     const { email } = req.params;
 
     try {
         console.log(`Fetching user with email: ${email}`);
-        const user: IYoutubeUser | null = await YoutubeUser.findOne({
-            email, // Use email as the identifier
+        const user: IYouTubeUser | null = await YouTubeUser.findOne({
+            email,
         }).lean();
 
         if (!user) {
@@ -67,6 +73,8 @@ app.get("/youtube/users/:email", async (req: Request, res: Response) => {
         res.status(500).json({ error: (error as Error).message });
     }
 });
+
+// Trigger scraping for YouTube activity
 app.post("/youtube/trigger-scraping", (req, res) => {
     const { email, range } = req.body;
 
@@ -79,8 +87,26 @@ app.post("/youtube/trigger-scraping", (req, res) => {
 
     console.log("Triggering Chrome with remote debugging...");
 
-    // Step 1: Launch Chrome in debugging mode
-    const chromeCommand = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\\Temp\\${email}"`;
+    // Step 1: Define a unique Chrome profile directory for the email
+    const emailProfileDir = path.join(
+        "C:\\Temp\\ChromeProfiles",
+        email.replace(/[^a-zA-Z0-9]/g, "_")
+    );
+
+    // Check if the directory exists
+    if (!fs.existsSync(emailProfileDir)) {
+        console.log(
+            `Creating new Chrome profile directory for email: ${email}`
+        );
+        fs.mkdirSync(emailProfileDir, { recursive: true });
+    } else {
+        console.log(
+            `Reusing existing Chrome profile directory for email: ${email}`
+        );
+    }
+
+    // Step 2: Launch Chrome with the user-specific profile
+    const chromeCommand = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --remote-debugging-port=9223 --user-data-dir="${emailProfileDir}"`;
 
     const chromeProcess = exec(chromeCommand, (error) => {
         if (error) {
@@ -93,11 +119,13 @@ app.post("/youtube/trigger-scraping", (req, res) => {
         console.log("Chrome launched successfully.");
     });
 
-    // Step 3: Ensure directory exists and write email and range to a temporary config file
-    const dirPath = path.join(__dirname, "scraper/src/Helpers/Google");
-    const configFilePath = path.join(dirPath, `${email.replace(/[^a-zA-Z0-9]/g, "_")}_ytconfig.json`);
+    // Step 3: Ensure the config directory exists and write email and range to a temporary config file
+    const dirPath = path.join(__dirname, "scraper/src/Helpers/YouTube");
+    const configFilePath = path.join(
+        dirPath,
+        `${email.replace(/[^a-zA-Z0-9]/g, "_")}_ytconfig.json`
+    );
 
-    // Check if the directory exists, create if not
     if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
         console.log(`Directory created: ${dirPath}`);
@@ -106,20 +134,17 @@ app.post("/youtube/trigger-scraping", (req, res) => {
     }
 
     // Write email and range to the config file
-    fs.writeFileSync(
-        configFilePath,
-        JSON.stringify({ email: email, range }, null, 2)
-    );
+    fs.writeFileSync(configFilePath, JSON.stringify({ email, range }, null, 2));
     console.log(`Config file written to: ${configFilePath}`);
 
-    // Step 2: Delay for 30 seconds
+    // Step 4: Delay for 10 seconds before running the Playwright script
     setTimeout(() => {
         console.log("Running Playwright script...");
 
-        // Step 4: Run the Playwright script
+        // Run the Playwright script
         const playwrightScript = path.join(
             __dirname,
-            "scraper/src/Helpers/Google",
+            "scraper/src/Helpers/YouTube",
             "youtubeHistory.ts"
         );
         const nodeCommand = `npx tsx "${playwrightScript}" ${email}`;
@@ -141,10 +166,13 @@ app.post("/youtube/trigger-scraping", (req, res) => {
                 message: "Scraping completed.",
             });
 
-            // Cleanup: Remove the config file after use
-            fs.unlinkSync(configFilePath);
+            // Cleanup: Optionally remove the config file after use
+            if (fs.existsSync(configFilePath)) {
+                fs.unlinkSync(configFilePath);
+                console.log(`Config file removed: ${configFilePath}`);
+            }
         });
-    }, 35000); // 35-second delay
+    }, 35000); // Delay to allow Chrome to fully initialize
 });
 
 // Start the server
