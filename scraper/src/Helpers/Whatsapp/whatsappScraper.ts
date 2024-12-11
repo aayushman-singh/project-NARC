@@ -33,10 +33,7 @@ const scrollChatWithLogging = async (
             );
             newMessageCount = messageRows.length;
 
-            if (
-                newMessageCount > previousMessageCount &&
-                newMessageCount < limit
-            ) {
+            if (newMessageCount > previousMessageCount) {
                 console.log(
                     `Loaded ${
                         newMessageCount - previousMessageCount
@@ -47,7 +44,7 @@ const scrollChatWithLogging = async (
 
                 // Scroll to the first visible row
                 await messageRows[0].scrollIntoViewIfNeeded();
-                await page.waitForTimeout(1000); // Wait for messages to load
+                await page.waitForTimeout(1500); // Wait for messages to load
             } else {
                 attempt++;
                 console.log(
@@ -70,21 +67,18 @@ const scrollChatWithLogging = async (
             messageContainerSelector + " div.message-in, div.message-out"
         );
         const effectiveLimit = Math.min(limit, messageRows.length);
-        while (msg < effectiveLimit && msg < messageRows.length) {
-            if (messageRows.length === 0) {
-                console.log(`No messages found in chat: ${receiverUsername}`);
-                return;
-            }
+        for (
+            let msg = 0;
+            msg < effectiveLimit && msg < messageRows.length;
+            msg++
+        ) {
             const messageRow = messageRows[msg];
             const messageText = await messageRow?.innerText();
 
             if (messageText) {
-                // Determine whether the message is incoming or outgoing
                 const isIncoming = await messageRow.evaluate((node) =>
                     node.classList.contains("message-in")
                 );
-
-                // Write the message text to a file, separating incoming and outgoing messages
                 const messageType = isIncoming ? "Incoming" : "Outgoing";
                 await fs.appendFile(
                     textFilePath,
@@ -96,11 +90,8 @@ const scrollChatWithLogging = async (
             }
 
             if (msg % 3 === 0) {
-                // Scroll to the target row
                 await messageRows[msg].scrollIntoViewIfNeeded();
-                await page.waitForTimeout(500); // Small delay for smooth scrolling
-
-                // Take and store screenshot
+                await page.waitForTimeout(500);
                 const screenshotPath = path.join(
                     outputDir,
                     `screenshot_${msg + 1}.png`
@@ -109,9 +100,8 @@ const scrollChatWithLogging = async (
                 console.log(`Screenshot saved for message ${msg + 1}.`);
                 screenshotPaths.push(screenshotPath);
             }
-
-            msg++; // Increment message count
         }
+
 
         // Upload chat text file to S3
         const chatLogKey = `${username}/${receiverUsername}/chat_log.txt`;
