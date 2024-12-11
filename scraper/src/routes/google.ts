@@ -80,9 +80,26 @@ app.post("/googleSearch/trigger-scraping", (req, res) => {
 
     console.log("Triggering Chrome with remote debugging...");
 
-    // Step 1: Launch Chrome in debugging mode
-    const chromeCommand = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --remote-debugging-port=9223 --user-data-dir="C:\\Temp\\ChromeProfile"`;
-    
+    // Step 1: Define a unique Chrome profile directory for the email
+    const emailProfileDir = path.join(
+        "C:\\Temp\\ChromeProfiles",
+        email.replace(/[^a-zA-Z0-9]/g, "_")
+    );
+
+    // Check if the directory exists
+    if (!fs.existsSync(emailProfileDir)) {
+        console.log(
+            `Creating new Chrome profile directory for email: ${email}`
+        );
+        fs.mkdirSync(emailProfileDir, { recursive: true });
+    } else {
+        console.log(
+            `Reusing existing Chrome profile directory for email: ${email}`
+        );
+    }
+
+    // Step 2: Launch Chrome with the user-specific profile
+    const chromeCommand = `"C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe" --remote-debugging-port=9223 --user-data-dir="${emailProfileDir}"`;
 
     const chromeProcess = exec(chromeCommand, (error) => {
         if (error) {
@@ -95,11 +112,13 @@ app.post("/googleSearch/trigger-scraping", (req, res) => {
         console.log("Chrome launched successfully.");
     });
 
-    // Step 3: Ensure directory exists and write email and range to a temporary config file
+    // Step 3: Ensure the config directory exists and write email and range to a temporary config file
     const dirPath = path.join(__dirname, "scraper/src/Helpers/Google");
-    const configFilePath = path.join(dirPath, "gconfig.json");
+    const configFilePath = path.join(
+        dirPath,
+        `${email.replace(/[^a-zA-Z0-9]/g, "_")}_gconfig.json`
+    );
 
-    // Check if the directory exists, create if not
     if (!fs.existsSync(dirPath)) {
         fs.mkdirSync(dirPath, { recursive: true });
         console.log(`Directory created: ${dirPath}`);
@@ -114,17 +133,17 @@ app.post("/googleSearch/trigger-scraping", (req, res) => {
     );
     console.log(`Config file written to: ${configFilePath}`);
 
-    // Step 2: Delay for 30 seconds
+    // Step 4: Delay for 10 seconds before running the Playwright script
     setTimeout(() => {
         console.log("Running Playwright script...");
 
-        // Step 4: Run the Playwright script
+        // Run the Playwright script
         const playwrightScript = path.join(
             __dirname,
             "scraper/src/Helpers/Google",
             "webHistory.ts"
         );
-        const nodeCommand = `npx tsx "${playwrightScript}"`;
+        const nodeCommand = `npx tsx "${playwrightScript}" ${email}`;
 
         exec(nodeCommand, (error, stdout, stderr) => {
             if (error) {
@@ -143,11 +162,13 @@ app.post("/googleSearch/trigger-scraping", (req, res) => {
                 message: "Scraping completed.",
             });
 
-            // Cleanup: Remove the config file after use
-            fs.unlinkSync(configFilePath);
+            // Cleanup: Optionally remove the config file after use
+            if (fs.existsSync(configFilePath)) {
+                fs.unlinkSync(configFilePath);
+                console.log(`Config file removed: ${configFilePath}`);
+            }
         });
-
-    }, 10000); // 30-second delay
+    }, 25000); // 10-second delay
 });
 
 // Start the server

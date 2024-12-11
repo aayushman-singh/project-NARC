@@ -4,38 +4,51 @@ import path from "path";
 import { __dirname } from "../../../../config.ts";
 import { insertGoogle, uploadToS3 } from "../mongoUtils.ts";
 
-const outputFile = path.join(__dirname, "/scraper/src/Helpers/Google/log.txt");
-const configFilePath = path.join(
-    __dirname,
-    "/scraper/src/Helpers/Google/gconfig.json"
-);
+// Define the base directory for configuration and logs
+const configBaseDir = path.join(__dirname, "/scraper/src/Helpers/Google");
+const outputFileBaseDir = configBaseDir;
+
+const args = process.argv.slice(2);
+const email = args[0];
+
+if (!email) {
+    console.error("Email is required. Pass it as an environment variable or argument.");
+    process.exit(1);
+}
+
+// Construct the config file path based on the email
+const configFileName = `${email.replace(/[^a-zA-Z0-9]/g, "_")}_gconfig.json`;
+const configFilePath = path.join(configBaseDir, configFileName);
+
+// Ensure configuration file exists
+if (!fs.existsSync(configFilePath)) {
+    console.error(`Config file not found for email ${email} at ${configFilePath}`);
+    process.exit(1);
+}
 
 // Read configuration
-const { email, range } = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
+const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
+const { range } = config;
 
-// Validate and parse the date range
-if (!range || !range.from || !range.to) {
-    throw new Error("Invalid date range provided in the config file.");
+if (!range) {
+    console.error("Date range is required in the config file.");
+    process.exit(1);
 }
 
-const startDate = new Date(range.from.split("-").reverse().join("-"));
-const endDate = new Date(range.to.split("-").reverse().join("-"));
-
-// Ensure startDate and endDate are valid
-if (isNaN(startDate.getTime()) || isNaN(endDate.getTime())) {
-    throw new Error("Invalid start or end date. Check the date format in the config file.");
-}
-
-console.log("Parsed Start Date:", startDate);
-console.log("Parsed End Date:", endDate);
+// Parse the date range
+const [startDateStr, endDateStr] = range.split(" to ");
+const startDate = new Date(startDateStr.split("-").reverse().join("-"));
+const endDate = new Date(endDateStr.split("-").reverse().join("-"));
 
 (async () => {
     const browser = await chromium.connectOverCDP("http://localhost:9223");
 
     try {
+        // Access the first context or create a new one
         const context = browser.contexts()[0] || (await browser.newContext());
         const page = await context.newPage();
 
+        // Navigate to the target URL
         await page.goto(
             "https://myactivity.google.com/activitycontrols/webandapp?hl=en",
             { waitUntil: "domcontentloaded" }
@@ -43,6 +56,7 @@ console.log("Parsed End Date:", endDate);
 
         console.log("Page loaded.");
 
+        // Wait for the `div` with `role="list"`
         const listSelector = 'div[role="list"]';
         await page.waitForSelector(listSelector, { timeout: 10000 });
         const list = await page.$(listSelector);
@@ -55,60 +69,62 @@ console.log("Parsed End Date:", endDate);
 
         let previousItemCount = 0;
 
-        while (true) {
-            const items = await list.$$("c-wiz, div[data-date]");
-            console.log(`Found ${items.length} items in the list.`);
+         while (true) {
+             // Get all `c-wiz` elements and divs with `data-date` inside the list
+             const items = await list.$$("c-wiz, div[data-date]");
+             console.log(`Found ${items.length} items in the list.`);
 
-            if (items.length === previousItemCount) {
-                console.log("No new items loaded. Stopping scroll.");
-                break;
-            }
+             if (items.length === previousItemCount) {
+                 console.log("No new items loaded. Stopping scroll.");
+                 break;
+             }
 
-            previousItemCount = items.length;
+             previousItemCount = items.length;
 
-            for (const item of items) {
-                const dataDateStr = await item.getAttribute("data-date");
-                const innerText = await item.innerText();
+             // Log content of all items to the log file
+             for (const item of items) {
+                 const dataDateStr = await item.getAttribute("data-date");
+                 const innerText = await item.innerText();
 
-                if (dataDateStr) {
-                    const dataDate = new Date(
-                        `${dataDateStr.slice(0, 4)}-${dataDateStr.slice(
-                            4,
-                            6
-                        )}-${dataDateStr.slice(6)}`
-                    );
+                 if (dataDateStr) {
+                     // Parse YYYYMMDD into a Date object
+                     const dataDate = new Date(
+                         `${dataDateStr.slice(0, 4)}-${dataDateStr.slice(
+                             4,
+                             6
+                         )}-${dataDateStr.slice(6)}`
+                     );
 
-                    if (dataDate < startDate || dataDate > endDate) {
-                        console.log(
-                            `Date ${dataDate.toISOString()} is out of range (${startDate.toISOString()} - ${endDate.toISOString()}).`
-                        );
-                        continue;
-                    }
-                }
+                     if (dataDate < startDate || dataDate > endDate) {
+                         console.log("Date out of range. Stopping.");
+                         return;
+                     }
+                 }
 
-                const logEntry = dataDateStr
-                    ? `Date: ${dataDateStr}\nContent:\n${innerText}\n\n`
-                    : `Content:\n${innerText}\n\n`;
+                 const logEntry = dataDateStr
+                     ? `Date: ${dataDateStr}\nContent:\n${innerText}\n\n`
+                     : `Content:\n${innerText}\n\n`;
 
-                fs.appendFileSync(outputFile, logEntry, "utf8");
-            }
+                 fs.appendFileSync(outputFile, logEntry, "utf8");
+             }
 
-            console.log("Logged items to file.");
+             console.log("Logged items to file.");
 
-            const lastItem = items[items.length - 1];
-            await lastItem.scrollIntoViewIfNeeded();
+             // Scroll to the last item
+             const lastItem = items[items.length - 1];
+             await lastItem.scrollIntoViewIfNeeded();
 
-            console.log(
-                "Scrolled to the last item. Waiting for more items to load..."
-            );
+             console.log(
+                 "Scrolled to the last item. Waiting for more items to load..."
+             );
 
-            await page.waitForTimeout(2000);
-        }
+             await page.waitForTimeout(2000); // Adjust delay as needed
+         }
 
         console.log(`Final log written to ${outputFile}`);
         const s3url = await uploadToS3(outputFile, `${email}_activity_google`);
         fs.unlinkSync(outputFile);
-
+        
         await insertGoogle(email, s3url, "google");
     } catch (error) {
         console.error("An error occurred:", error);
