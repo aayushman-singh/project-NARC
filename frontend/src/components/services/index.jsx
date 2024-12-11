@@ -838,22 +838,44 @@ const Services = () => {
 
 {activeSection === "google" && (
   <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-    <h2 className="text-2xl font-bold text-blue-400 mb-4 text-center">Google Services</h2>
-    <Tabs defaultValue="search" className="w-full">
-      <TabsList className="grid w-full grid-cols-4 mb-4">
-        <TabsTrigger value="search" className="text-white bg-gray-700 hover:bg-gray-600">
-          Google Search
-        </TabsTrigger>
-        <TabsTrigger value="youtube" className="text-white bg-gray-700 hover:bg-gray-600">
-          YouTube History
-        </TabsTrigger>
-        <TabsTrigger value="gmail" className="text-white bg-gray-700 hover:bg-gray-600">
-          Gmail
-        </TabsTrigger>
-        <TabsTrigger value="drive" className="text-white bg-gray-700 hover:bg-gray-600">
-          Google Drive
-        </TabsTrigger>
-      </TabsList>
+  <h2 className="text-2xl font-bold text-blue-400 mb-5 text-center">
+  Google Services
+</h2>
+<Tabs defaultValue="search" className="w-full">
+  <TabsList className="grid w-full grid-cols-5 mb-5">
+    <TabsTrigger
+      value="search"
+      className="text-white bg-gray-700 hover:bg-gray-600"
+    >
+      Google Search
+    </TabsTrigger>
+    <TabsTrigger
+      value="youtube"
+      className="text-white bg-gray-700 hover:bg-gray-600"
+    >
+      YouTube History
+    </TabsTrigger>
+    <TabsTrigger
+      value="gmail"
+      className="text-white bg-gray-700 hover:bg-gray-600"
+    >
+      Gmail
+    </TabsTrigger>
+    <TabsTrigger
+      value="drive"
+      className="text-white bg-gray-700 hover:bg-gray-600"
+    >
+      Google Drive
+    </TabsTrigger>
+    <TabsTrigger
+      value="timeline"
+      className="text-white bg-gray-700 hover:bg-gray-600"
+    >
+      Timeline
+    </TabsTrigger>
+  </TabsList>
+
+
       
       {/* Google Search Tab */}
       <TabsContent value="search" className="space-y-4">
@@ -1163,6 +1185,157 @@ const Services = () => {
           )}
         </div>
       </TabsContent>
+      {/* timeline */}
+       {/* Google Drive Tab */}
+      <TabsContent value="drive">
+        <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+          <h2 className="text-2xl font-bold text-blue-400">Google Drive</h2>
+          <div className="mt-4">
+            <label className="text-gray-400 text-sm">Email Address</label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              placeholder="Enter your email"
+              className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+            />
+          </div>
+          <div className="flex items-center">
+            Max files:
+            <span className="ml-2 text-gray-400 cursor-pointer relative group text-lg" aria-label="tooltip">
+              ℹ️
+              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+                Specify the maximum number of files to retrieve.
+              </span>
+            </span>
+          </div>
+          <div className="mt-2">{renderDropdown("googleDrive")}</div>
+          <div className="flex space-x-4 mt-4">
+            <button
+              onClick={() => handleGoogleDrive(email)}
+              className="bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
+              disabled={isLoading}
+            >
+              Submit
+            </button>
+            <button
+              onClick={() => {
+                console.log("Email:", email); // Debugging
+                handleShowDetails("drive");
+              }}
+              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+            >
+              Show Details
+            </button>
+          </div>
+          {googleDriveData && showDetails && (
+            <div className="mt-6">
+              <h3 className="text-xl font-semibold text-blue-300 mb-4">Google Drive Data</h3>
+              <GoogleDriveUsers users={[googleDriveData]} />
+            </div>
+          )}
+        </div>
+      </TabsContent>
+      <TabsContent value="timeline" className="space-y-4">
+  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 className="text-2xl font-bold text-blue-400 mb-4">Timeline</h2>
+    <div className="mt-4">
+      <label className="text-gray-400 text-sm">Google Account Email</label>
+      <input
+        type="email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        placeholder="Enter your Google account email"
+        className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+      />
+    </div>
+
+    {/* <div className="flex space-x-4 mt-4">
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="w-full justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {timelineDateRange.from ? (
+              format(timelineDateRange.from, "dd-MM-yyyy")
+            ) : (
+              <span className="text-gray-400">From Date</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={timelineDateRange.from}
+            onSelect={(date) =>
+              setTimelineDateRange({ ...timelineDateRange, from: date })
+            }
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+
+      <Popover>
+        <PopoverTrigger asChild>
+          <Button
+            variant="outline"
+            className="w-full justify-start text-left font-normal text-white bg-gray-700 hover:bg-gray-600"
+          >
+            <CalendarIcon className="mr-2 h-4 w-4" />
+            {timelineDateRange.to ? (
+              format(timelineDateRange.to, "dd-MM-yyyy")
+            ) : (
+              <span className="text-gray-400">To Date</span>
+            )}
+          </Button>
+        </PopoverTrigger>
+        <PopoverContent className="w-auto p-0" align="start">
+          <Calendar
+            mode="single"
+            selected={timelineDateRange.to}
+            onSelect={(date) =>
+              setTimelineDateRange({ ...timelineDateRange, to: date })
+            }
+            initialFocus
+          />
+        </PopoverContent>
+      </Popover>
+    </div> */}
+
+    <div className="mt-4 flex justify-between items-center">
+      {renderDropdown("timeline")}
+    </div>
+
+    <div className="flex space-x-4 mt-4">
+      <button
+        onClick={() => handleSubmitG("timeline")}
+        className="flex-1 bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 disabled:opacity-50"
+        disabled={isLoading}
+      >
+        Submit
+      </button>
+      <button
+        onClick={() => handleShowDetails("timeline")}
+        className="flex-1 bg-blue-600 text-white px-6 py-2 rounded-md hover:bg-blue-700 disabled:opacity-50"
+        disabled={isLoading}
+      >
+        Show Details
+      </button>
+    </div>
+
+    {googleData && showDetails && (
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold text-blue-300 mb-4">
+          Timeline Data
+        </h3>
+        <GoogleInfo data={googleData} />
+      </div>
+    )}
+  </div>
+</TabsContent>
+
     </Tabs>
   </div>
 )}
