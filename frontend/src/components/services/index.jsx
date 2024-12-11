@@ -13,7 +13,8 @@ import {
   Coins,
   X,
 } from "phosphor-react";
-import { FaGoogle } from "react-icons/fa";
+import { FaGoogle, FaDiscord as DiscordLogo } from "react-icons/fa";
+import DiscordChat from "./Discord";
 import "./style.css";
 import WhatsAppChats from "./Whatsapp";
 import TelegramChats from "./Telegram";
@@ -57,6 +58,7 @@ const Services = () => {
     type: "info",
   });
   const [whatsappData, setWhatsappData] = useState(null);
+  const[discordData , setDiscordData] =  useState(null);
   const [xData, setXData] = useState(null);
   const [facebookData, setFacebookData] = useState(null);
    const [gmailData, setGmailData] = useState(null);
@@ -199,7 +201,8 @@ const Services = () => {
       gmail: 3006,
       drive: 3009,
       google: 3007,
-      youtube: 3008 // This is for Google platform
+      youtube: 3008 ,
+      discord :3011,
     };
   
     const port = platformConfig[platform];
@@ -241,7 +244,19 @@ const Services = () => {
         return;
       }
       username = whatsappInput.value;
-    } else if (platform === "facebook") {
+
+    } 
+    else if (platform === "discord") {
+      const discordInput = document.getElementById("discordInput");
+      if (!discordInput || !discordInput.value) {
+        console.error("email is required for platform 'discord'");
+        showAlert("Please enter a email", "error");
+        return;
+      }
+      username = discordInput.value;
+
+    } 
+    else if (platform === "facebook") {
       const facebookInput = document.getElementById("facebookInput");
       if (!facebookInput || !facebookInput.value) {
         console.error("Email or phone number is required for platform 'facebook'");
@@ -317,6 +332,9 @@ const Services = () => {
           break;
         case "youtube":
           setYoutubeData(data);
+          break;
+        case "discord":
+          setDiscordData(data);
           break;
         default:
           console.error("Unknown platform");
@@ -655,6 +673,23 @@ const Services = () => {
             WhatsApp
           </span>
         </button>
+        <button
+  onClick={() => handleSectionClick("discord")}
+  className="flex items-center space-x-2"
+>
+  <DiscordLogo
+    size={32}
+    color={activeSection === "discord" ? "#5865F2" : "#ccc"}
+  />
+  <span
+    className={`text-lg ${
+      activeSection === "discord" ? "text-blue-400" : "text-gray-400"
+    }`}
+  >
+    Discord
+  </span>
+</button>
+
       </div>
 
       {activeSection === "instagram" && (
@@ -835,6 +870,64 @@ const Services = () => {
           )}
         </div>
       )}
+{activeSection === "discord" && (
+  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 className="text-2xl font-bold text-purple-500">Discord</h2>
+    <input
+      type="text"
+      id="discordInput"
+      placeholder="Enter Discord email"
+      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+    />
+    <input
+      type="password"
+      id="discordPassword"
+      placeholder="Enter Discord password"
+      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
+    />
+    <div className="flex items-center mt-4">
+      Max messages:
+      <span
+        className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+        aria-label="tooltip"
+      >
+        ℹ️
+        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+          Specify the maximum number of messages to retrieve.
+        </span>
+      </span>
+    </div>
+    <div className="mt-2">{renderDropdown("discord")}</div>
+    <div className="flex space-x-4 mt-4">
+      <button
+        onClick={() => handleSubmit("discord")}
+        className="bg-purple-500 text-white px-6 py-2 rounded-md hover:bg-purple-600 disabled:opacity-50"
+        disabled={isLoading}
+      >
+        Submit
+      </button>
+      <button
+        onClick={() => handleShowDetails("discord")}
+        className="bg-purple-500 text-white px-6 py-2 rounded-md hover:bg-purple-600"
+      >
+        Show Details
+      </button>
+    </div>
+    {showDetails && (
+      <div className="mt-6">
+        <h3 className="text-xl font-bold text-purple-400 mb-4">Messages</h3>
+        {discordData?.chats?.length > 0 ? (
+          discordData.chats.map((chat, index) => (
+            <DiscordChat key={index} chat={chat} />
+          ))
+        ) : (
+          <p className="text-gray-400">No messages available</p>
+        )}
+      </div>
+    )}
+  </div>
+)}
+
 
 {activeSection === "google" && (
   <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
