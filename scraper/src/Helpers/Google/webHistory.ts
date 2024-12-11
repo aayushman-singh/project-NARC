@@ -4,7 +4,6 @@ import path from "path";
 import { __dirname } from "../../../../config.ts";
 import { insertGoogle, uploadToS3 } from "../mongoUtils.ts";
 
-// Define the base directory for configuration and logs
 const configBaseDir = path.join(__dirname, "/scraper/src/Helpers/Google");
 const outputFileBaseDir = configBaseDir;
 
@@ -12,7 +11,9 @@ const args = process.argv.slice(2);
 const email = args[0];
 
 if (!email) {
-    console.error("Email is required. Pass it as an environment variable or argument.");
+    console.error(
+        "Email is required. Pass it as an environment variable or argument."
+    );
     process.exit(1);
 }
 
@@ -22,10 +23,11 @@ const configFilePath = path.join(configBaseDir, configFileName);
 
 // Ensure configuration file exists
 if (!fs.existsSync(configFilePath)) {
-    console.error(`Config file not found for email ${email} at ${configFilePath}`);
+    console.error(
+        `Config file not found for email ${email} at ${configFilePath}`
+    );
     process.exit(1);
 }
-
 // Read configuration
 const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
 const { range } = config;
@@ -39,6 +41,12 @@ if (!range) {
 const [startDateStr, endDateStr] = range.split(" to ");
 const startDate = new Date(startDateStr.split("-").reverse().join("-"));
 const endDate = new Date(endDateStr.split("-").reverse().join("-"));
+
+// Define the output file for logs
+const outputFile = path.join(
+    outputFileBaseDir,
+    `${email.replace(/[^a-zA-Z0-9]/g, "_")}_log.txt`
+);
 
 (async () => {
     const browser = await chromium.connectOverCDP("http://localhost:9223");

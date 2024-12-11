@@ -39,6 +39,11 @@ if (!range) {
 let startDate: Date;
 let endDate: Date;
 
+const outputFile = path.join(
+    outputFileBaseDir,
+    `${email.replace(/[^a-zA-Z0-9]/g, "_")}_log.txt`
+);
+
 if (typeof range === "string" && range.includes(" to ")) {
     // Handle string range like "1-12-2024 to 2-12-2024"
     const [from, to] = range.split(" to ").map((dateStr) =>
