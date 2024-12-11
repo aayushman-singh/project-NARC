@@ -6,6 +6,7 @@ import {
   ExternalLink,
   Image as ImageIcon,
 } from "lucide-react";
+import axios from "axios";
 
 const TelegramChat = ({ chat, index }) => {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
@@ -13,6 +14,7 @@ const TelegramChat = ({ chat, index }) => {
   const [chatLogs, setChatLogs] = useState(null); // Stores chat logs
   const [isLogsLoading, setIsLogsLoading] = useState(false); // Indicates loading state
   const [isChatLogsVisible, setIsChatLogsVisible] = useState(false); // Controls visibility of chat logs
+  const [selectedLanguage, setSelectedLanguage] = useState("en"); // Default to English
 
   const toggleMedia = () => setIsMediaExpanded(!isMediaExpanded);
 
@@ -35,7 +37,10 @@ const TelegramChat = ({ chat, index }) => {
       }
 
       const text = await response.text();
-      setChatLogs(text);
+
+      // Translate the logs
+      const translatedLogs = await translateText(text, selectedLanguage);
+      setChatLogs(translatedLogs);
       setIsChatLogsVisible(true); // Make logs visible
     } catch (error) {
       console.error(error.message);
@@ -43,6 +48,21 @@ const TelegramChat = ({ chat, index }) => {
       setIsChatLogsVisible(true);
     } finally {
       setIsLogsLoading(false);
+    }
+  };
+
+  const translateText = async (text, targetLanguage) => {
+    const apiKey = "AIzaSyCwqziN0xQTJUXtPRACkRwpMLrbY9P2uHg";
+    const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
+    try {
+      const response = await axios.post(url, {
+        q: text,
+        target: targetLanguage,
+      });
+      return response.data.data.translations[0].translatedText;
+    } catch (error) {
+      console.error("Translation failed:", error);
+      return "Translation failed. Please try again.";
     }
   };
 
@@ -59,6 +79,17 @@ const TelegramChat = ({ chat, index }) => {
             {chat.receiverUsername}
           </h3>
         </div>
+        <select
+          value={selectedLanguage}
+          onChange={(e) => setSelectedLanguage(e.target.value)}
+          className="bg-gray-700 text-white text-sm rounded-lg p-2"
+        >
+          <option value="en">English</option>
+          <option value="hi">Hindi</option>
+          <option value="es">Marathi</option>
+          <option value="fr">French</option>
+          {/* Add more languages as needed */}
+        </select>
       </div>
 
       <div className="space-y-4">
@@ -171,15 +202,4 @@ const TelegramChat = ({ chat, index }) => {
   );
 };
 
-
-const TelegramChats = ({ chats }) => {
-  return (
-    <div className="space-y-6">
-      {chats.map((chat, index) => (
-        <TelegramChat key={index} chat={chat} index={index} />
-      ))}
-    </div>
-  );
-};
-
-export default TelegramChats;
+export default TelegramChat;
