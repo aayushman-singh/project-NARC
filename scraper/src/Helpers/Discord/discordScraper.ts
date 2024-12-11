@@ -2,7 +2,7 @@ import { chromium } from "playwright";
 import { __dirname } from "../../../../config.js";
 import fs from "fs";
 import path from "path";
-import { uploadChats } from "../mongoUtils"; // Ensure this is correctly defined elsewhere
+import { uploadChats, uploadToS3 } from "../mongoUtils"; // Ensure this is correctly defined elsewhere
 
 export const scrapeDiscord = async (username:string, password:string) => {
     try {
@@ -54,12 +54,17 @@ export const scrapeDiscord = async (username:string, password:string) => {
                     const recipientUsername = await link.getAttribute(
                         "aria-label"
                     );
-                    const chatLink = await link.getAttribute("href");
+                   // const chatLink = await link.getAttribute("href");
 
+                    const sanitizedUsername = recipientUsername!.replace(
+                        /[^a-zA-Z0-9]/g,
+                        "_"
+                    );
                     const logFilePath = path.join(
                         outputDir,
-                        `${recipientUsername}_chat_logs.txt`
+                        `${sanitizedUsername}_chat_logs.txt`
                     );
+                    
                     const screenshotPaths = [];
 
                     if (!fs.existsSync(outputDir)) {
@@ -85,11 +90,19 @@ export const scrapeDiscord = async (username:string, password:string) => {
 
                             for (let j = 2; j < messages.length; j++) {
                                 const content = await messages[j].innerText();
-                                fs.appendFileSync(
-                                    logFilePath,
-                                    `Message: ${content}\n`,
-                                    "utf-8"
-                                );
+                                try {
+                                    fs.appendFileSync(
+                                        logFilePath,
+                                        `Message: ${content}\n`,
+                                        "utf-8"
+                                    );
+                                } catch (fileError) {
+                                    console.error(
+                                        `Error writing to log file: ${logFilePath}`,
+                                        fileError
+                                    );
+                                }
+
                                 messageCount++;
 
                                 if (messageCount % 5 === 0) {
@@ -123,12 +136,13 @@ export const scrapeDiscord = async (username:string, password:string) => {
 
                         await page.waitForTimeout(1000);
                     }
-
+                    const s3Key = `${username}/${recipientUsername}_chat_logs`;
+                    const s3Url = await uploadToS3(logFilePath, s3Key);
                     await uploadChats(
                         username,
                         recipientUsername!,
                         screenshotPaths,
-                        logFilePath,
+                        s3Url,
                         "discord"
                     );
 
