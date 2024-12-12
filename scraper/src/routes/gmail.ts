@@ -10,8 +10,7 @@ import mongoose from "mongoose";
 import { Request, Response } from "express";
 import GmailInUser, { IGmailInUser } from "../models/Gmail/GmailInUser";
 import GmailOutUser, { IGmailOutUser } from "../models/Gmail/GmailOutUser.ts";
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
+import { __dirname } from "../../../config.ts";
 
 const CLIENT_ID =
     "218022995131-pkv99vvugfmhr73ua600lg44q362bbsj.apps.googleusercontent.com";
@@ -46,6 +45,7 @@ app.use(express.json());
 let userEmail = "";
 let emailLimit = 10;
 let user = '';
+
 app.get("/gmailOut/users", async (req: Request, res: Response) => {
     try {
         console.log("Fetching users from database...");
@@ -63,6 +63,7 @@ app.get("/gmailOut/users", async (req: Request, res: Response) => {
         res.status(500).json({ error: (error as Error).message });
     }
 });
+
 app.get("/gmailIn/users", async (req: Request, res: Response) => {
     try {
         console.log("Fetching users from database...");
@@ -252,7 +253,7 @@ app.post("/auth-url", (req, res) => {
 
 async function fetchGmailMessages(
     accessToken: string,
-    label: string = "INBOX",
+    label: string,
     maxResults: number
 ) {
     try {
