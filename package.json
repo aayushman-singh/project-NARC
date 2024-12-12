@@ -20,7 +20,7 @@
     "webdriverio": "^9.4.1"
   },
   "devDependencies": {
-    "@playwright/test": "^1.49.0",
+    "@playwright/test": "^1.49.1",
     "@types/cors": "^2.8.17",
     "@types/express": "^4.17.21",
     "@types/node": "^22.10.1",
@@ -40,6 +40,7 @@
     "backend"
   ],
   "scripts": {
+    "start:report": "python scraper/src/routes/reports.py",
     "start:mastodon": "npx tsx  scraper/src/routes/mastodon.ts",
     "start:timeline": "npx tsx  scraper/src/routes/timeline.ts",
     "start:discord": "npx tsx  scraper/src/routes/discord.ts",
