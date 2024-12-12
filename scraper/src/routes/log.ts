@@ -83,28 +83,81 @@ const upload = multer({
 // Routes
 // Add this function near the top of your server.ts
 const parseDateTime = (line: string): Date | null => {
+    // Pattern for "Date: YYYYMMDD" format first
+    const dateHeaderMatch = line.match(/Date:\s*(\d{4})(\d{2})(\d{2})/);
+    if (dateHeaderMatch) {
+        const [_, year, month, day] = dateHeaderMatch;
+        // Look for time in the format "HH:MM AM/PM"
+        const timeMatch = line.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+        if (timeMatch) {
+            const [_, hours, minutes, meridiem] = timeMatch;
+            let hour = parseInt(hours);
+            // Convert to 24-hour format
+            if (meridiem.toLowerCase() === 'pm' && hour < 12) hour += 12;
+            if (meridiem.toLowerCase() === 'am' && hour === 12) hour = 0;
+            
+            return new Date(
+                parseInt(year),
+                parseInt(month) - 1,
+                parseInt(day),
+                hour,
+                parseInt(minutes)
+            );
+        }
+        // If no time found, use start of day
+        return new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+    }
+
+    // Other date patterns
     const patterns = [
-        /(\d{4}[-/]\d{1,2}[-/]\d{1,2}[\sT]\d{1,2}:\d{1,2}(:\d{1,2})?)/,  // 2024-03-14 15:30:00
-        /(\d{1,2}[-/]\d{1,2}[-/]\d{2,4}[\s,]+\d{1,2}:\d{1,2}(:\d{1,2})?)/,  // 14-03-2024 15:30:00
-        /(\d{1,2}:\d{1,2}(:\d{1,2})?[\s,]+[AP]M)/i,  // 3:30:00 PM
-        /(\d{1,2}[-/]\d{1,2}[-/]\d{2,4})/,  // 14-03-2024
-        /(\d{1,2}\s+(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{2,4})/i,  // 14 March 2024
-        /(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*\s+\d{1,2},?\s+\d{2,4}/i   // March 14, 2024
+        {
+            // 2024-03-14 15:30:00
+            regex: /(\d{4})[-/](\d{1,2})[-/](\d{1,2})[\sT](\d{1,2}):(\d{1,2})(:\d{1,2})?/,
+            parse: (m: RegExpMatchArray) => new Date(
+                parseInt(m[1]), 
+                parseInt(m[2]) - 1, 
+                parseInt(m[3]), 
+                parseInt(m[4]), 
+                parseInt(m[5])
+            )
+        },
+        {
+            // Time only: 12:43 PM
+            regex: /(\d{1,2}):(\d{2})\s*(AM|PM)/i,
+            parse: (m: RegExpMatchArray) => {
+                let hours = parseInt(m[1]);
+                const minutes = parseInt(m[2]);
+                const meridiem = m[3].toLowerCase();
+                
+                if (meridiem === 'pm' && hours < 12) hours += 12;
+                if (meridiem === 'am' && hours === 12) hours = 0;
+                
+                const now = new Date();
+                return new Date(
+                    now.getFullYear(),
+                    now.getMonth(),
+                    now.getDate(),
+                    hours,
+                    minutes
+                );
+            }
+        }
     ];
 
     for (const pattern of patterns) {
-        const match = line.match(pattern);
+        const match = line.match(pattern.regex);
         if (match) {
-            const date = new Date(match[0]);
+            const date = pattern.parse(match);
             if (!isNaN(date.getTime())) {
                 return date;
             }
         }
     }
+
     return null;
 };
 
-// Modify your text file upload route
+// Modify the upload route to handle entries as groups
 app.post('/api/upload/text', upload.array('files'), async (req: MulterRequest, res: Response) => {
     try {
         if (!req.files || req.files.length === 0) {
@@ -112,42 +165,60 @@ app.post('/api/upload/text', upload.array('files'), async (req: MulterRequest, r
         }
 
         const logs: Partial<ILog>[] = [];
-        const MAX_LOGS = 1000; // Maximum number of log entries allowed
         
         for (const file of req.files) {
             try {
                 const content = fs.readFileSync(file.path, 'utf-8');
                 const lines = content.split('\n');
+                let currentEntry = '';
+                let currentDate: Date | null = null;
                 
-                for (const line of lines) {
-                    if (line.trim()) {
-                        if (logs.length >= MAX_LOGS) {
-                            // Clean up remaining files
-                            req.files.forEach(f => {
-                                if (fs.existsSync(f.path)) {
-                                    fs.unlinkSync(f.path);
-                                }
-                            });
-                            throw new Error(`Maximum limit of ${MAX_LOGS} log entries exceeded`);
-                        }
+                for (let i = 0; i < lines.length; i++) {
+                    const line = lines[i].trim();
+                    if (!line) continue;
 
-                        const timestamp = parseDateTime(line);
-                        if (timestamp) {
+                    if (line.startsWith('Date:')) {
+                        // Process previous entry if exists
+                        if (currentEntry && currentDate) {
                             logs.push({
-                                timestamp,
-                                activity: line.trim(),
+                                timestamp: currentDate,
+                                activity: currentEntry.trim(),
                                 platform: path.parse(file.originalname).name,
                                 source: 'text'
                             });
-                        } else {
-                            logs.push({
-                                timestamp: new Date(),
-                                activity: line.trim(),
-                                platform: path.parse(file.originalname).name,
-                                source: 'text'
-                            });
+                        }
+                        // Start new entry
+                        currentEntry = line;
+                        currentDate = parseDateTime(line);
+                    } else {
+                        // Add line to current entry
+                        currentEntry += '\n' + line;
+                        
+                        // Update time if found in content
+                        const timeMatch = line.match(/(\d{1,2}):(\d{2})\s*(AM|PM)/i);
+                        if (timeMatch && currentDate) {
+                            const updatedDate = parseDateTime(line);
+                            if (updatedDate) {
+                                currentDate = new Date(
+                                    currentDate.getFullYear(),
+                                    currentDate.getMonth(),
+                                    currentDate.getDate(),
+                                    updatedDate.getHours(),
+                                    updatedDate.getMinutes()
+                                );
+                            }
                         }
                     }
+                }
+
+                // Process last entry
+                if (currentEntry && currentDate) {
+                    logs.push({
+                        timestamp: currentDate,
+                        activity: currentEntry.trim(),
+                        platform: path.parse(file.originalname).name,
+                        source: 'text'
+                    });
                 }
                 
                 fs.unlinkSync(file.path);
@@ -161,10 +232,17 @@ app.post('/api/upload/text', upload.array('files'), async (req: MulterRequest, r
             throw new Error('No valid log entries found in uploaded files');
         }
 
-        await Log.insertMany(logs);
+        // Sort logs by timestamp before saving
+        logs.sort((a, b) => {
+            return (a.timestamp?.getTime() || 0) - (b.timestamp?.getTime() || 0);
+        });
+
+        const savedLogs = await Log.insertMany(logs);
+
         res.json({ 
             message: 'Text logs uploaded successfully', 
-            count: logs.length
+            count: logs.length,
+            logs: savedLogs
         });
     } catch (error) {
         res.status(500).json({ 
@@ -172,34 +250,6 @@ app.post('/api/upload/text', upload.array('files'), async (req: MulterRequest, r
         });
     }
 });
-
-app.get('/api/logs', async (req: Request, res: Response) => {
-    try {
-        const logs = await Log.find()
-            .sort({ timestamp: 1 })
-            .select('-__v')
-            .exec();
-        res.json(logs);
-    } catch (error) {
-        res.status(500).json({ error: error instanceof Error ? error.message : 'Unknown error occurred' });
-    }
-});
-app.delete('/api/logs', async (req: Request, res: Response) => {
-    try {
-        await Log.deleteMany({});
-        res.json({ message: 'All logs cleared successfully' });
-    } catch (error) {
-        res.status(500).json({ 
-            error: error instanceof Error ? error.message : 'Unknown error occurred'
-        });
-    }
-});
-// Error handling middleware
-app.use((err: Error, req: Request, res: Response, next: Function) => {
-    console.error(err.stack);
-    res.status(500).json({ error: err.message });
-});
-
 // Database connection and server start
 // Original problematic URL:
 // mongodb+srv://aayushman2702:Lmaoded@11@cluster0.eivmu.mongodb.net/logDB?retryWrites=true&w=majority
