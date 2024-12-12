@@ -34,6 +34,7 @@ import GoogleSection from "./GoogleSection"
 import TimelineDataViewer from "./Timeline";
 import TwitterDataDisplay from "./Twitter"
 import GoogleInfo from "./GoogleSection";
+import { SocialIcon } from 'react-social-icons';
 const Services = () => {
   const [activeSection, setActiveSection] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -676,6 +677,7 @@ const handleGoogleDrive = async (email) => {
     Google
   </span>
 </button>
+
         <button
           onClick={() => handleSectionClick("whatsapp")}
           className="flex items-center space-x-2"
@@ -708,6 +710,23 @@ const handleGoogleDrive = async (email) => {
     Discord
   </span>
 </button>
+<button 
+      onClick={() => handleSectionClick("mastodon")}
+      className="flex items-center space-x-2"
+    >
+      <SocialIcon 
+        network="mastodon" 
+        style={{ height: 32, width: 32 }}
+        bgColor={activeSection === "mastodon" ? "#6364FF" : "#ccc"}
+      />
+      <span 
+        className={`text-lg ${
+          activeSection === "mastodon" ? "text-blue-400" : "text-gray-400"
+        }`}
+      >
+        Mastodon
+      </span>
+    </button>
 
       </div>
 
@@ -831,6 +850,7 @@ const handleGoogleDrive = async (email) => {
           )}
         </div>
       )}
+      
       {activeSection === "x" && (
         <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
           <h2 className="text-2xl font-bold text-blue-500">
@@ -889,13 +909,66 @@ const handleGoogleDrive = async (email) => {
           )}
         </div>
       )}
+      {activeSection === "mastodon" && (
+  <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
+    <h2 className="text-2xl font-bold text-blue-400">Mastodon</h2>
+    <input
+            type="text"
+            id="mastadonInput"
+            placeholder="Enter email"
+            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+          <input
+            type="password"
+            id="mastadonPassword"
+            placeholder="Enter mastadon password"
+            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+          />
+    <div className="flex items-center">
+      Max toots:
+      <span
+        className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+        aria-label="tooltip"
+      >
+        ℹ️
+        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
+          Specify the maximum number of toots to retrieve.
+        </span>
+      </span>
+    </div>
+    <div className="mt-2">{renderDropdown("mastodon")}</div>
+    <div className="flex space-x-4 mt-4">
+      <button
+        onClick={() => handleSubmit("mastodon")}
+        className="bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
+        disabled={isLoading}
+      >
+        Submit
+      </button>
+      <button
+        onClick={() => handleShowDetails("mastodon")}
+        className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+      >
+        Show Details
+      </button>
+    </div>
+    {/* {mastodonData && showDetails && (
+      <div className="mt-6">
+        <h3 className="text-xl font-semibold text-blue-300 mb-4">
+          Toots
+        </h3>
+        <MastodonToots toots={mastodonData.toots} />
+      </div>
+    )} */}
+  </div>
+)}
 {activeSection === "discord" && (
   <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
     <h2 className="text-2xl font-bold text-purple-500">Discord</h2>
     <input
       type="text"
       id="discordInput"
-      placeholder="Enter Discord email"
+      placeholder="Enter Discord email and phone"
       className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-purple-500"
     />
     <input
