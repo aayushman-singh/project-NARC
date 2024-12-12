@@ -97,6 +97,21 @@ interface InstagramUserDocument extends Document {
     profile?: InstagramProfile;
 }
 
+interface ProfileInfo {
+    fullName: string;
+    server: string;
+    username: string;
+}
+
+interface ScrapingResult {
+    success: boolean;
+    message: string;
+    articlesCount?: number;
+    username?: string;
+    profileInfo?: ProfileInfo;
+    error?: string;
+}
+
 export async function insertGoogle(
     email: string,
     s3url: string,
@@ -245,7 +260,31 @@ export async function insertDriveInfo(
     }
 }
 
+export async function uploadMastodon(
+    email: string,
+    profileInfo: ProfileInfo,
+    userId: string
+): Promise<string> {
+    try {
+        const profileDocument = {
+            email,
+            userId,
+            fullName: profileInfo.fullName,
+            server: profileInfo.server,
+            username: profileInfo.username,
+            timestamp: new Date(),
+            type: "mastodon-profile-info",
+        };
 
+        const result = await db
+            .collection("profile_info")
+            .insertOne(profileDocument);
+        return result.insertedId.toString();
+    } catch (error) {
+        console.error("Error uploading profile info to MongoDB:", error);
+        throw error;
+    }
+}
 
 export async function uploadChats(
     username: string,
