@@ -8,7 +8,8 @@ import cors from "cors";
 import { insertEmail, updateUserHistory } from "../Helpers/mongoUtils";
 import mongoose from "mongoose";
 import { Request, Response } from "express";
-import GmailUser, { IGmailUser } from "../models/GmailUser.js";
+import GmailInUser, { IGmailInUser } from "../models/Gmail/GmailInUser";
+import GmailOutUser, { IGmailOutUser } from "../models/Gmail/GmailOutUser.ts";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -19,6 +20,8 @@ const REDIRECT_URI = "http://localhost:3006/oauth2callback";
 const TOKEN_PATH = path.join(__dirname, "token.json");
 
 // Connect to MongoDB (your existing code remains the same)
+
+
 const connectDB = async () => {
     try {
         await mongoose.connect(
@@ -26,7 +29,7 @@ const connectDB = async () => {
             {
                 useNewUrlParser: true,
                 useUnifiedTopology: true,
-            } as mongoose.ConnectOptions
+            } as mongoose.ConnectOptions,
         );
         console.log("MongoDB connected successfully");
     } catch (error) {
@@ -43,10 +46,10 @@ app.use(express.json());
 let userEmail = "";
 let emailLimit = 10;
 let user = '';
-app.get("/gmail/users", async (req: Request, res: Response) => {
+app.get("/gmailOut/users", async (req: Request, res: Response) => {
     try {
         console.log("Fetching users from database...");
-        const users: IGmailUser[] = await GmailUser.find().lean();
+        const users: IGmailOutUser[] = await GmailOutUser.find().lean();
         console.log(`Found ${users.length} users`);
 
         if (users.length === 0) {
@@ -60,13 +63,50 @@ app.get("/gmail/users", async (req: Request, res: Response) => {
         res.status(500).json({ error: (error as Error).message });
     }
 });
+app.get("/gmailIn/users", async (req: Request, res: Response) => {
+    try {
+        console.log("Fetching users from database...");
+        const users: IGmailInUser[] = await GmailInUser.find().lean();
+        console.log(`Found ${users.length} users`);
 
-app.get("/gmail/users/:username", async (req: Request, res: Response) => {
+        if (users.length === 0) {
+            console.log("No users found in the database");
+            return res.status(404).json({ message: "No users found" });
+        }
+
+        res.status(200).json(users);
+    } catch (error) {
+        console.error("Error fetching users:", error);
+        res.status(500).json({ error: (error as Error).message });
+    }
+});
+app.get("/gmailOut/users/:username", async (req: Request, res: Response) => {
     const { username } = req.params;
 
     try {
         console.log(`Fetching user with username: ${username}`);
-        const user: IGmailUser | null = await GmailUser.findOne({
+        const user: IGmailOutUser | null = await GmailOutUser.findOne({
+            email: username, // Match against the `email` field
+        }).lean();
+
+        if (!user) {
+            console.log(`User not found: ${username}`);
+            return res.status(404).json({ message: "User not found" });
+        }
+
+        console.log(`User found: ${username}`);
+        res.status(200).json(user);
+    } catch (error) {
+        console.error("Error fetching user:", error);
+        res.status(500).json({ error: (error as Error).message });
+    }
+});
+app.get("/gmailIn/users/:username", async (req: Request, res: Response) => {
+    const { username } = req.params;
+
+    try {
+        console.log(`Fetching user with username: ${username}`);
+        const user: IGmailInUser | null = await GmailInUser.findOne({
             email: username, // Match against the `email` field
         }).lean();
 
