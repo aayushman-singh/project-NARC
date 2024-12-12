@@ -69,7 +69,7 @@ app.get("/google/users/:email", async (req: Request, res: Response) => {
 });
 
 app.post("/googleTimeline/trigger-scraping", (req, res) => {
-    const { email } = req.body;
+    const { email, userId } = req.body;
 
     if (!email) {
         return res.status(400).json({
@@ -129,7 +129,7 @@ app.post("/googleTimeline/trigger-scraping", (req, res) => {
     // Write email and range to the config file
     fs.writeFileSync(
         configFilePath,
-        JSON.stringify({ email: email }, null, 2)
+        JSON.stringify({ email: email, userId: userId }, null, 2)
     );
     console.log(`Config file written to: ${configFilePath}`);
 

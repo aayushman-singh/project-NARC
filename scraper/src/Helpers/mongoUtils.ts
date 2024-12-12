@@ -160,6 +160,7 @@ export async function uploadScreenshotToMongo(
         console.log(
             `${fieldName} screenshot uploaded successfully for ${username}.`,
         );
+        return result;
     } catch (error) {
         console.error(`Error uploading screenshot for ${username}:`, error);
     } finally {

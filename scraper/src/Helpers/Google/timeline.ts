@@ -2,12 +2,12 @@ import { chromium } from "playwright";
 import fs from "fs";
 import path from "path";
 import { __dirname } from "../../../../config.ts";
-import { uploadScreenshotToMongo } from "../mongoUtils.ts";
+import { updateUserHistory, uploadScreenshotToMongo } from "../mongoUtils.ts";
 
 // Get the email argument from the command line
 const email = process.argv[2];
 
-if (!email) {
+if (!email ) {
     console.error("Error: Email argument is required.");
     process.exit(1);
 }
@@ -16,12 +16,36 @@ if (!email) {
 const configBaseDir = path.join(__dirname, "/scraper/src/Helpers/Google");
 const outputFileBaseDir = configBaseDir;
 
+async function extractUserIdFromConfig(configPath) {
+    try {
+        // Read the config file
+        const configContent = await fs.readFile(configPath, 'utf8');
+        
+        // Parse the JSON content
+        const config = JSON.parse(configContent);
+        
+        // Check if userId exists in the config
+        if (!config.userId) {
+            throw new Error('userId not found in config file');
+        }
+        
+        return config.userId;
+    } catch (error) {
+        if (error.code === 'ENOENT') {
+            throw new Error(`Config file not found at path: ${configPath}`);
+        }
+        throw error;
+    }
+}
+
+const userId = await extractUserIdFromConfig(configBaseDir);
+
 // Define the output file for logs
 const outputFile = path.join(
     outputFileBaseDir,
     `${email.replace(/[^a-zA-Z0-9]/g, "_")}_log.txt`
 );
-
+let resultId;
 (async () => {
     let browser;
     try {
@@ -100,8 +124,13 @@ const outputFile = path.join(
                 console.log(`Screenshot saved: ${screenshotPath}`);
     
                 // Upload the screenshot to MongoDB
-                await uploadScreenshotToMongo(email, screenshotPath, 'timeline', 'timeline');
-    
+                resultId = await uploadScreenshotToMongo(email, screenshotPath, `timeline_${i}`, 'timeline');
+                await updateUserHistory(
+                    userId,
+                    email,
+                    resultId,
+                    "google-timeline"
+                );
                 // Click the specified button
                 const buttonSelector = "#map-page > div.map-page-content-wrapper > div > div > div.timeline-wrapper.invalidate-overlay > div.timeline-header > i.timeline-header-button.previous-date-range-button.material-icons-extended.material-icon-with-ripple.rtl-mirrored";
                 await page.click(buttonSelector);
@@ -117,6 +146,7 @@ const outputFile = path.join(
         // Save a log to the output file
         fs.writeFileSync(outputFile, "Scraping completed successfully.");
         console.log("Scraping completed successfully. Log saved.");
+        
     } catch (error) {
         console.error("An error occurred during scraping:", error);
         fs.writeFileSync(outputFile, `Error: ${error.message}`);
