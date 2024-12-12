@@ -1346,8 +1346,7 @@ const handleGoogleDrive = async (email) => {
              placeholder="Enter your email"
              className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
            />
-              placeholder="Enter your email"
-              className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+             
           
           </div>
           <div className="flex items-center">
