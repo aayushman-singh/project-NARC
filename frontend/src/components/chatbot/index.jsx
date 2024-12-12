@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 
 const API_URL = "https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash-latest:generateContent";
-const API_KEY = "AIzaSyCwqziN0xQTJUXtPRACkRwpMLrbY9P2uHg"; // Replace with your actual API key
+const API_KEY = "AIzaSyDETyZ9Aqb5YZF7fAHDJRpjKfVpo3bMwho"; // Replace with your actual API key
 
 const Chatbot = () => {
   const [messages, setMessages] = useState([]);
