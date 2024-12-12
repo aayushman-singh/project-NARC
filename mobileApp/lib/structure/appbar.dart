@@ -118,9 +118,9 @@ class _PersistentStructureState extends State<PersistentStructure> {
           const AnalysisPage(),
           const PastDataPage(),
           ProfilePage(),
-          SplashPage(),
+          const SplashPage(),
           const OnboardingPage(),
-          AuthPage(),
+          const AuthPage(),
         ],
       ),
       bottomNavigationBar: Padding(
@@ -149,7 +149,7 @@ class _PersistentStructureState extends State<PersistentStructure> {
                 ),
                 AppBarImageItem(
                   imagePath: 
-                    'assets/detective-logo.PNG',
+                    'assets/detective-logo.png',
                    
                   
                   isSelected: _currentPage == AppPage.socialMedia,
@@ -215,11 +215,11 @@ class AppBarImageItem extends StatelessWidget {
   final VoidCallback onPressed;
 
   const AppBarImageItem({
-    Key? key,
+    super.key,
     required this.imagePath,
     required this.isSelected,
     required this.onPressed,
-  }) : super(key: key);
+  });
 
   @override
   Widget build(BuildContext context) {

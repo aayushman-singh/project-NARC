@@ -156,3 +156,270 @@ Message 9: .watchlist-grid {
 11:13 am
 Message 10: https://www.loom.com/share/6993d782908944f598ceb5f6b345893a?sid=c12dec29-2928-4abc-89ae-e7521bd96329
 10:45 am
+Message 1: BHAUMIK YADAV
+roll number aur name likh ke do
+1:52 pm
+Message 2: haan bhai kar liya mat likho
+1:52 pm
+Message 3: college id mat bhej dena roll number ki jagah
+1:53 pm
+Message 4: bhej do jise bhejna hai
+1:59 pm
+Message 5: 4 baje list bhejni hai
+1:59 pm
+Message 1: A
+Aayushman
+Aayushman Singh
+
+2201431650002
+3:35 pm
+Message 2: BHAUMIK YADAV
+Aayushman
+Aayushman Singh
+2201431650002
+ab itne mein samajh jayenge roll number to sahi na
+4:06 pm
+Message 3: arrey ab jisne bhi yaha nahi diya tha apna naam roll number
+4:06 pm
+Message 4: hod maam ko message karke bata dena
+4:06 pm
+Message 5: waha se lag jayegi attendance
+4:07 pm
+Incoming Message 1: A
+Aayushman
+Aayushman Singh
+
+2201431650002
+3:35 pm
+Incoming Message 2: BHAUMIK YADAV
+Aayushman
+Aayushman Singh
+2201431650002
+ab itne mein samajh jayenge roll number to sahi na
+4:06 pm
+Incoming Message 3: arrey ab jisne bhi yaha nahi diya tha apna naam roll number
+4:06 pm
+Incoming Message 4: hod maam ko message karke bata dena
+4:06 pm
+Incoming Message 5: waha se lag jayegi attendance
+4:07 pm
+Incoming Message 1: +91 90454 90491
+SIH 2024 SEATING PLAN DATA.pdf
+1 page•PDF•131 kB
+12:59 pm
+Incoming Message 2: +91 90454 90491
+SIH 2024 SEATING PLAN F.pdf
+1 page•PDF•75 kB
+12:59 pm
+Incoming Message 3: +91 93507 10881
+Anyone left for evening snacks come to hostel mess on Block-3 for the same.
+6:02 pm
+Incoming Message 4: Dinner will be served from 8:00 pm to 09:00 pm in Block-3 Mess. All the SIH participants should come with Dinner coupons.
+6:53 pm
+2
+Incoming Message 5: +91 90454 90491
+All the team leaders please collect the new lanyard for their I-card from registration desk from 8:00PM and if any team have old lanyard please return it.
+7:48 pm
+4
+Incoming Message 6: MN
+Mayank Deep Khare NIET
+Everyone should reach for breakfast by 6:45 am in the morning. Get into the auditorium b block first floor.
+11:35 pm
+Incoming Message 7: Mayank Deep Khare NIET
+Final_Schedule_for_SIH_2024_Software_27-11.pdf
+2 pages•PDF•791 kB
+11:37 pm
+Incoming Message 8: MN
+Mayank Deep Khare NIET
+All the best to all the teams....
+12:52 am
+14
+Incoming Message 9: +91 93507 10881
+Breakfast is ready and timings are 07:00 am to 07:30 am. Follow the timings.
+7:07 am
+Incoming Message 10: MN
+Mayank Deep Khare NIET
+All teams reach in auditorium immediately
+7:51 am
+Outgoing Message 1: gdrive.png
+PNG•131 kB
+10:50 am
+Outgoing Message 2: logo.png
+PNG•27 kB
+10:50 am
+Outgoing Message 3: facebook.png
+PNG•3 kB
+10:50 am
+Outgoing Message 4: instagram.png
+PNG•10 kB
+10:50 am
+Outgoing Message 5: telegram.png
+PNG•5 kB
+10:50 am
+Outgoing Message 1: Acct Statement_XX0752_02102024.pdf
+16 pages•PDF•65 kB
+3:39 pm
+Outgoing Message 2: 27 kB
+1:09 pm
+Outgoing Message 3: 36 kB
+2:57 pm
+Outgoing Message 4: 33 kB
+2:37 pm
+Outgoing Message 5: BilledStatements_3588_19-10-24_22.56.pdf
+4 pages•PDF•84 kB
+10:56 pm
+Outgoing Message 6: BilledStatements_3588_19-10-24_22.57.pdf
+4 pages•PDF•87 kB
+10:57 pm
+Outgoing Message 7: qacademy.pdf
+1 page•PDF•368 kB
+12:01 pm
+Outgoing Message 8: import React, { useEffect, useState } from 'react';
+
+import axios from 'axios';
+
+import './Watchlist.css'; // Add CSS for styling
+
+
+
+const Watchlist = () => {
+
+  const [watchlist, setWatchlist] = useState([
+
+    { name: 'Ethereum', symbol: 'eth', type: 'token' },
+
+    { name: 'Reliance Industries', symbol: 'RELIANCE', type: 'stock', exchange: 'NSE' }
+
+  ]);
+
+  
+
+  const [prices, setPrices] = useState({});
+
+
+
+  // Fetch data for each watchlist item
+
+  useEffect(() => {
+
+    const fetchPrices = async () => {
+
+      const priceData = {};
+
+      for (const item of watchlist) {
+
+        try {
+
+          if (item.type === 'token') {
+
+            // Fetch token price using Moralis API
+
+            const tokenResponse = await axios.get(https://deep-index.moralis.io/api/v2/erc20/${item.…Read more
+11:13 am
+Outgoing Message 9: .watchlist-grid {
+
+  display: grid;
+
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+
+  gap: 20px;
+
+  padding: 20px;
+
+}
+
+
+
+.watchlist-tile {
+
+  background-color: #f4f4f9;
+
+  border-radius: 10px;
+
+  padding: 20px;
+
+  text-align: center;
+
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+
+  transition: transform 0.2s ease-in-out;
+
+}
+
+
+
+.watchlist-tile:hover {
+
+  transform: scale(1.05);
+
+}
+
+
+
+.watchlist-tile h3 {
+
+  font-size: 1.2em;
+
+  margin-bottom: 10px;
+
+  color: #333;
+
+}
+
+
+
+.watchlist-tile p {
+
+  font-size: 1em;
+
+  color: #555;
+
+}
+11:13 am
+Outgoing Message 10: https://www.loom.com/share/6993d782908944f598ceb5f6b345893a?sid=c12dec29-2928-4abc-89ae-e7521bd96329
+10:45 am
+Outgoing Message 11: Here's a LinkedIn post you could use:
+
+
+
+---
+
+
+
+ Just wrapped up an incredible experience at the *Hackathon hosted by Delhi Technical University (DTU), proudly sponsored by **On-Demand.io*! 
+
+
+
+Our team developed a project aimed at boosting *financial awareness* among the general population. Leveraging on-demand agents, we designed a solution to help people make informed financial decisions and manage their portfolios with ease. The goal? Empower users to gain more control over their financial futures!
+
+
+
+While we didn’t snag a win this time, the journey was invaluable. From brainstorming sessions to late-night coding marathons, and of course, the thrill of presenting our work – it was a fantastic opportunity to learn, collaborate, and innovate alongside some tr…Read more
+9:20 pm
+Outgoing Message 12: Screenshot 2024-10-31 at 8.43.38 PM.png
+PNG•2 MB
+8:46 pm
+Outgoing Message 13: Parsing of Social Media Feeds.pptx
+6 pages•PPTX•2 MB
+4:18 pm
+Outgoing Message 14: https://project-narc.s3.ap-south-1.amazonaws.com/9650593099/default-groupRajpoot Family9/chat_log.txt
+6:43 pm
+Outgoing Message 15: My account info.zip
+ZIP•730 kB
+6:54 pm
+Outgoing Message 16: Forwarded
+3RD YR.xlsx
+4 pages•XLSX•83 kB
+9:35 am
+Outgoing Message 17: edited-report.pdf
+20 pages•PDF•204 kB
+9:47 am
+Outgoing Message 18: got ?
+9:47 am
+Outgoing Message 19: 5 edited pages.pdf
+5 pages•PDF•1 MB
+2:16 pm
+Outgoing Message 20: Forwarded
+DBMS Lab File CSD.docx
+1 page•DOCX•4 MB
+9:26 pm

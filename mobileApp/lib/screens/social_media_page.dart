@@ -21,6 +21,7 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
     'facebook': TextEditingController(),
     'whatsapp': TextEditingController(),
     'telegram': TextEditingController(),
+    'google': TextEditingController(),
   };
   final Map<String, TextEditingController> passwordControllers = {
     'instagram': TextEditingController(),
@@ -28,6 +29,7 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
     'facebook': TextEditingController(),
     'whatsapp': TextEditingController(),
     'telegram': TextEditingController(),
+    'google': TextEditingController(),
   };
   final Map<String, int> maxPosts = {
     'instagram': 10,
@@ -109,7 +111,8 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
       });
     }
   }
-    void handleShowDetails(String platform,
+
+  void handleShowDetails(String platform,
       {bool requiresPassword = false}) async {
     final tagController = tagControllers[platform];
     final passwordController = passwordControllers[platform];
@@ -167,9 +170,7 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
     }
   }
 
-
-
-@override
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
       backgroundColor: Colors.grey[900],
@@ -226,6 +227,13 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
                         activeSection == 'telegram', Colors.blueAccent, () {
                       handleSectionClick('telegram');
                     }),
+                    _buildServiceButton(
+                        'google',
+                        'Google',
+                        activeSection == 'google',
+                        const Color.fromARGB(255, 233, 30, 30), () {
+                      handleSectionClick('google');
+                    }),
                   ],
                 ),
                 const SizedBox(height: 20),
@@ -239,6 +247,9 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
                   _buildServiceForm('Telegram', Colors.blueAccent, 'telegram'),
                 if (activeSection == 'facebook')
                   _buildServiceForm('Facebook', Colors.blue, 'facebook'),
+                if (activeSection == 'google')
+                  _buildServiceForm('Google',
+                      const Color.fromARGB(255, 233, 30, 30), 'google'),
               ],
             ),
           ),
@@ -247,8 +258,7 @@ class _SocialMediaPageState extends State<SocialMediaPage> {
     );
   }
 
-
-Widget _buildServiceButton(String platformKey, String label, bool isActive,
+  Widget _buildServiceButton(String platformKey, String label, bool isActive,
       Color activeColor, VoidCallback onPressed) {
     return Column(
       children: [
@@ -292,95 +302,301 @@ Widget _buildServiceButton(String platformKey, String label, bool isActive,
     );
   }
 
-
   Widget _buildServiceForm(String platform, Color color, String platformKey) {
     final tagController = tagControllers[platformKey];
     final passwordController = passwordControllers[platformKey];
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-          color: Colors.grey[800], borderRadius: BorderRadius.circular(12)),
-      child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
-        children: [
-          Text(platform,
-              style: TextStyle(
-                  fontSize: 18, fontWeight: FontWeight.bold, color: color)),
-          const SizedBox(height: 10),
-          DropdownButton<int>(
-            value: (platformKey == 'telegram' || platformKey == 'whatsapp')
-                ? maxMessages[platformKey]
-                : maxPosts[platformKey],
-            dropdownColor: Colors.grey[800],
-            items: (platformKey == 'telegram' || platformKey == 'whatsapp')
-                ? List.generate(
-                    5,
-                    (index) => DropdownMenuItem(
-                      value: (index + 1) * 10,
-                      child: Text(
-                        'Max messages: ${(index + 1) * 10}',
-                        style: const TextStyle(color: Colors.white),
-                      ),
+
+    if (platformKey == 'google') {
+      String selectedService = 'Google Drive'; // Default selected service
+      String? selectedMaxItems;
+      DateTime? beforeDate;
+      DateTime? afterDate;
+
+      final List<Map<String, String>> services = [
+        {'name': 'Google Drive', 'logo': 'assets/gdrive.png'},
+        {'name': 'Gmail', 'logo': 'assets/gmail.png'},
+        {'name': 'Google', 'logo': 'assets/google.png'},
+        {'name': 'YouTube', 'logo': 'assets/youtube.png'},
+      ];
+
+      final List<String> maxValues = [
+        '1',
+        '3',
+        '5',
+        '10',
+        '20',
+        '50',
+        '100',
+        '200'
+      ];
+
+      return StatefulBuilder(builder: (context, setState) {
+        Future<void> selectDate(
+            BuildContext context, bool isBeforeDate) async {
+          final DateTime? picked = await showDatePicker(
+            context: context,
+            initialDate: DateTime.now(),
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2100),
+          );
+          if (picked != null) {
+            setState(() {
+              if (isBeforeDate) {
+                beforeDate = picked;
+              } else {
+                afterDate = picked;
+              }
+            });
+          }
+        }
+
+        Future<void> submit() async {
+          final email = tagController!.text;
+          if (selectedService == 'Google Drive' || selectedService == 'Gmail') {
+            await BackendService.sendRequest(
+              serviceName: selectedService,
+              email: email,
+              limit: selectedMaxItems,
+            );
+          } else if (selectedService == 'Google' ||
+              selectedService == 'YouTube') {
+            final range =
+                '${beforeDate?.toIso8601String() ?? ''} to ${afterDate?.toIso8601String() ?? ''}';
+            await BackendService.sendRequest(
+              serviceName: selectedService,
+              email: email,
+              range: range,
+            );
+          }
+        }
+
+        Future<void> showGoogleDetails() async {
+          final email = tagController!.text;
+          await BackendService.sendRequest(
+            serviceName: selectedService,
+            email: email,
+          );
+        }
+
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.grey[800],
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              // Email field
+              TextField(
+                controller: tagController,
+                decoration: const InputDecoration(
+                  labelText: 'Email Address',
+                  labelStyle: TextStyle(color: Colors.white),
+                  border: OutlineInputBorder(),
+                ),
+                style: const TextStyle(color: Colors.white),
+              ),
+              const SizedBox(height: 16),
+
+              // Dropdown for selecting the service
+              DropdownButton<String>(
+                value: selectedService,
+                onChanged: (String? newValue) {
+                  setState(() {
+                    selectedService = newValue!;
+                  });
+                },
+                items: services.map<DropdownMenuItem<String>>((service) {
+                  return DropdownMenuItem<String>(
+                    value: service['name'],
+                    child: Row(
+                      children: [
+                        Image.asset(
+                          service['logo']!,
+                          width: 24,
+                          height: 24,
+                        ),
+                        const SizedBox(width: 8),
+                        Text(service['name']!,
+                            style: const TextStyle(color: Colors.white)),
+                      ],
                     ),
-                  )
-                : [1, 3, 5, 10, 15, 20, 30, 50, 100].map((value) {
-                    return DropdownMenuItem(
+                  );
+                }).toList(),
+                dropdownColor: Colors.grey[800],
+              ),
+              const SizedBox(height: 16),
+
+              // Conditional Widgets
+              if (selectedService == 'Google Drive' ||
+                  selectedService == 'Gmail') ...[
+                DropdownButton<String>(
+                  value: selectedMaxItems,
+                  onChanged: (String? newValue) {
+                    setState(() {
+                      selectedMaxItems = newValue!;
+                    });
+                  },
+                  items:
+                      maxValues.map<DropdownMenuItem<String>>((String value) {
+                    return DropdownMenuItem<String>(
                       value: value,
-                      child: Text(
-                        'Max posts: $value',
-                        style: const TextStyle(color: Colors.white),
-                      ),
+                      child: Text(value, style: const TextStyle(color: Colors.white)),
                     );
                   }).toList(),
-            onChanged: (value) {
-              setState(() {
-                if (platformKey == 'telegram' || platformKey == 'whatsapp') {
-                  maxMessages[platformKey] = value!;
-                } else {
-                  maxPosts[platformKey] = value!;
-                }
-              });
-            },
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: tagController,
-            decoration: InputDecoration(
-              hintText: 'Enter $platform username',
-              filled: true,
-              fillColor: Colors.grey[700],
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-          const SizedBox(height: 10),
-          TextField(
-            controller: passwordController,
-            decoration: InputDecoration(
-              hintText: 'Enter password',
-              filled: true,
-              fillColor: Colors.grey[700],
-              border:
-                  OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-            ),
-          ),
-          const SizedBox(height: 10),
-          Row(
-            children: [
+                  hint: const Text('Select Max Items',
+                      style: TextStyle(color: Colors.white)),
+                  dropdownColor: Colors.grey[800],
+                ),
+              ] else if (selectedService == 'Google' ||
+                  selectedService == 'YouTube') ...[
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextField(
+                        readOnly: true,
+                        onTap: () => selectDate(context, true),
+                        decoration: const InputDecoration(
+                          labelText: 'Before',
+                          labelStyle: TextStyle(color: Colors.white),
+                          border: OutlineInputBorder(),
+                          suffixIcon:
+                              Icon(Icons.calendar_today, color: Colors.white),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                        controller: TextEditingController(
+                          text: beforeDate != null
+                              ? "${beforeDate!.year}-${beforeDate!.month.toString().padLeft(2, '0')}-${beforeDate!.day.toString().padLeft(2, '0')}"
+                              : '',
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: TextField(
+                        readOnly: true,
+                        onTap: () => selectDate(context, false),
+                        decoration: const InputDecoration(
+                          labelText: 'After',
+                          labelStyle: TextStyle(color: Colors.white),
+                          border: OutlineInputBorder(),
+                          suffixIcon:
+                              Icon(Icons.calendar_today, color: Colors.white),
+                        ),
+                        style: const TextStyle(color: Colors.white),
+                        controller: TextEditingController(
+                          text: afterDate != null
+                              ? "${afterDate!.year}-${afterDate!.month.toString().padLeft(2, '0')}-${afterDate!.day.toString().padLeft(2, '0')}"
+                              : '',
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+              const SizedBox(height: 16),
+
+              // Submit Button
               ElevatedButton(
-                onPressed: () => handleSubmit(platformKey),
-                style: ElevatedButton.styleFrom(backgroundColor: color),
+                onPressed: submit,
                 child: const Text('Submit'),
               ),
               ElevatedButton(
-                onPressed: () => handleShowDetails(platformKey),
-                style: ElevatedButton.styleFrom(backgroundColor: color),
+                onPressed: showGoogleDetails,
                 child: const Text('Show details'),
               ),
             ],
           ),
-        ],
-      ),
-    );
+        );
+      });
+    } else {
+      return Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+            color: Colors.grey[800], borderRadius: BorderRadius.circular(12)),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(platform,
+                style: TextStyle(
+                    fontSize: 18, fontWeight: FontWeight.bold, color: color)),
+            const SizedBox(height: 10),
+            DropdownButton<int>(
+              value: (platformKey == 'telegram' || platformKey == 'whatsapp')
+                  ? maxMessages[platformKey]
+                  : maxPosts[platformKey],
+              dropdownColor: Colors.grey[800],
+              items: (platformKey == 'telegram' || platformKey == 'whatsapp')
+                  ? List.generate(
+                      5,
+                      (index) => DropdownMenuItem(
+                        value: (index + 1) * 10,
+                        child: Text(
+                          'Max messages: ${(index + 1) * 10}',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    )
+                  : [1, 3, 5, 10, 15, 20, 30, 50, 100].map((value) {
+                      return DropdownMenuItem(
+                        value: value,
+                        child: Text(
+                          'Max posts: $value',
+                          style: const TextStyle(color: Colors.white),
+                        ),
+                      );
+                    }).toList(),
+              onChanged: (value) {
+                setState(() {
+                  if (platformKey == 'telegram' || platformKey == 'whatsapp') {
+                    maxMessages[platformKey] = value!;
+                  } else {
+                    maxPosts[platformKey] = value!;
+                  }
+                });
+              },
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: tagController,
+              decoration: InputDecoration(
+                hintText: 'Enter $platform username',
+                filled: true,
+                fillColor: Colors.grey[700],
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 10),
+            TextField(
+              controller: passwordController,
+              decoration: InputDecoration(
+                hintText: 'Enter password',
+                filled: true,
+                fillColor: Colors.grey[700],
+                border:
+                    OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+              ),
+            ),
+            const SizedBox(height: 10),
+            Row(
+              children: [
+                ElevatedButton(
+                  onPressed: () => handleSubmit(platformKey),
+                  style: ElevatedButton.styleFrom(backgroundColor: color),
+                  child: const Text('Submit'),
+                ),
+                ElevatedButton(
+                  onPressed: () => handleShowDetails(platformKey),
+                  style: ElevatedButton.styleFrom(backgroundColor: color),
+                  child: const Text('Show details'),
+                ),
+              ],
+            ),
+          ],
+        ),
+      );
+    }
   }
 }

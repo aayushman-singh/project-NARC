@@ -1,19 +1,69 @@
 import React, { useState } from "react";
-import {
-  ChevronDown,
-  ChevronUp,
-  X,
-  Image as ImageIcon,
-  ExternalLink,
-} from "lucide-react";
+import { ChevronDown, ChevronUp, X, Image as ImageIcon, ExternalLink } from "lucide-react";
+import axios from "axios";
 
 const WhatsAppChat = ({ chat, index }) => {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
+  const [chatLogs, setChatLogs] = useState(null); // Stores original chat logs
+  const [translatedLogs, setTranslatedLogs] = useState(null); // Stores translated chat logs
+  const [isLogsLoading, setIsLogsLoading] = useState(false); // Indicates loading state
+  const [isChatLogsVisible, setIsChatLogsVisible] = useState(false); // Controls visibility of chat logs
+  const [isTranslating, setIsTranslating] = useState(false); // Indicates translation loading state
+  const [selectedLanguage, setSelectedLanguage] = useState("en"); // Default translation language
 
   const toggleMedia = () => setIsMediaExpanded(!isMediaExpanded);
   const openImageViewer = (image) => setSelectedImage(image);
   const closeImageViewer = () => setSelectedImage(null);
+
+  const fetchChatLogs = async () => {
+    if (isChatLogsVisible) {
+      // Close chat logs if already open
+      setIsChatLogsVisible(false);
+      return;
+    }
+
+    try {
+      setIsLogsLoading(true);
+      const response = await fetch(chat.chats);
+
+      if (!response.ok) {
+        throw new Error(`Failed to fetch chat logs: ${response.statusText}`);
+      }
+
+      const text = await response.text();
+      setChatLogs(text);
+      setIsChatLogsVisible(true); // Make logs visible
+    } catch (error) {
+      console.error(error.message);
+      setChatLogs("Failed to load chat logs.");
+      setIsChatLogsVisible(true);
+    } finally {
+      setIsLogsLoading(false);
+    }
+  };
+
+  const translateChatLogs = async () => {
+    if (!chatLogs || !selectedLanguage) return;
+    setIsTranslating(true);
+
+    const apiKey = "AIzaSyCwqziN0xQTJUXtPRACkRwpMLrbY9P2uHg"; // Replace with your API key
+    const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
+
+    try {
+      const response = await axios.post(url, {
+        q: chatLogs,
+        target: selectedLanguage,
+      });
+
+      setTranslatedLogs(response.data.data.translations[0].translatedText);
+    } catch (error) {
+      console.error("Error translating chat logs:", error);
+      setTranslatedLogs("Translation failed.");
+    } finally {
+      setIsTranslating(false);
+    }
+  };
 
   return (
     <div className="bg-gradient-to-br from-green-900 to-gray-800 p-6 rounded-xl shadow-lg mt-6 border border-green-700/20">
@@ -82,16 +132,53 @@ const WhatsAppChat = ({ chat, index }) => {
         )}
 
         <div className="flex justify-between items-center">
-          <a
-            href={chat.chats}
+          <button
+            onClick={fetchChatLogs}
             className="inline-flex items-center space-x-2 text-green-400 hover:text-green-300 transition-colors duration-200 group"
-            target="_blank"
-            rel="noopener noreferrer"
           >
-            <span className="font-medium">View Chat History</span>
+            <span className="font-medium">
+              {isChatLogsVisible ? "Close Chat History" : "View Chat History"}
+            </span>
             <ExternalLink className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-          </a>
+          </button>
         </div>
+
+        {isChatLogsVisible && (
+          <div className="bg-gray-800/50 rounded-xl p-4 mt-4 overflow-auto max-h-64">
+            {isLogsLoading ? (
+              <p className="text-green-300">Loading chat logs...</p>
+            ) : (
+              <>
+                <pre className="text-gray-300 whitespace-pre-wrap">{chatLogs}</pre>
+                {translatedLogs && (
+                  <div className="mt-4 bg-gray-700 p-3 rounded-lg text-gray-300">
+                    <strong>Translated Logs:</strong>
+                    <pre className="whitespace-pre-wrap">{translatedLogs}</pre>
+                  </div>
+                )}
+                <div className="flex items-center mt-4 space-x-4">
+                  <button
+                    onClick={translateChatLogs}
+                    disabled={isTranslating}
+                    className="text-green-400 hover:text-green-300 transition-colors"
+                  >
+                    {isTranslating ? "Translating..." : "Translate Logs"}
+                  </button>
+                  <select
+                    value={selectedLanguage}
+                    onChange={(e) => setSelectedLanguage(e.target.value)}
+                    className="bg-gray-800 text-white text-sm rounded-lg p-2"
+                  >
+                    <option value="en">English</option>
+                    <option value="hi">Hindi</option>
+                    <option value="es">Spanish</option>
+                    <option value="fr">French</option>
+                  </select>
+                </div>
+              </>
+            )}
+          </div>
+        )}
       </div>
 
       {selectedImage && (

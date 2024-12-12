@@ -1,7 +1,7 @@
 import { Page } from "playwright";
 import fs from "fs";
 import path from "path";
-import { uploadScreenshotToMongo, uploadToS3 } from "../mongoUtils";
+import { uploadScreenshotToMongo } from "../mongoUtils";
 import { fileURLToPath } from "url";
 import { dirname } from "path";
 
@@ -67,7 +67,7 @@ export async function scrapeFacebookPosts(
                             resultId = await uploadScreenshotToMongo(
                                 username,
                                 screenshotPath,
-                                `post_${i + 1}`,
+                                `post_${i + 1}.png`,
                                 "facebook"
                             );
                             console.log(

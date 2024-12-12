@@ -1,134 +1,83 @@
-import React, { useState } from 'react';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
-import { format } from "date-fns";
-import { CalendarIcon } from 'lucide-react';
+import React, { useState } from "react";
+import { X, ExternalLink } from "lucide-react";
 
-const GoogleSection = ({ activeSection, isLoading, handleSubmit, handleShowDetails }) => {
-  const [googleSearchData, setGoogleSearchData] = useState(null);
-  const [youtubeHistoryData, setYoutubeHistoryData] = useState(null);
-  const [showGoogleSearchDetails, setShowGoogleSearchDetails] = useState(false);
-  const [showYoutubeHistoryDetails, setShowYoutubeHistoryDetails] = useState(false);
-  const [googleSearchDateRange, setGoogleSearchDateRange] = useState({ from: null, to: null });
-  const [youtubeHistoryDateRange, setYoutubeHistoryDateRange] = useState({ from: null, to: null });
+const ChatLogsViewer = ({ logsUrl }) => {
+  const [isLogsVisible, setIsLogsVisible] = useState(false);
+  const [chatLogs, setChatLogs] = useState(null);
+  const [isLoading, setIsLoading] = useState(false);
 
-  if (activeSection !== "google") return null;
-  
-
-  const renderDatePicker = (section, range, setRange) => (
-    <div className="flex space-x-4 mt-4">
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-[240px] justify-start text-left font-normal">
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {range.from ? format(range.from, "dd-MM-yyyy") : <span>From Date</span>}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={range.from}
-            onSelect={(date) => setRange({ ...range, from: date })}
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
-      <Popover>
-        <PopoverTrigger asChild>
-          <Button variant="outline" className="w-[240px] justify-start text-left font-normal">
-            <CalendarIcon className="mr-2 h-4 w-4" />
-            {range.to ? format(range.to, "dd-MM-yyyy") : <span>To Date</span>}
-          </Button>
-        </PopoverTrigger>
-        <PopoverContent className="w-auto p-0" align="start">
-          <Calendar
-            mode="single"
-            selected={range.to}
-            onSelect={(date) => setRange({ ...range, to: date })}
-            initialFocus
-          />
-        </PopoverContent>
-      </Popover>
-    </div>
-  );
+  const fetchLogs = async () => {
+    if (isLogsVisible) {
+      setIsLogsVisible(false);
+      return;
+    }
+    try {
+      setIsLoading(true);
+      const response = await fetch(logsUrl);
+      if (!response.ok) {
+        throw new Error("Failed to fetch chat logs");
+      }
+      const logs = await response.text();
+      setChatLogs(logs);
+      setIsLogsVisible(true);
+    } catch (error) {
+      console.error(error);
+      setChatLogs("Error fetching logs. Please try again.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
 
   return (
-    <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-      <h2 className="text-2xl font-bold text-blue-400 mb-4">Google</h2>
-      <Tabs defaultValue="search" className="w-full">
-        <TabsList className="grid w-full grid-cols-2">
-          <TabsTrigger value="search">Google Search</TabsTrigger>
-          <TabsTrigger value="youtube">YouTube History</TabsTrigger>
-        </TabsList>
-        <TabsContent value="search">
-          <div className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Enter Google account email"
-              className="w-full p-3 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            {renderDatePicker("googleSearch", googleSearchDateRange, setGoogleSearchDateRange)}
-            <div className="flex space-x-4 mt-4">
-              <Button
-                onClick={() => handleSubmit("googleSearch")}
-                className="bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
-                disabled={isLoading}
-              >
-                Submit
-              </Button>
-              <Button
-                onClick={() => setShowGoogleSearchDetails(!showGoogleSearchDetails)}
-                className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-              >
-                Show Details
-              </Button>
-            </div>
-            {googleSearchData && showGoogleSearchDetails && (
-              <div className="mt-6">
-                <h3 className="text-xl font-semibold text-blue-300 mb-4">Google Search History</h3>
-                {/* Add Google Search history display component here */}
-              </div>
-            )}
-          </div>
-        </TabsContent>
-        <TabsContent value="youtube">
-          <div className="space-y-4">
-            <Input
-              type="email"
-              placeholder="Enter YouTube account email"
-              className="w-full p-3 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-            />
-            {renderDatePicker("youtubeHistory", youtubeHistoryDateRange, setYoutubeHistoryDateRange)}
-            <div className="flex space-x-4 mt-4">
-              <Button
-                onClick={() => handleSubmit("youtubeHistory")}
-                className="bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
-                disabled={isLoading}
-              >
-                Submit
-              </Button>
-              <Button
-                onClick={() => setShowYoutubeHistoryDetails(!showYoutubeHistoryDetails)}
-                className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-              >
-                Show Details
-              </Button>
-            </div>
-            {youtubeHistoryData && showYoutubeHistoryDetails && (
-              <div className="mt-6">
-                <h3 className="text-xl font-semibold text-blue-300 mb-4">YouTube History</h3>
-                {/* Add YouTube history display component here */}
-              </div>
-            )}
-          </div>
-        </TabsContent>
-      </Tabs>
+    <div className="bg-gradient-to-br from-blue-900 to-gray-800 p-6 rounded-lg shadow-lg mt-6 border border-blue-700/20">
+      <div className="flex justify-between items-center">
+        <button
+          onClick={fetchLogs}
+          className="text-blue-400 hover:text-blue-300 font-medium transition-colors duration-200"
+        >
+          {isLogsVisible ? "Hide Logs" : "View Chat Logs"}
+        </button>
+        <a
+          href={logsUrl}
+          target="_blank"
+          rel="noopener noreferrer"
+          className="text-blue-400 hover:text-blue-300 text-sm transition-colors duration-200"
+        >
+          Open Logs <ExternalLink className="h-4 w-4 inline-block ml-1" />
+        </a>
+      </div>
+
+      {isLogsVisible && (
+        <div className="bg-gray-800/50 mt-4 p-4 rounded-lg max-h-64 overflow-auto">
+          {isLoading ? (
+            <p className="text-blue-300">Loading chat logs...</p>
+          ) : (
+            <pre className="text-gray-300 whitespace-pre-wrap">
+              {chatLogs}
+            </pre>
+          )}
+        </div>
+      )}
     </div>
   );
 };
 
-export default GoogleSection;
+const GoogleInfo = ({ data }) => {
+  return (
+    <div className="space-y-6">
+      <div className="bg-gradient-to-br from-blue-900 to-gray-800 p-6 rounded-lg shadow-lg border border-blue-700/20">
+        <div className="flex items-center space-x-4">
+          <div className="w-12 h-12 rounded-full bg-blue-500 flex items-center justify-center">
+            <span className="text-white font-bold text-xl">
+              {data.email.charAt(0).toUpperCase()}
+            </span>
+          </div>
+          <h3 className="text-white text-2xl font-bold">{data.email}</h3>
+        </div>
+        <ChatLogsViewer logsUrl={data.logs[0]} />
+      </div>
+    </div>
+  );
+};
 
+export default GoogleInfo;

@@ -2,126 +2,136 @@ import { Browser, chromium, Page } from "playwright";
 import fs from "fs/promises";
 import path from "path";
 import { uploadChats, uploadToS3 } from "../mongoUtils";
-import { fileURLToPath } from "url";
+import { __dirname } from "../../../../config";
 import dotenv from "dotenv";
 
 dotenv.config();
 
-const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
-// Reusable function for scrolling and capturing screenshots
 const scrollChatWithLogging = async (
     username: string,
     receiverUsername: string,
     page: Page,
     messageContainerSelector: string,
     outputDir: string,
-    limit: number,
+    limit: number
 ) => {
     const screenshotPaths: string[] = [];
     const textFilePath = path.join(outputDir, `chat_text.txt`);
     try {
         console.log("Starting infinite scrolling upward...");
-        let previousMessageCount = 0;
-        let newMessageCount = 0;
+        let totalMessageCount = 0;
         let attempt = 0;
 
-        // Phase 1: Scroll upward until attempts are exhausted
-        while (attempt < 10) {
-            const messageRows = await page.$$(
-                messageContainerSelector + " div.message-in, div.message-out",
-            );
-            newMessageCount = messageRows.length;
-
-            if (
-                newMessageCount > previousMessageCount &&
-                newMessageCount < limit
-            ) {
-                console.log(
-                    `Loaded ${newMessageCount - previousMessageCount} new messages.`,
+        while (totalMessageCount < limit) {
+            while (attempt < 10) {
+                const messageRows = await page.$$(
+                    messageContainerSelector +
+                        " div.message-in, div.message-out"
                 );
-                previousMessageCount = newMessageCount;
-                attempt = 0; // Reset attempts if new messages are found
+                const newMessageCount = messageRows.length;
 
-                // Scroll to the first visible row
-                await messageRows[0].scrollIntoViewIfNeeded();
-                await page.waitForTimeout(1000); // Wait for messages to load
-            } else {
-                attempt++;
+                if (newMessageCount > totalMessageCount) {
+                    const messagesToLoad = Math.min(
+                        newMessageCount - totalMessageCount,
+                        limit - totalMessageCount
+                    );
+
+                    console.log(
+                        `Loaded ${messagesToLoad} new messages (Total: ${
+                            totalMessageCount + messagesToLoad
+                        }/${limit}).`
+                    );
+
+                    totalMessageCount += messagesToLoad;
+                    attempt = 0; // Reset attempts if new messages are found
+
+                    // Scroll to the first visible row
+                    await messageRows[0].scrollIntoViewIfNeeded();
+                    await page.waitForTimeout(1500); // Wait for messages to load
+                } else {
+                    attempt++;
+                    console.log(
+                        `No new messages found. Waiting... (Attempt ${attempt}/10)`
+                    );
+                    await page.waitForTimeout(2000);
+                }
+
+                if (totalMessageCount >= limit) {
+                    console.log(
+                        `Reached the limit of ${limit} messages. Stopping scroll.`
+                    );
+                    break;
+                }
+            }
+
+            if (attempt >= 10) {
                 console.log(
-                    `No new messages found. Waiting... (Attempt ${attempt}/10)`,
+                    "No more messages to load after 10 attempts. Stopping."
                 );
-                await page.waitForTimeout(2000);
+                break;
             }
         }
 
         console.log(
-            "Finished scrolling upward. Now scrolling downward and taking screenshots...",
+            "Finished scrolling upward. Now capturing messages and screenshots..."
         );
 
-        // Phase 2: Scroll downward and take screenshots every third message
-        let index = 0;
-        let messagesLogged = 0;
-        let msg = 0;
+        // Simplified logging and screenshot phase
         await fs.mkdir(path.dirname(textFilePath), { recursive: true });
         const messageRows = await page.$$(
-            messageContainerSelector + " div.message-in, div.message-out",
+            messageContainerSelector + " div.message-in, div.message-out"
         );
-        const effectiveLimit = Math.min(limit, messageRows.length);
-        while (msg < effectiveLimit && msg < messageRows.length) {
-            if (messageRows.length === 0) {
-                console.log(`No messages found in chat: ${receiverUsername}`);
-                return;
-            }
+
+        for (let msg = 0; msg < messageRows.length; msg++) {
             const messageRow = messageRows[msg];
             const messageText = await messageRow?.innerText();
 
             if (messageText) {
-                // Write the message text to a file
+                const isIncoming = await messageRow.evaluate((node) =>
+                    node.classList.contains("message-in")
+                );
+                const messageType = isIncoming ? "Incoming" : "Outgoing";
                 await fs.appendFile(
                     textFilePath,
-                    `Message ${msg + 1}: ${messageText}\n`,
+                    `${messageType} Message ${msg + 1}: ${messageText}\n`
                 );
-                console.log(`Message ${msg + 1} written to text file.`);
+                console.log(
+                    `${messageType} Message ${msg + 1} written to text file.`
+                );
             }
 
             if (msg % 3 === 0) {
-                // Scroll to the target row
-                await messageRows[msg].scrollIntoViewIfNeeded();
-                await page.waitForTimeout(500); // Small delay for smooth scrolling
-
-                // Take and store screenshot
+                await messageRow.scrollIntoViewIfNeeded();
+                await page.waitForTimeout(500);
                 const screenshotPath = path.join(
                     outputDir,
-                    `screenshot_${msg + 1}.png`,
+                    `${username}_${receiverUsername}_screenshot_${msg + 1}.png`
                 );
                 await page.screenshot({ path: screenshotPath });
                 console.log(`Screenshot saved for message ${msg + 1}.`);
                 screenshotPaths.push(screenshotPath);
             }
-
-            msg++; // Increment message count
         }
 
         // Upload chat text file to S3
-        const chatLogKey = `${username}/${receiverUsername}/chat_log.txt`;
+        const chatLogKey = `${username}/${receiverUsername}_chat_log.txt`;
         const chatLogURL = await uploadToS3(textFilePath, chatLogKey);
         console.log(`Chat log uploaded to S3: ${chatLogURL}`);
 
         // Upload screenshots and chat log URL to MongoDB
-
         await uploadChats(
             username,
             receiverUsername,
             screenshotPaths,
             chatLogURL,
-            "whatsapp",
+            "whatsapp"
         );
-        console.log("Finished scrolling downward and capturing screenshots.");
+        console.log("Finished capturing messages and screenshots.");
     } catch (error: any) {
         console.error(
             "Error during scrolling and screenshot capture:",
-            error.message,
+            error.message
         );
     }
 };
@@ -167,12 +177,14 @@ const whatsappScraper = async (username: string, limit: number) => {
         for (const [index, chatTile] of chatTiles.entries()) {
             let receiverUsername =
                 (await chatTile.textContent()) || `chat_${index}`;
-            receiverUsername = receiverUsername.split(":")[0];
+            receiverUsername = receiverUsername
+                .split(":")[0]
+                .replace(/[^a-zA-Z0-9_]/g, "");
             console.log(`Processing chat ${index + 1}: ${receiverUsername}`);
 
             // Click on each chat tile to open the chat
             await chatTile.click();
-            await page.waitForTimeout(2000); // Wait for chat to load
+            await page.waitForTimeout(2000); // Wait for chat to load 
 
             // Define the message container selector and output directory
             const messageContainerSelector = 'div[role="application"]';
