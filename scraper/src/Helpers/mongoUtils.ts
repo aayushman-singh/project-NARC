@@ -313,35 +313,44 @@ export async function uploadMastodon(
     platform: "mastodon"
 ): Promise<string> {
     try {
-        const profileDocument = {
-            username,
-            userId,
-            fullName: profileInfo.fullName,
-            server: profileInfo.server,
-            name: profileInfo.username,
-            timestamp: new Date(),
-            type: "mastodon-profile-info",
+        const updateDocument = {
+            $set: {
+                userId,
+                fullName: profileInfo.fullName,
+                server: profileInfo.server,
+                name: profileInfo.username,
+                lastUpdated: new Date(),
+            },
+            $setOnInsert: {
+                username,
+                timestamp: new Date(),
+                type: "mastodon-profile-info",
+            },
         };
 
         await client.connect();
         const database = client.db(`${platform}DB`);
         const collection = database.collection(`${platform}_users`);
 
-        // Use findOneAndReplace with upsert option
         const result = await collection.findOneAndUpdate(
-            { username }, // filter to find existing document
-            profileDocument, // replacement document
+            { username },
+            updateDocument,
             {
-                upsert: true, // insert if not exists
-                returnDocument: "after", // return the document after replacement/insertion
+                upsert: true,
+                returnDocument: "after",
             }
         );
 
-        // Extract and return the _id as a string
-        return result._id.toString();
+        if (!result.value) {
+            throw new Error("Failed to update/insert document");
+        }
+
+        return result.value._id.toString();
     } catch (error) {
         console.error("Error uploading profile info to MongoDB:", error);
         throw error;
+    } finally {
+        await client.close();
     }
 }
 
