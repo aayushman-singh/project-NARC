@@ -193,8 +193,12 @@ class _OnboardingScreenState extends State<OnboardingScreen> {
                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
                   child: Text(
                     text,
+                    style: TextStyle(
+                      color: Colors.white,
+                      fontSize: 18,
+                    ),
                     textAlign: TextAlign.center,
-                    style: const TextStyle(fontSize: 18),
+                   
                   ),
                 ),
                 if (isLast) // Add the "Get Started" arrow
