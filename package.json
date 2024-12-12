@@ -40,6 +40,7 @@
     "backend"
   ],
   "scripts": {
+    "start:report": "python scraper/src/routes/reports.py",
     "start:mastodon": "npx tsx  scraper/src/routes/mastodon.ts",
     "start:timeline": "npx tsx  scraper/src/routes/timeline.ts",
     "start:discord": "npx tsx  scraper/src/routes/discord.ts",

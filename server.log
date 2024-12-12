@@ -1,0 +1,70 @@
+2024-12-12 17:02:39,336 - __main__ - INFO - Starting Flask server on port 5003
+2024-12-12 17:02:40,066 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://60.70.0.69:5003
+2024-12-12 17:02:40,067 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-12 17:03:21,409 - __main__ - INFO - Executing script instagram for username aayushman2702@gmail.com
+2024-12-12 17:03:21,410 - werkzeug - INFO - 127.0.0.1 - - [12/Dec/2024 17:03:21] "[35m[1mPOST /run/instagram HTTP/1.1[0m" 500 -
+2024-12-12 17:04:33,637 - __main__ - INFO - Starting Flask server on port 5003
+2024-12-12 17:04:33,644 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://60.70.0.69:5003
+2024-12-12 17:04:33,644 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-12 17:04:37,688 - __main__ - INFO - Executing script instagram for username aayushman2702@gmail.com
+2024-12-12 17:04:37,688 - werkzeug - INFO - 127.0.0.1 - - [12/Dec/2024 17:04:37] "[35m[1mPOST /run/instagram HTTP/1.1[0m" 500 -
+2024-12-12 17:05:45,051 - __main__ - INFO - Executing script whatsapp for username aayushman2702@gmail.com
+2024-12-12 17:05:45,053 - werkzeug - INFO - 127.0.0.1 - - [12/Dec/2024 17:05:45] "[35m[1mPOST /run/whatsapp HTTP/1.1[0m" 500 -
+2024-12-12 17:06:06,075 - __main__ - ERROR - Scripts directory not found: /Users/aayushman/Documents/Repo/project-NARC/scraper/src/frontend/pdf_conv
+2024-12-12 17:06:06,075 - __main__ - INFO - Created scripts directory: /Users/aayushman/Documents/Repo/project-NARC/scraper/src/frontend/pdf_conv
+2024-12-12 17:06:06,076 - __main__ - INFO - Using scripts directory: /Users/aayushman/Documents/Repo/project-NARC/scraper/src/frontend/pdf_conv
+2024-12-12 17:06:06,076 - __main__ - INFO - Starting Flask server on port 5003
+2024-12-12 17:06:06,083 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://60.70.0.69:5003
+2024-12-12 17:06:06,083 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-12 17:06:09,414 - __main__ - INFO - Executing script whatsapp for username aayushman2702@gmail.com
+2024-12-12 17:06:09,415 - __main__ - ERROR - Script not found: /Users/aayushman/Documents/Repo/project-NARC/scraper/src/frontend/pdf_conv/whatsapp.py
+2024-12-12 17:06:09,416 - werkzeug - INFO - 127.0.0.1 - - [12/Dec/2024 17:06:09] "[35m[1mPOST /run/whatsapp HTTP/1.1[0m" 500 -
+2024-12-12 17:06:38,398 - __main__ - ERROR - Scripts directory not found: /Users/aayushman/Documents/Repo/project-NARC/scraper/frontend/pdf_conv
+2024-12-12 17:06:38,398 - __main__ - INFO - Created scripts directory: /Users/aayushman/Documents/Repo/project-NARC/scraper/frontend/pdf_conv
+2024-12-12 17:06:38,398 - __main__ - INFO - Using scripts directory: /Users/aayushman/Documents/Repo/project-NARC/scraper/frontend/pdf_conv
+2024-12-12 17:06:38,398 - __main__ - INFO - Starting Flask server on port 5003
+2024-12-12 17:06:38,405 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://60.70.0.69:5003
+2024-12-12 17:06:38,405 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-12 17:06:40,703 - __main__ - INFO - Executing script whatsapp for username aayushman2702@gmail.com
+2024-12-12 17:06:40,704 - __main__ - ERROR - Script not found: /Users/aayushman/Documents/Repo/project-NARC/scraper/frontend/pdf_conv/whatsapp.py
+2024-12-12 17:06:40,705 - werkzeug - INFO - 127.0.0.1 - - [12/Dec/2024 17:06:40] "[35m[1mPOST /run/whatsapp HTTP/1.1[0m" 500 -
+2024-12-12 17:06:48,521 - __main__ - INFO - Using scripts directory: /Users/aayushman/Documents/Repo/project-NARC/frontend/pdf_conv
+2024-12-12 17:06:48,521 - __main__ - INFO - Starting Flask server on port 5003
+2024-12-12 17:06:48,527 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://60.70.0.69:5003
+2024-12-12 17:06:48,527 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-12 17:06:50,719 - __main__ - INFO - Executing script whatsapp for username aayushman2702@gmail.com
+2024-12-12 17:06:50,720 - __main__ - INFO - Executing script: /Users/aayushman/Documents/Repo/project-NARC/frontend/pdf_conv/whatsapp.py with username: aayushman2702@gmail.com
+2024-12-12 17:06:52,500 - __main__ - ERROR - Script execution error: Traceback (most recent call last):
+  File "/Users/aayushman/Documents/Repo/project-NARC/frontend/pdf_conv/whatsapp.py", line 2, in <module>
+    from reportlab.lib import colors
+ModuleNotFoundError: No module named 'reportlab'
+
+2024-12-12 17:06:52,501 - werkzeug - INFO - 127.0.0.1 - - [12/Dec/2024 17:06:52] "[35m[1mPOST /run/whatsapp HTTP/1.1[0m" 500 -
+2024-12-12 17:08:50,434 - __main__ - INFO - Using scripts directory: /Users/aayushman/Documents/Repo/project-NARC/frontend/pdf_conv
+2024-12-12 17:08:50,434 - __main__ - INFO - Starting Flask server on port 5003
+2024-12-12 17:08:50,441 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://60.70.0.69:5003
+2024-12-12 17:08:50,441 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-12 17:08:52,252 - __main__ - INFO - Executing script whatsapp for username aayushman2702@gmail.com
+2024-12-12 17:08:52,252 - __main__ - INFO - Executing script: /Users/aayushman/Documents/Repo/project-NARC/frontend/pdf_conv/whatsapp.py with username: aayushman2702@gmail.com
+2024-12-12 17:09:25,368 - werkzeug - INFO - 127.0.0.1 - - [12/Dec/2024 17:09:25] "POST /run/whatsapp HTTP/1.1" 200 -
+2024-12-12 17:09:58,470 - __main__ - INFO - Executing script whatsapp for username 9650593099
+2024-12-12 17:09:58,471 - __main__ - INFO - Executing script: /Users/aayushman/Documents/Repo/project-NARC/frontend/pdf_conv/whatsapp.py with username: 9650593099
+2024-12-12 17:10:29,716 - werkzeug - INFO - 127.0.0.1 - - [12/Dec/2024 17:10:29] "POST /run/whatsapp HTTP/1.1" 200 -
