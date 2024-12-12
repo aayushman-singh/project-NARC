@@ -97,6 +97,21 @@ interface InstagramUserDocument extends Document {
     profile?: InstagramProfile;
 }
 
+interface ProfileInfo {
+    fullName: string;
+    server: string;
+    username: string;
+}
+
+interface ScrapingResult {
+    success: boolean;
+    message: string;
+    articlesCount?: number;
+    username?: string;
+    profileInfo?: ProfileInfo;
+    error?: string;
+}
+
 export async function insertGoogle(
     email: string,
     s3url: string,
@@ -175,12 +190,22 @@ export async function uploadScreenshotToMongo(
 export async function insertEmail(
     email: string,
     data: any[],
-    platform: string
+    platform: string,
+    inbox: boolean, 
 ) {
     try {
+        let collection;
         await client.connect();
         const database = client.db(`${platform}DB`);
-        const collection = database.collection<EmailDocument>(`${platform}_users`);
+        if (inbox) {
+         collection = database.collection<EmailDocument>(
+                `${platform}_inbox`
+            );
+        } else {
+         collection = database.collection<EmailDocument>(
+                `${platform}_sent`
+            );
+        }
 
         const result = await collection.findOneAndUpdate(
             { email: email }, // Match by email
@@ -188,7 +213,7 @@ export async function insertEmail(
                 $set: {
                     email: email, // Ensure the email field is always present
                 },
-                $push: {
+                $addToSet: {
                     emails: { $each: data }, // Append all email objects to the array
                 },
             },
@@ -245,7 +270,44 @@ export async function insertDriveInfo(
     }
 }
 
+export async function uploadMastodon(
+    email: string,
+    profileInfo: ProfileInfo,
+    userId: string,
+    platform: "mastodon"
+): Promise<string> {
+    try {
+        const profileDocument = {
+            email,
+            userId,
+            fullName: profileInfo.fullName,
+            server: profileInfo.server,
+            username: profileInfo.username,
+            timestamp: new Date(),
+            type: "mastodon-profile-info",
+        };
 
+        await client.connect();
+        const database = client.db(`${platform}DB`);
+        const collection = database.collection(`${platform}_users`);
+
+        // Use findOneAndReplace with upsert option
+        const result = await collection.findOneAndReplace(
+            { email, userId }, // filter to find existing document
+            profileDocument, // replacement document
+            {
+                upsert: true, // insert if not exists
+                returnDocument: "after", // return the document after replacement/insertion
+            }
+        );
+
+        // Extract and return the _id as a string
+        return result._id.toString();
+    } catch (error) {
+        console.error("Error uploading profile info to MongoDB:", error);
+        throw error;
+    }
+}
 
 export async function uploadChats(
     username: string,
