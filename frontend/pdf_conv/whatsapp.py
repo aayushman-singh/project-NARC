@@ -188,6 +188,32 @@ class WhatsAppDataReport:
         except Exception as e:
             print(f"Error reading chat log {file_path}: {str(e)}")
             return "Error reading chat content"
+        
+    def format_screenshots_section(self, chats):
+        """Format screenshots section for the report."""
+        story = []
+        story.append(Paragraph("VISUAL EVIDENCE", self.styles['SectionHeader']))
+        story.append(Spacer(1, 20))
+
+        for chat_idx, chat in enumerate(chats, 1):
+            if chat.get('screenshots'):
+                story.append(Paragraph(f"Communication #{chat_idx} - Participant: {chat['receiverUsername']}", self.styles['DataHeader']))
+                story.append(Spacer(1, 10))
+                
+                for screen_idx, screenshot_url in enumerate(chat['screenshots'], 1):
+                    local_path = self.download_file(screenshot_url)
+                    if local_path and local_path.endswith(('.jpg', '.jpeg', '.png')):
+                        img = Image(local_path, width=6*inch, height=4*inch)
+                        story.append(img)
+                        story.append(Paragraph(
+                            f"Evidence ID: SCRN-{datetime.now().strftime('%Y%m%d')}-{chat_idx}-{screen_idx}",
+                            self.styles['EvidenceLabel']
+                        ))
+                        story.append(Spacer(1, 20))
+                
+                story.append(PageBreak())
+
+        return story    
 
     def format_chat_section(self, chats):
         """Format chats section for the report."""
@@ -270,15 +296,16 @@ class WhatsAppDataReport:
             story.append(PageBreak())
 
             # Evidence Index
-            story.append(Paragraph("EVIDENCE INDEX", self.styles['SectionHeader']))
             story.append(Paragraph("1. Subject Information", self.styles['DataHeader']))
-            story.append(Paragraph("2. Communications (Chat History)", self.styles['DataHeader']))
-            story.append(Paragraph("3. Visual Evidence (Screenshots)", self.styles['DataHeader']))
-            story.append(PageBreak())
+            story.append(Paragraph("2. Visual Evidence (Screenshots)", self.styles['DataHeader']))
+            story.append(Paragraph("3. Communications (Chat History)", self.styles['DataHeader']))
 
             # Add Chats Section
             if user_data.get('chats'):
-                story.extend(self.format_chat_section(user_data['chats']))
+            # First add screenshots
+             story.extend(self.format_screenshots_section(user_data['chats']))
+            # Then add chat logs
+            story.extend(self.format_chat_section(user_data['chats']))
 
             # Add footer to each page
             def add_page_number(canvas, doc):
