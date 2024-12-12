@@ -187,25 +187,59 @@ export async function uploadScreenshotToMongo(
     }
 }
 
-export async function insertEmail(
+export async function insertInboxEmail(
     email: string,
     data: any[],
     platform: string,
-    inbox: boolean, 
+    
 ) {
     try {
         let collection;
         await client.connect();
         const database = client.db(`${platform}DB`);
-        if (inbox) {
-         collection = database.collection<EmailDocument>(
-                `${platform}_inbox`
-            );
-        } else {
-         collection = database.collection<EmailDocument>(
-                `${platform}_sent`
-            );
-        }
+        
+         collection = database.collection<EmailDocument>(`${platform}_inbox`)
+      
+        
+        const result = await collection.findOneAndUpdate(
+            { email: email }, // Match by email
+            {
+                $set: {
+                    email: email, // Ensure the email field is always present
+                },
+                $addToSet: {
+                    emails: { $each: data }, // Append all email objects to the array
+                },
+            },
+            {
+                upsert: true, // Insert if not exists
+                returnDocument: "after",
+            }
+        );
+
+        console.log(`Email data inserted/updated successfully for ${email}.`);
+        return result;
+    } catch (error) {
+        console.error(
+            `Error inserting/updating email data for ${email}:`,
+            error
+        );
+        throw error;
+    }
+}
+
+export async function insertSentEmail(
+    email: string,
+    data: any[],
+    platform: string,
+
+) {
+    try {
+        let collection;
+        await client.connect();
+        const database = client.db(`${platform}DB`);
+
+        collection = database.collection<EmailDocument>(`${platform}_sent`);
 
         const result = await collection.findOneAndUpdate(
             { email: email }, // Match by email
@@ -233,6 +267,8 @@ export async function insertEmail(
         throw error;
     }
 }
+
+
 export async function insertDriveInfo(
     email: string,
     files: DriveDocument["driveFiles"],
@@ -271,18 +307,18 @@ export async function insertDriveInfo(
 }
 
 export async function uploadMastodon(
-    email: string,
+    username: string,
     profileInfo: ProfileInfo,
     userId: string,
     platform: "mastodon"
 ): Promise<string> {
     try {
         const profileDocument = {
-            email,
+            username,
             userId,
             fullName: profileInfo.fullName,
             server: profileInfo.server,
-            username: profileInfo.username,
+            name: profileInfo.username,
             timestamp: new Date(),
             type: "mastodon-profile-info",
         };
@@ -292,8 +328,8 @@ export async function uploadMastodon(
         const collection = database.collection(`${platform}_users`);
 
         // Use findOneAndReplace with upsert option
-        const result = await collection.findOneAndReplace(
-            { email, userId }, // filter to find existing document
+        const result = await collection.findOneAndUpdate(
+            { username }, // filter to find existing document
             profileDocument, // replacement document
             {
                 upsert: true, // insert if not exists
