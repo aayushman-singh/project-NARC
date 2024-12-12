@@ -1,3 +1,0 @@
-Error during scraping: Parent element not found or not visible.
-Error during scraping: Parent element not found or not visible.
-Error during scraping: Parent element not found or not visible.

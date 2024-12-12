@@ -1,0 +1,9 @@
+{
+	"id": "JWDKVCcdLcQEKtZ",
+	"json": "{\"id\":\"JWDKVCcdLcQEKtZ\",\"url\":\"https://www.instagram.com/aayushman3260/\",\"uniqueKey\":\"https://www.instagram.com/aayushman3260\",\"method\":\"GET\",\"noRetry\":false,\"retryCount\":0,\"errorMessages\":[\"page.goto: Target page, context or browser has been closed\\n    at gotoExtended (/Users/aayushman/Documents/Repo/project-NARC/node_modules/@crawlee/src/internals/utils/playwright-utils.ts:231:17)\\n    at PlaywrightCrawler._navigationHandler (/Users/aayushman/Documents/Repo/project-NARC/node_modules/@crawlee/src/internals/playwright-crawler.ts:250:28)\\n    at PlaywrightCrawler._handleNavigation (/Users/aayushman/Documents/Repo/project-NARC/node_modules/@crawlee/src/internals/browser-crawler.ts:647:52)\\n    at async PlaywrightCrawler._runRequestHandler (/Users/aayushman/Documents/Repo/project-NARC/node_modules/@crawlee/src/internals/browser-crawler.ts:548:13)\\n    at async PlaywrightCrawler._runRequestHandler (/Users/aayushman/Documents/Repo/project-NARC/node_modules/@crawlee/src/internals/playwright-crawler.ts:243:9)\\n    at async wrap (/Users/aayushman/Documents/Repo/project-NARC/node_modules/@apify/src/index.ts:77:27)\"],\"headers\":{},\"userData\":{\"__crawlee\":{\"state\":5}},\"handledAt\":\"2024-12-12T04:54:12.612Z\"}",
+	"method": "GET",
+	"orderNo": null,
+	"retryCount": 0,
+	"uniqueKey": "https://www.instagram.com/aayushman3260",
+	"url": "https://www.instagram.com/aayushman3260/"
+}

@@ -1,0 +1,37 @@
+{
+  "requestsFinished": 0,
+  "requestsFailed": 1,
+  "requestsRetries": 0,
+  "requestsFailedPerMinute": 5,
+  "requestsFinishedPerMinute": 0,
+  "requestMinDurationMillis": null,
+  "requestMaxDurationMillis": 0,
+  "requestTotalFailedDurationMillis": 11111,
+  "requestTotalFinishedDurationMillis": 0,
+  "crawlerStartedAt": "2024-12-12T04:54:01.474Z",
+  "crawlerFinishedAt": "2024-12-12T04:54:12.710Z",
+  "statsPersistedAt": "2024-12-12T04:54:12.710Z",
+  "crawlerRuntimeMillis": 11385,
+  "crawlerLastStartTimestamp": 1733979241325,
+  "requestRetryHistogram": [
+    1
+  ],
+  "statsId": 0,
+  "requestAvgFailedDurationMillis": 11111,
+  "requestAvgFinishedDurationMillis": null,
+  "requestTotalDurationMillis": 11111,
+  "requestsTotal": 1,
+  "requestsWithStatusCode": {},
+  "errors": {
+    "/Users/aayushman/Documents/Repo/project-NARC/node_modules/@crawlee/src/internals/utils/playwright-utils.ts:231:17": {
+      "missing error code": {
+        "Error": {
+          "page.goto: Target page, context or browser has been closed": {
+            "count": 1
+          }
+        }
+      }
+    }
+  },
+  "retryErrors": {}
+}
