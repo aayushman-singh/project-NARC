@@ -136,7 +136,7 @@ export const scrapeDiscord = async (username:string, password:string) => {
 
                         await page.waitForTimeout(1000);
                     }
-                    const s3Key = `${username}/${recipientUsername}_chat_logs`;
+                    const s3Key = `${username}/${recipientUsername}_chat_logs.txt`;
                     const s3Url = await uploadToS3(logFilePath, s3Key);
                     await uploadChats(
                         username,

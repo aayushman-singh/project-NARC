@@ -142,7 +142,7 @@ const outputFile = path.join(
         console.log(`Final log written to ${outputFile}`);
 
         // Upload to S3 and MongoDB
-        const s3url = await uploadToS3(outputFile, `${email}_activity_google`);
+        const s3url = await uploadToS3(outputFile, `${email}_activity.txt`);
         fs.unlinkSync(outputFile);
 
         const result = await insertGoogle(email, s3url, "google");
