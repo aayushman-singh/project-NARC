@@ -158,7 +158,7 @@ const outputFile = path.join(
         fs.unlinkSync(outputFile);
 
         const result = await insertGoogle(email, s3url, "google");
-        updateUserHistory(userId, email, result, 'google')
+        await updateUserHistory(userId, email, result, 'google')
         console.log("Upload complete:", result);
     } catch (error) {
         console.error("An error occurred:", error);
