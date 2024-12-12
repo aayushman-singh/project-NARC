@@ -6,7 +6,6 @@ import {
   ExternalLink,
   Image as ImageIcon,
 } from "lucide-react";
-import axios from "axios";
 
 const TelegramChat = ({ chat, index }) => {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
@@ -14,7 +13,6 @@ const TelegramChat = ({ chat, index }) => {
   const [chatLogs, setChatLogs] = useState(null); // Stores chat logs
   const [isLogsLoading, setIsLogsLoading] = useState(false); // Indicates loading state
   const [isChatLogsVisible, setIsChatLogsVisible] = useState(false); // Controls visibility of chat logs
-  const [selectedLanguage, setSelectedLanguage] = useState("en"); // Default to English
 
   const toggleMedia = () => setIsMediaExpanded(!isMediaExpanded);
 
@@ -27,20 +25,14 @@ const TelegramChat = ({ chat, index }) => {
       setIsChatLogsVisible(false);
       return;
     }
-
     try {
       setIsLogsLoading(true);
       const response = await fetch(chat.logs);
-
       if (!response.ok) {
         throw new Error(`Failed to fetch chat logs: ${response.statusText}`);
       }
-
       const text = await response.text();
-
-      // Translate the logs
-      const translatedLogs = await translateText(text, selectedLanguage);
-      setChatLogs(translatedLogs);
+      setChatLogs(text);
       setIsChatLogsVisible(true); // Make logs visible
     } catch (error) {
       console.error(error.message);
@@ -50,22 +42,6 @@ const TelegramChat = ({ chat, index }) => {
       setIsLogsLoading(false);
     }
   };
-
-  const translateText = async (text, targetLanguage) => {
-    const apiKey = "AIzaSyCwqziN0xQTJUXtPRACkRwpMLrbY9P2uHg";
-    const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
-    try {
-      const response = await axios.post(url, {
-        q: text,
-        target: targetLanguage,
-      });
-      return response.data.data.translations[0].translatedText;
-    } catch (error) {
-      console.error("Translation failed:", error);
-      return "Translation failed. Please try again.";
-    }
-  };
-
   return (
     <div className="bg-gradient-to-br from-blue-900 to-gray-800 p-6 rounded-xl shadow-lg mt-6 border border-blue-700/20">
       <div className="flex items-center justify-between mb-6">
@@ -79,17 +55,6 @@ const TelegramChat = ({ chat, index }) => {
             {chat.receiverUsername}
           </h3>
         </div>
-        <select
-          value={selectedLanguage}
-          onChange={(e) => setSelectedLanguage(e.target.value)}
-          className="bg-gray-700 text-white text-sm rounded-lg p-2"
-        >
-          <option value="en">English</option>
-          <option value="hi">Hindi</option>
-          <option value="es">Marathi</option>
-          <option value="fr">French</option>
-          {/* Add more languages as needed */}
-        </select>
       </div>
 
       <div className="space-y-4">
@@ -155,10 +120,13 @@ const TelegramChat = ({ chat, index }) => {
           </button>
           <a
             href={chat.logs}
+            className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors duration-200 group"
             target="_blank"
             rel="noopener noreferrer"
             className="text-blue-400 hover:text-blue-300 text-sm transition-colors duration-200"
           >
+            <span className="font-medium">View Chat History</span>
+            <ExternalLink className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
             Open Chat Log
           </a>
         </div>
@@ -176,7 +144,6 @@ const TelegramChat = ({ chat, index }) => {
           )}
         </div>
       )}
-
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
@@ -202,4 +169,14 @@ const TelegramChat = ({ chat, index }) => {
   );
 };
 
-export default TelegramChat;
+const TelegramChats = ({ chats }) => {
+  return (
+    <div className="space-y-6">
+      {chats.map((chat, index) => (
+        <TelegramChat key={index} chat={chat} index={index} />
+      ))}
+    </div>
+  );
+};
+
+export default TelegramChats;

@@ -14,6 +14,7 @@ import GoogleDriveFileExplorer from "./components/services/GoogleDrive"
 import { useRoutes } from "react-router-dom";
 import ProfilePage from "./components/profile";
 import ChatbotAvatar from "./components/chatbot/chatbotAvatar"
+import UserActivity from "./components/UserActivity";
 function App() {
   const routesArray = [
     {
@@ -59,6 +60,10 @@ function App() {
     {
       path: "/google",
       element: <GoogleDriveFileExplorer/>,
+    },
+    {
+      path: "/activity",
+      element: <UserActivity/>,
     },
    
   ];
