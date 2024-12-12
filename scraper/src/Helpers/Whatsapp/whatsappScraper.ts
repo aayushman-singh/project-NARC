@@ -23,7 +23,7 @@ const scrollChatWithLogging = async (
         let totalMessageCount = 0;
         let attempt = 0;
 
-        while (totalMessageCount < (limit/2)) {
+        while (totalMessageCount < limit) {
             while (attempt < 10) {
                 const messageRows = await page.$$(
                     messageContainerSelector +
@@ -34,7 +34,7 @@ const scrollChatWithLogging = async (
                 if (newMessageCount > totalMessageCount) {
                     const messagesToLoad = Math.min(
                         newMessageCount - totalMessageCount,
-                        (limit/2) - totalMessageCount
+                        limit - totalMessageCount
                     );
 
                     console.log(
@@ -150,7 +150,7 @@ const whatsappScraper = async (username: string, limit: number) => {
         await page.goto("https://web.whatsapp.com/", {
             waitUntil: "networkidle",
         });
-        await page.waitForTimeout(60000); // Add a 10-second delay
+        await page.waitForTimeout(30000); // Add a 10-second delay
 
         // Wait for QR code scan only if cookies are not loaded
         if (!(await page.$('div[aria-label="Chat list"]'))) {
