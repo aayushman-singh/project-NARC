@@ -18,7 +18,7 @@ import DiscordChat from "./Discord";
 import "./style.css";
 import WhatsAppChats from "./Whatsapp";
 import TelegramChats from "./Telegram";
-import GmailChats from "./Gmail";
+import GmailChats from "./GmailIn";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Input } from "@/components/ui/input";
 import { Button } from "@/components/ui/button";
@@ -29,7 +29,7 @@ import { CalendarIcon } from 'lucide-react';
 import GoogleDriveUsers from "./GoogleDrive"
 import FacebookData from "./Facebook";
 import RenderInstagramData from "./Instagram";
-import GmailUsers from "./Gmail";
+import GmailInUsers from "./GmailIn";
 import GoogleSection from "./GoogleSection"
 import TimelineDataViewer from "./Timeline";
 import TwitterDataDisplay from "./Twitter"
@@ -52,6 +52,8 @@ const[timelineData , setTimelineData] = useState(null);
   const [googleSearchDateRange, setGoogleSearchDateRange] = useState({ from: null, to: null });
   const [youtubeHistoryDateRange, setYoutubeHistoryDateRange] = useState({ from: null, to: null });
   const [email, setEmail] = useState("");
+  const[ gmailInData, setGmailInData] = useState(null);
+  const[ gmailOutData, setGmailIOutData] = useState(null);
   const[youtubeEmail, setYoutubeEmail] = useState("");
   const [alert, setAlert] = useState({
     visible: false,
@@ -206,7 +208,7 @@ const handleGoogleDrive = async (email) => {
       x: 3003,
       telegram: 3005,
       instagram: 3001,
-      gmail: 3006,
+      
       drive: 3009,
       google: 3007,
       youtube: 3008 ,
@@ -373,7 +375,62 @@ const handleGoogleDrive = async (email) => {
   
 
  
-
+  const handleGmailShowDetails = async (type) => {
+    const port = 3006; // Fixed port for Gmail
+    const platformConfig = {
+      gmailIn: "/gmailIn/users/",
+      gmailOut: "/gmailOut/users/",
+    };
+  
+    // Validate email input
+    const gmailInput = document.getElementById("gmailInput");
+    if (!gmailInput || !gmailInput.value.trim()) {
+      console.error("Email is required for Gmail");
+      showAlert("Please enter an email", "error");
+      return;
+    }
+  
+    const emailValue = gmailInput.value.trim();
+  
+    // Determine the correct endpoint based on the type
+    const endpoint = platformConfig[type];
+    if (!endpoint) {
+      console.error(`Unsupported Gmail type: ${type}`);
+      showAlert("Invalid Gmail type selected", "error");
+      return;
+    }
+  
+    setIsLoading(true);
+  
+    try {
+      const response = await fetch(
+        `http://localhost:${port}${endpoint}${emailValue}`
+      );
+  
+      if (!response.ok) {
+        const errorDetails = await response.text();
+        console.error(`Failed to fetch Gmail ${type} data:`, errorDetails);
+        throw new Error(`Failed to fetch Gmail ${type} data: ${errorDetails}`);
+      }
+  
+      const data = await response.json();
+  
+      // Update state based on the Gmail type
+      if (type === "gmailIn") {
+        setGmailInData(data);
+      } else if (type === "gmailOut") {
+        setGmailOutData(data);
+      }
+  
+      setShowDetails(true);
+      showAlert(`${type} data fetched successfully`, "success");
+    } catch (error) {
+      console.error(`Error fetching ${type} data:`, error);
+      showAlert("Failed to fetch Gmail data. Please try again.", "error");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   
   
 
@@ -1281,11 +1338,16 @@ const handleGoogleDrive = async (email) => {
           <div className="mt-4">
             <label className="text-gray-400 text-sm">Email Address</label>
             <input
-              type="email"
-              onChange={(e) => setEmail(e.target.value)}
+          
+             id="gmailInput"
+             type="email"
+             onChange={(e) => setEmail(e.target.value)}
+             placeholder="Enter your email"
+             className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
+           />
               placeholder="Enter your email"
               className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-            />
+          
           </div>
           <div className="flex items-center">
             Max emails:
@@ -1306,18 +1368,28 @@ const handleGoogleDrive = async (email) => {
               Submit
             </button>
             <button
-              onClick={() => handleShowDetails("gmail")}
-              className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-            >
-              Show Details
-            </button>
+  onClick={() => handleGmailShowDetails("gmailIn")}
+  className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+>
+  Show Gmail Inbox
+</button>
+<button
+  onClick={() => handleGmailShowDetails("gmailOut")}
+  className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
+>
+  Show Gmail Sent
+</button>
+
           </div>
-          {gmailData && showDetails && (
-            <div className="mt-6">
-              <h3 className="text-xl font-semibold text-blue-300 mb-4">Chats</h3>
-              <GmailUsers users={[gmailData]} />
-            </div>
-          )}
+          {gmailInData && gmailInData.emails && Array.isArray(gmailInData.emails) && (
+  <div className="mt-6">
+    <h3 className="text-xl font-semibold text-blue-300 mb-4">Chats</h3>
+    <GmailInUsers users={[gmailInData]} />
+  </div>
+)}
+
+
+
         </div>
       </TabsContent>
       {/* Google Drive Tab */}
