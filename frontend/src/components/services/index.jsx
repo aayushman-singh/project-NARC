@@ -103,8 +103,11 @@ const Services = () => {
       showAlert("Please select both from and to dates");
       return;
     }
-  
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+
+    const userId = userInfo ? userInfo._id : "";
     const payload = {
+      id: userId,
       email: emailInputElement.value.trim(),
       range: {
         from: format(dateRange.from, "dd-MM-yyyy"),
@@ -159,37 +162,40 @@ const Services = () => {
   const handleGmail = async (email) => {
     const dropdownElement = document.getElementById(`gmailDropdown`);
     const limit = parseInt(dropdownElement.value, 10);
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    const userId = userInfo ? userInfo._id : "";
 
-     try {
-       const response = await fetch("http://localhost:3006/auth-url", {
-         method: "POST",
-         headers: { "Content-Type": "application/json" },
-         body: JSON.stringify({ email, limit }),
-       });
+    try {
+        const response = await fetch("http://localhost:3006/auth-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, limit, userId }), // Added userId here
+        });
+        const data = await response.json();
+        window.open(data.authUrl, "_blank");
+    } catch (error) {
+        console.error("Error initiating Gmail flow:", error);
+    }
+};
 
-       const data = await response.json();
-       window.open(data.authUrl, "_blank");
-     } catch (error) {
-       console.error("Error initiating Gmail flow:", error);
-     }
-  };
-  const handleGoogleDrive = async (email) => {
+const handleGoogleDrive = async (email) => {
     const dropdownElement = document.getElementById(`googleDriveDropdown`);
     const limit = parseInt(dropdownElement.value, 10);
-  
+    const userInfo = JSON.parse(localStorage.getItem("userInfo"));
+    const userId = userInfo ? userInfo._id : "";
+
     try {
-      const response = await fetch("http://localhost:3009/auth-url", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ email, limit }),
-      });
-  
-      const data = await response.json();
-      window.open(data.authUrl, "_blank");
+        const response = await fetch("http://localhost:3009/auth-url", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ email, limit, userId }), // Added userId here
+        });
+        const data = await response.json();
+        window.open(data.authUrl, "_blank");
     } catch (error) {
-      console.error("Error initiating Google Drive flow:", error);
+        console.error("Error initiating Google Drive flow:", error);
     }
-  };
+};
   
   const handleShowDetails = async (platform, requiresPassword = false) => {
     const platformConfig = {

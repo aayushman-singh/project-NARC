@@ -1,0 +1,5 @@
+Error: browserType.connectOverCDP: Timeout 30000ms exceeded.
+Call log:
+[2m  - <ws preparing> retrieving websocket url from http://localhost:9223[22m
+[2m  - <ws connecting> ws://localhost:9223/devtools/browser/21bc2d26-f365-4ac8-bbdc-3a4a1f8f627e[22m
+[2m  - <ws connected> ws://localhost:9223/devtools/browser/21bc2d26-f365-4ac8-bbdc-3a4a1f8f627e[22m
