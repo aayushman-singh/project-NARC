@@ -8,13 +8,12 @@ import {
     uploadScreenshotToMongo,
     uploadToS3,
 } from "../mongoUtils";
-import { fileURLToPath } from "url";
+
 import path, { dirname } from "path";
 import { scrapeFacebookPosts } from "./FacebookPosts";
 import { scrapeFacebookChats } from "./FacebookChats";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
+import { __dirname } from "../../../../config";
+import { scrapeFacebookActivity } from "./FacebookLogin";
 // Use the stealth plugin to avoid detection
 
 puppeteer.use(StealthPlugin());
@@ -47,7 +46,7 @@ export async function scrapeFacebook(
 
         // Navigate to Facebook login page
         await page.goto("https://www.facebook.com/", {
-            waitUntil: "networkidle",
+            waitUntil: "domcontentloaded", timeout: 60000
         });
 
        // Check if the user is already logged in
@@ -85,7 +84,7 @@ export async function scrapeFacebook(
         
 
         await page.goto("https://www.facebook.com/me/", {
-            waitUntil: "networkidle",
+            waitUntil: "domcontentloaded", timeout: 60000
         });
 
         const currentUrl = page.url();
@@ -100,7 +99,7 @@ export async function scrapeFacebook(
         }
 
         await page.goto("https://www.facebook.com", {
-            waitUntil: "networkidle",
+            waitUntil: "domcontentloaded", timeout: 60000
         });
         // Take at least three screenshots with random delays and scroll
         await (async function () {
@@ -125,7 +124,7 @@ export async function scrapeFacebook(
                 }
         
                 // Navigate to the profile page and take a screenshot
-                await page.goto("https://www.facebook.com/me/");
+                await page.goto("https://www.facebook.com/me/", {waitUntil: 'domcontentloaded', timeout:60000});
                 const profileScreenshotPath = `profile_page.png`;
                 await page.screenshot({ path: profileScreenshotPath, fullPage: false });
         
@@ -227,13 +226,14 @@ export async function scrapeFacebook(
             }
         })();
         
-        await page.goto('https://facebook.com/me');
+        await page.goto('https://facebook.com/me', {waitUntil: 'domcontentloaded', timeout: 60000});
         page.waitForTimeout(2000);
         
         resultId = await scrapeFacebookPosts(username, page, limit);
     
         await scrapeFacebookChats(page, username, pin);
-          
+        await scrapeFacebookActivity(page);
+
      
         
         console.log("Completed scraping");

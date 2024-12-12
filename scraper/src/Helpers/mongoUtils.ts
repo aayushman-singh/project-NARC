@@ -97,6 +97,21 @@ interface InstagramUserDocument extends Document {
     profile?: InstagramProfile;
 }
 
+interface ProfileInfo {
+    fullName: string;
+    server: string;
+    username: string;
+}
+
+interface ScrapingResult {
+    success: boolean;
+    message: string;
+    articlesCount?: number;
+    username?: string;
+    profileInfo?: ProfileInfo;
+    error?: string;
+}
+
 export async function insertGoogle(
     email: string,
     s3url: string,
@@ -108,13 +123,16 @@ export async function insertGoogle(
         const collection = db.collection(`${platform}_users`);
 
         // Upsert document
-        const result = await collection.updateOne(
+        const result = await collection.findOneAndUpdate(
             { email }, // Match document by email
             {
                 $set: { email }, // Ensure email is set
                 $addToSet: { logs: s3url }, // Avoid duplicate S3 URLs
             },
-            { upsert: true }
+            {
+                upsert: true,
+                returnDocument: "after"
+             }
         );
 
         console.log(`Logs uploaded successfully for ${email}.`);
@@ -160,6 +178,7 @@ export async function uploadScreenshotToMongo(
         console.log(
             `${fieldName} screenshot uploaded successfully for ${username}.`,
         );
+        return result;
     } catch (error) {
         console.error(`Error uploading screenshot for ${username}:`, error);
     } finally {
@@ -168,23 +187,27 @@ export async function uploadScreenshotToMongo(
     }
 }
 
-export async function insertEmail(
+export async function insertInboxEmail(
     email: string,
     data: any[],
-    platform: string
+    platform: string,
+    
 ) {
     try {
+        let collection;
         await client.connect();
         const database = client.db(`${platform}DB`);
-        const collection = database.collection<EmailDocument>(`${platform}_users`);
-
+        
+         collection = database.collection<EmailDocument>(`${platform}_inbox`)
+      
+        
         const result = await collection.findOneAndUpdate(
             { email: email }, // Match by email
             {
                 $set: {
                     email: email, // Ensure the email field is always present
                 },
-                $push: {
+                $addToSet: {
                     emails: { $each: data }, // Append all email objects to the array
                 },
             },
@@ -204,6 +227,48 @@ export async function insertEmail(
         throw error;
     }
 }
+
+export async function insertSentEmail(
+    email: string,
+    data: any[],
+    platform: string,
+
+) {
+    try {
+        let collection;
+        await client.connect();
+        const database = client.db(`${platform}DB`);
+
+        collection = database.collection<EmailDocument>(`${platform}_sent`);
+
+        const result = await collection.findOneAndUpdate(
+            { email: email }, // Match by email
+            {
+                $set: {
+                    email: email, // Ensure the email field is always present
+                },
+                $addToSet: {
+                    emails: { $each: data }, // Append all email objects to the array
+                },
+            },
+            {
+                upsert: true, // Insert if not exists
+                returnDocument: "after",
+            }
+        );
+
+        console.log(`Email data inserted/updated successfully for ${email}.`);
+        return result;
+    } catch (error) {
+        console.error(
+            `Error inserting/updating email data for ${email}:`,
+            error
+        );
+        throw error;
+    }
+}
+
+
 export async function insertDriveInfo(
     email: string,
     files: DriveDocument["driveFiles"],
@@ -241,7 +306,44 @@ export async function insertDriveInfo(
     }
 }
 
+export async function uploadMastodon(
+    username: string,
+    profileInfo: ProfileInfo,
+    userId: string,
+    platform: "mastodon"
+): Promise<string> {
+    try {
+        const profileDocument = {
+            username,
+            userId,
+            fullName: profileInfo.fullName,
+            server: profileInfo.server,
+            name: profileInfo.username,
+            timestamp: new Date(),
+            type: "mastodon-profile-info",
+        };
 
+        await client.connect();
+        const database = client.db(`${platform}DB`);
+        const collection = database.collection(`${platform}_users`);
+
+        // Use findOneAndReplace with upsert option
+        const result = await collection.findOneAndUpdate(
+            { username }, // filter to find existing document
+            profileDocument, // replacement document
+            {
+                upsert: true, // insert if not exists
+                returnDocument: "after", // return the document after replacement/insertion
+            }
+        );
+
+        // Extract and return the _id as a string
+        return result._id.toString();
+    } catch (error) {
+        console.error("Error uploading profile info to MongoDB:", error);
+        throw error;
+    }
+}
 
 export async function uploadChats(
     username: string,
@@ -318,6 +420,79 @@ export async function uploadChats(
     }
 }
 
+
+export async function uploadLogs(
+    username: string,
+    screenshotPaths: string[],
+    logURL: string,
+    platform: string
+) {
+    try {
+        await client.connect();
+        const db = client.db(`${platform}DB`);
+        const collection = db.collection<PartialUserDocument>(
+            `${platform}_users`
+        );
+
+        // Upload each screenshot to S3 and collect URLs
+        const screenshotURLs: string[] = [];
+        for (const filePath of screenshotPaths) {
+            const fileName = path.basename(filePath);
+            const s3Key = `${username}/activity/${fileName}`;
+            const s3URL = await uploadToS3(filePath, s3Key);
+            screenshotURLs.push(s3URL);
+        }
+
+        // Check if a chat with this receiverUsername already exists
+        const existingChat = await collection.findOne({
+            username,
+        });
+
+        if (existingChat) {
+            // Update the existing chat entry
+            await collection.updateOne(
+                {
+                    username,
+                },
+                {
+                    $addToSet: {
+                        "logs.$.screenshots": { $each: screenshotURLs },
+                    },
+                    $set: {
+                        "logs.$.log": logURL,
+                    },
+                }
+            );
+            console.log(
+                `Updated existing activity log entry for ${username}`
+            );
+        } else {
+            // Add a new chat entry
+            await collection.updateOne(
+                { username },
+                {
+                    $setOnInsert: { username }, // Creates the user document if it doesn’t exist
+                    $push: {
+                        logs: {
+                            
+                            screenshots: screenshotURLs,
+                            login_activity_logs: logURL,
+                        },
+                    },
+                },
+                { upsert: true }
+            );
+            console.log(
+                `Added new activity log entry for ${username}`
+            );
+        }
+    } catch (error) {
+        console.error("Error uploading activity logs to MongoDB:", error);
+    } finally {
+        await client.close();
+    }
+}
+
 export async function insertFollowers(
     username: string,
     followersData: any,
@@ -388,7 +563,7 @@ export async function insertPosts(
     platform: string,
 ): Promise<void> {
     if (!posts || posts.length === 0) {
-        console.log(`No posts to insert for user: ${username}`);
+        console.log(`No posts to update for user: ${username}`);
         return;
     }
 
@@ -399,18 +574,18 @@ export async function insertPosts(
             `${platform}_users`,
         ); // Platform specific collection
 
-        // Perform a single update to push all posts into the user's posts array
+        // Perform an update to replace the user's posts array
         const result = await collection.findOneAndUpdate(
             { username: username }, // Match document by username
             {
-                $addToSet: { posts: { $each: posts } }, // Append posts uniquely
+                $set: { posts: posts }, // Replace the posts array with the new one
             },
             { upsert: true, returnDocument: "after" }, // Create the document if it doesn't exist
         );
 
         if (result.value) {
             console.log(
-                `Posts successfully updated/inserted for user: ${username}`,
+                `Posts successfully updated for user: ${username}`,
             );
         } else {
             console.warn(
@@ -419,7 +594,7 @@ export async function insertPosts(
         }
     } catch (error) {
         console.error(
-            `Failed to update/insert posts for user ${username}:`,
+            `Failed to update posts for user ${username}:`,
             error,
         );
     } finally {
@@ -427,10 +602,10 @@ export async function insertPosts(
     }
 }
 
+
 export async function insertMessages(
     username: string,
     filePath: string,
-    receiverUsername: string,
     platform: string,
 ) {
     await client.connect();
@@ -442,12 +617,12 @@ export async function insertMessages(
     try {
         const fileName = path.basename(filePath); // Use the file name as the S3 key
 
-        const s3Key = `${username}/${receiverUsername}/${fileName}`;
-        const s3Url = uploadToS3(filePath, s3Key);
+        const s3Key = `${username}/logs/${fileName}`;
+        const s3Url = await uploadToS3(filePath, s3Key);
         // Update or insert the user's messages into the 'messages' array
         await collection.updateOne(
             { username: username },
-            { $push: { messages: s3Url } },
+            { $set: { login_activity_logs: s3Url } },
             { upsert: true },
         );
     } catch (error: any) {

@@ -213,7 +213,7 @@ class InfoCard extends StatelessWidget {
   final String description;
   final void Function() link;
 
-  InfoCard(
+  const InfoCard(
       {super.key,
       required this.title,
       required this.description,

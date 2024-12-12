@@ -39,6 +39,16 @@ dependencies:
   http: ^1.2.2
   flutter_secure_storage: ^9.2.2
   provider: ^6.1.2
+  flutter_launcher_icons: ^0.14.2
+  flutter_phosphor_icons: ^0.0.1+6
+  flutter_svg: ^2.0.16
+  flutter_charts: ^0.5.2
+  syncfusion_flutter_charts: ^27.2.5
+
+flutter_icons:
+  android: true
+  ios: true
+  image_path: "assets/logo.png"
 
 dev_dependencies:
   flutter_test:

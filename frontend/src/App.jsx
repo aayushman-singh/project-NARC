@@ -13,7 +13,8 @@ import { AuthProvider } from "./contexts/authContext";
 import GoogleDriveFileExplorer from "./components/services/GoogleDrive"
 import { useRoutes } from "react-router-dom";
 import ProfilePage from "./components/profile";
-
+import ChatbotAvatar from "./components/chatbot/chatbotAvatar"
+import UserActivity from "./components/UserActivity";
 function App() {
   const routesArray = [
     {
@@ -59,7 +60,12 @@ function App() {
     {
       path: "/google",
       element: <GoogleDriveFileExplorer/>,
-    }
+    },
+    {
+      path: "/activity",
+      element: <UserActivity/>,
+    },
+   
   ];
 
   let routesElement = useRoutes(routesArray);
@@ -73,6 +79,7 @@ function App() {
       <div className="w-full flex-grow flex flex-col pt-16 bg-gray-700">
         {routesElement}
       </div>
+      <ChatbotAvatar />
       </GoogleOAuthProvider>
     </>
   );

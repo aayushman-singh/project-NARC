@@ -7,7 +7,7 @@ import 'package:tattletale/provider/user.dart';
 import 'package:tattletale/structure/appbar.dart';
 
 const localhost = '10.0.2.2'; // Emulator-specific localhost
-final storage = const FlutterSecureStorage(); // Secure storage for token
+const storage = FlutterSecureStorage(); // Secure storage for token
 
 class AuthPage extends StatefulWidget {
   const AuthPage({super.key});

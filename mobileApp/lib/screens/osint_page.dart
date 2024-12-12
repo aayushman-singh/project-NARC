@@ -4,12 +4,14 @@ import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 
 class OsintPage extends StatefulWidget {
+  const OsintPage({super.key});
+
   @override
   _OsintPageState createState() => _OsintPageState();
 }
 
 class _OsintPageState extends State<OsintPage> {
-  TextEditingController _usernameController = TextEditingController();
+  final TextEditingController _usernameController = TextEditingController();
   List<String> _urls = [];
   bool _loading = false;
   String? _error;
@@ -86,7 +88,7 @@ class _OsintPageState extends State<OsintPage> {
                 fontSize: 36,
                 fontWeight: FontWeight.bold,
                 foreground: Paint()
-                  ..shader = LinearGradient(
+                  ..shader = const LinearGradient(
                     colors: [Colors.blue, Colors.purple],
                   ).createShader(Rect.fromLTWH(0, 0, 200, 70)),
               ),
@@ -99,14 +101,14 @@ class _OsintPageState extends State<OsintPage> {
             ),
             const SizedBox(height: 30),
             if (_loading)
-              CircularProgressIndicator()
+              const CircularProgressIndicator()
             else
               Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
                   TextField(
                     controller: _usernameController,
-                    style: TextStyle(color: Colors.white),
+                    style: const TextStyle(color: Colors.white),
                     decoration: InputDecoration(
                       hintText: "Enter a username",
                       hintStyle: TextStyle(color: Colors.grey[600]),

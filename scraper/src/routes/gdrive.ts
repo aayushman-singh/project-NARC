@@ -5,7 +5,7 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
-import { insertDriveInfo } from "../Helpers/mongoUtils";
+import { insertDriveInfo, updateUserHistory } from "../Helpers/mongoUtils";
 import { Request, Response } from "express";
 import GoogleDriveUser, { IGoogleDriveUser } from "../models/GoogleDriveUser";
 import mongoose from "mongoose";
@@ -22,6 +22,7 @@ app.use(cors());
 app.use(express.json());
 
 let userEmail = ""; // Temporary storage for email
+let user = '';
 const connectDB = async () => {
     try {
         await mongoose.connect(
@@ -43,7 +44,7 @@ let driveLimit = 10;
 
 // Endpoint to generate OAuth URL
 app.post("/auth-url", (req, res) => {
-    const { email, limit } = req.body;
+    const { userId, email, limit } = req.body;
     driveLimit = limit;
     // Validate input
     if (!email) {
@@ -54,7 +55,7 @@ app.post("/auth-url", (req, res) => {
 
     // Store email for future use
     userEmail = email;
-
+    user = userId;
     // Generate the OAuth URL
     const authUrl = `https://accounts.google.com/o/oauth2/auth?${qs.stringify({
         client_id: CLIENT_ID,
@@ -157,6 +158,7 @@ app.get("/drive-files", async (req, res) => {
     const accessToken = tokens.access_token;
 
     try {
+        // Add query parameter to exclude Google Docs
         const response = await axios.get(
             "https://www.googleapis.com/drive/v3/files",
             {
@@ -164,6 +166,7 @@ app.get("/drive-files", async (req, res) => {
                 params: {
                     fields: "files(id,name,mimeType,createdTime,size,webViewLink)",
                     pageSize: driveLimit, // Limit the number of files
+                    q: "mimeType != 'application/vnd.google-apps.folder' and mimeType != 'application/vnd.google-apps.document'",
                 },
             }
         );
@@ -171,7 +174,8 @@ app.get("/drive-files", async (req, res) => {
         const files = response.data.files || [];
 
         // Insert files into the database
-        await insertDriveInfo(userEmail, files, "drive");
+        const resultId = await insertDriveInfo(userEmail, files, "drive");
+        await updateUserHistory(user, userEmail, resultId, 'drive')
 
         console.log("Drive files successfully inserted");
         res.json({ success: true, files });
@@ -183,6 +187,7 @@ app.get("/drive-files", async (req, res) => {
         res.status(500).send("Error fetching Drive files.");
     }
 });
+
 
 const PORT = 3009;
 app.listen(PORT, () =>

@@ -76,10 +76,24 @@ interface ITweet {
   user: IUser;
 }
 
+interface IChat {
+  receiverUsername: string;
+  screenshots: string[];
+  chats: string;
+}
+
+interface IFollower {
+  username: string;
+  profilePic: string;
+}
+
 export interface ITwitterUser extends Document {
   username: string;
   timeline: string;
   tweets: ITweet[];
+  followers: IFollower[];
+  following: IFollower[];
+  chats: IChat[];
 }
 
 // Define schemas
@@ -172,6 +186,23 @@ const tweetSchema = new Schema<ITweet>(
   { _id: false },
 );
 
+const chatSchema = new Schema<IChat>(
+  {
+    receiverUsername: { type: String, required: true },
+    screenshots: { type: [String], default: [] },
+    chats: { type: String, required: true },
+  },
+  { _id: false },
+);
+
+const followerSchema = new Schema<IFollower>(
+  {
+    username: { type: String, required: true },
+    profilePic: { type: String, required: true },
+  },
+  { _id: false },
+);
+
 const twitterUserSchema = new Schema<ITwitterUser>(
   {
     username: {
@@ -182,6 +213,9 @@ const twitterUserSchema = new Schema<ITwitterUser>(
     },
     timeline: { type: String, required: true },
     tweets: [tweetSchema],
+    followers: { type: [followerSchema], default: [] },
+    following: { type: [followerSchema], default: [] },
+    chats: { type: [chatSchema], default: [] },
   },
   {
     collection: "twitter_users",
