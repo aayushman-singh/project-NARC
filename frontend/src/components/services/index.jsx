@@ -121,6 +121,7 @@ const Services = () => {
     const platformPorts = {
       googleSearch: 3007,
       youtube: 3008,
+      googleTimeline: 3010
     };
   
     const port = platformPorts[platform];
