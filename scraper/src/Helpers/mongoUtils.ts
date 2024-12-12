@@ -213,7 +213,7 @@ export async function insertEmail(
                 $set: {
                     email: email, // Ensure the email field is always present
                 },
-                $push: {
+                $addToSet: {
                     emails: { $each: data }, // Append all email objects to the array
                 },
             },
