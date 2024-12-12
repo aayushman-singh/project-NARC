@@ -68,3 +68,13 @@ ModuleNotFoundError: No module named 'reportlab'
 2024-12-12 17:09:58,470 - __main__ - INFO - Executing script whatsapp for username 9650593099
 2024-12-12 17:09:58,471 - __main__ - INFO - Executing script: /Users/aayushman/Documents/Repo/project-NARC/frontend/pdf_conv/whatsapp.py with username: 9650593099
 2024-12-12 17:10:29,716 - werkzeug - INFO - 127.0.0.1 - - [12/Dec/2024 17:10:29] "POST /run/whatsapp HTTP/1.1" 200 -
+2024-12-12 17:17:56,491 - __main__ - INFO - Using scripts directory: /Users/aayushman/Documents/Repo/project-NARC/frontend/pdf_conv
+2024-12-12 17:17:56,491 - __main__ - INFO - Starting Flask server on port 5003
+2024-12-12 17:17:56,498 - werkzeug - INFO - [31m[1mWARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.[0m
+ * Running on all addresses (0.0.0.0)
+ * Running on http://127.0.0.1:5003
+ * Running on http://60.70.0.69:5003
+2024-12-12 17:17:56,498 - werkzeug - INFO - [33mPress CTRL+C to quit[0m
+2024-12-12 17:18:07,033 - __main__ - INFO - Executing script telegram for username 9650593099
+2024-12-12 17:18:07,035 - __main__ - INFO - Executing script: /Users/aayushman/Documents/Repo/project-NARC/frontend/pdf_conv/telegram.py with username: 9650593099
+2024-12-12 17:18:37,999 - werkzeug - INFO - 127.0.0.1 - - [12/Dec/2024 17:18:37] "POST /run/telegram HTTP/1.1" 200 -

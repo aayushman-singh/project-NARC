@@ -17,7 +17,7 @@ API_ID = '26264571'
 API_HASH = 'eb3970da203e1ab5b55081d5f1ae6311'
 def connect_db():
     try:
-        client = MongoClient('mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/telegramDB?retryWrites=true&w=majority')
+        client = MongoClient('mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/telegramDB?retryWrites=true&w=majority?ssl=true&ssl_cert_reqs=CERT_NONE')
         db = client.get_database('telegramDB')  # Replace with your database name
         print("MongoDB connected successfully")
         return db
