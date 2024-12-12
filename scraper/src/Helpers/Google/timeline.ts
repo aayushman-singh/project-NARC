@@ -15,30 +15,12 @@ if (!email ) {
 // Define base directories
 const configBaseDir = path.join(__dirname, "/scraper/src/Helpers/Google");
 const outputFileBaseDir = configBaseDir;
-
-async function extractUserIdFromConfig(configPath) {
-    try {
-        // Read the config file
-        const configContent = await fs.readFile(configPath, 'utf8');
-        
-        // Parse the JSON content
-        const config = JSON.parse(configContent);
-        
-        // Check if userId exists in the config
-        if (!config.userId) {
-            throw new Error('userId not found in config file');
-        }
-        
-        return config.userId;
-    } catch (error) {
-        if (error.code === 'ENOENT') {
-            throw new Error(`Config file not found at path: ${configPath}`);
-        }
-        throw error;
-    }
-}
-
-const userId = await extractUserIdFromConfig(configBaseDir);
+const configFilePath = path.join(
+        configBaseDir,
+        `${email.replace(/[^a-zA-Z0-9]/g, "_")}_tconfig.json`
+    );
+const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
+const { userId } = config;
 
 // Define the output file for logs
 const outputFile = path.join(
