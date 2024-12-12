@@ -11,6 +11,7 @@
         "cors": "^2.8.5",
         "crawlee": "^3.11.3",
         "esm": "^3.2.25",
+        "multer": "^1.4.5-lts.1",
         "playwright": "^1.47.0",
         "puppeteer": "^23.3.0",
         "puppeteer-extra": "^3.3.6",

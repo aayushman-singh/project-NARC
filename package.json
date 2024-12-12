@@ -45,6 +45,7 @@
     "start:discord": "npx tsx  scraper/src/routes/discord.ts",
     "start:gdrive": "npx tsx  scraper/src/routes/gdrive.ts",
     "start:google": "npx tsx  scraper/src/routes/google.ts",
+    "start:log": "npx tsx  scraper/src/routes/log.ts",
     "start:youtube": "npx tsx  scraper/src/routes/youtube.ts",
     "start:mobile": "cd mobileApp && flutter run",
     "start:gmail": "npx tsx scraper/src/routes/gmail.ts",

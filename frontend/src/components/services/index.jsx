@@ -14,6 +14,9 @@ import {
   X,
 } from "phosphor-react";
 import { FaGoogle, FaDiscord as DiscordLogo } from "react-icons/fa";
+import { Info } from "lucide-react"; // Adjust based on the library you're using
+
+import MastodonProfile from "./mastodon";
 import DiscordChat from "./Discord";
 import "./style.css";
 import WhatsAppChats from "./Whatsapp";
@@ -48,6 +51,7 @@ const Services = () => {
   const [expandedChats, setExpandedChats] = useState({});
   const [googleEmail  ,setGoogleEmail] = useState("");
 const[timelineData , setTimelineData] = useState(null);
+const[mastodonData , setMastodonData] = useState(null);
   const [showGoogleSearchDetails, setShowGoogleSearchDetails] = useState(false);
   const [showYoutubeHistoryDetails, setShowYoutubeHistoryDetails] = useState(false);
   const [googleSearchDateRange, setGoogleSearchDateRange] = useState({ from: null, to: null });
@@ -214,7 +218,8 @@ const handleGoogleDrive = async (email) => {
       google: 3007,
       youtube: 3008 ,
       discord :3011,
-      timeline:3010
+      timeline:3010,
+      mastodon:3012
     };
   
     const port = platformConfig[platform];
@@ -274,6 +279,16 @@ const handleGoogleDrive = async (email) => {
         return;
       }
       username = discordInput.value;
+
+    } 
+    else if (platform === "mastodon") {
+      const mastodonInput = document.getElementById("mastodonInput");
+      if (!mastodonInput || !mastodonInput.value) {
+        console.error("email is required for platform 'discord'");
+        showAlert("Please enter a email", "error");
+        return;
+      }
+      username = mastodonInput.value;
 
     } 
     else if (platform === "facebook") {
@@ -359,6 +374,9 @@ const handleGoogleDrive = async (email) => {
           case "timeline":
             setTimelineData(data);
             break;
+            case "mastodon":
+              setMastodonData(data);
+              break;
         default:
           console.error("Unknown platform");
       }
@@ -969,56 +987,62 @@ const handleGoogleDrive = async (email) => {
       )}
       {activeSection === "mastodon" && (
   <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
-    <h2 className="text-2xl font-bold text-blue-400">Mastodon</h2>
-    <input
-            type="text"
-            id="mastadonInput"
-            placeholder="Enter email"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-          <input
-            type="password"
-            id="mastadonPassword"
-            placeholder="Enter mastadon password"
-            className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-          />
-    <div className="flex items-center">
-      Max toots:
-      <span
-        className="ml-2 text-gray-400 cursor-pointer relative group text-lg"
+  <h2 className="text-2xl font-bold text-blue-400">Mastodon</h2>
+  
+  <input
+    type="text"
+    id="mastodonInput"
+    placeholder="Enter email"
+    className="w-full p-3 mt-4 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+  
+  <input
+    type="password"
+    id="mastodonPassword"
+    placeholder="Enter Mastodon password"
+    className="w-full p-3 mt-4 bg-gray-700 text-white rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+  />
+  
+  <div className="flex items-center mt-4">
+    <span className="text-white">Max toots:</span>
+    <div className="ml-2 relative group">
+      <Info 
+        className="h-5 w-5 text-gray-400 cursor-help"
         aria-label="tooltip"
-      >
-        ℹ️
-        <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity">
-          Specify the maximum number of toots to retrieve.
-        </span>
+      />
+      <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-gray-900 text-white text-sm rounded-md px-2 py-1 shadow-lg opacity-0 group-hover:opacity-100 transition-opacity w-48 text-center">
+        Specify the maximum number of toots to retrieve
       </span>
     </div>
-    <div className="mt-2">{renderDropdown("mastodon")}</div>
-    <div className="flex space-x-4 mt-4">
-      <button
-        onClick={() => handleSubmit("mastodon")}
-        className="bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 disabled:opacity-50"
-        disabled={isLoading}
-      >
-        Submit
-      </button>
-      <button
-        onClick={() => handleShowDetails("mastodon")}
-        className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600"
-      >
-        Show Details
-      </button>
-    </div>
-    {/* {mastodonData && showDetails && (
-      <div className="mt-6">
-        <h3 className="text-xl font-semibold text-blue-300 mb-4">
-          Toots
-        </h3>
-        <MastodonToots toots={mastodonData.toots} />
-      </div>
-    )} */}
   </div>
+
+  <div className="mt-2">
+    {renderDropdown("mastodon")}
+  </div>
+
+  <div className="flex space-x-4 mt-4">
+    <button
+      onClick={() => handleSubmit("mastodon")}
+      className="bg-blue-500 text-white px-6 py-2 rounded-md hover:bg-blue-600 transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
+      disabled={isLoading}
+    >
+      {isLoading ? "Loading..." : "Submit"}
+    </button>
+    
+    <button
+      onClick={() => handleShowDetails("mastodon")}
+      className="bg-blue-400 text-white px-6 py-2 rounded-md hover:bg-blue-500 transition-colors duration-200"
+    >
+      Show Details
+    </button>
+  </div>
+
+  {mastodonData && showDetails && (
+    <div className="mt-6">
+      <MastodonProfile userData={mastodonData} />
+    </div>
+  )}
+</div>
 )}
 {activeSection === "discord" && (
   <div className="bg-gray-800 p-6 rounded-lg shadow-lg">
