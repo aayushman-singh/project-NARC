@@ -7,6 +7,79 @@ import dotenv from "dotenv";
 
 dotenv.config();
 
+async function connectToExistingChrome() {
+    try {
+        // Connect to Chrome running in debug mode
+        const browserURL = "http://localhost:9223";
+        const browser = await chromium.connectOverCDP(browserURL);
+        return browser;
+    } catch (error) {
+        console.error("Failed to connect to Chrome debug mode:", error);
+        throw error;
+    }
+}
+
+async function handleButtonSequence(page: Page, recipientUsername: string) {
+    try {
+        // Use page.locator() instead of document.querySelector()
+        const profileDetailsButton = page.locator(
+            'div[role="button"][title="Profile details"]'
+        );
+
+        // Wait for the element to be visible and then click
+        await profileDetailsButton.waitFor({ state: "visible" });
+        await profileDetailsButton.click();
+        await page
+            .getByRole("button", { name: "Media, links and docs" })
+            .click();
+        // Select all image list items
+        const listItems = page.getByRole("listitem", { name: " Image" });
+        const count = await listItems.count();
+
+        // First, select all items
+        for (let i = 0; i < count; i++) {
+            await listItems.nth(i).hover();
+            const checkbox = listItems
+                .nth(i)
+                .locator('button[role="checkbox"]');
+            await checkbox.click();
+        
+
+            // Then handle download
+            try {
+                // Wait for download button to be visible
+                const downloadButton = page.getByLabel("Download");
+                await downloadButton.waitFor({ state: "visible", timeout: 5000 });
+
+                // Capture download event
+                const downloadPromise = page.waitForEvent("download");
+
+                // Click download button
+                await downloadButton.click();
+
+                // Wait for download to complete
+                const download = await downloadPromise;
+
+                console.log("Download completed:", await download.path());
+            } catch (error) {
+                console.error("Download failed:", error);
+
+                // Take screenshot for debugging
+                await page.screenshot({
+                    path: `download-error-${Date.now()}.png`,
+                    fullPage: true,
+                });
+            }
+        }
+    } catch (error) {
+        console.error("Error during button sequence:", error);
+        await page.screenshot({
+            path: `error-screenshot-${Date.now()}.png`,
+            fullPage: true,
+        });
+        throw error;
+    }
+}
 
 const scrollChatWithLogging = async (
     username: string,
@@ -135,29 +208,40 @@ const scrollChatWithLogging = async (
         );
     }
 };
-
 const whatsappScraper = async (username: string, limit: number) => {
     let browser: Browser | null = null;
     let page: Page | null = null;
 
     try {
-        // Launch a browser instance with Playwright
-        const browser = await chromium.launchPersistentContext("./user-data", {
-            headless: false,
-        });
-        page = await browser.newPage();
+        // Connect to existing Chrome instance
+        browser = await connectToExistingChrome();
 
-        await page.goto("https://web.whatsapp.com/", {
-            waitUntil: "networkidle",
-        });
-        await page.waitForTimeout(60000); // Add a 10-second delay
+        // Get the first page/tab
+        const contexts = browser.contexts();
+        if (contexts.length === 0) {
+            throw new Error("No browser contexts found");
+        }
+        const context = contexts[0];
+        const pages = context.pages();
+
+        // Find or navigate to WhatsApp Web
+        let page = pages.find((p) => p.url().includes("web.whatsapp.com"));
+
+        if (!page) {
+            // If WhatsApp Web is not open, navigate to it
+            page = await context.newPage();
+            await page.goto("https://web.whatsapp.com/", {
+                waitUntil: "networkidle",
+            });
+            await page.waitForTimeout(10000); // Add a 10-second delay
+        }
 
         // Wait for QR code scan only if cookies are not loaded
         if (!(await page.$('div[aria-label="Chat list"]'))) {
             console.log("Waiting for user to scan the QR code...");
             await page.waitForSelector(
                 'canvas[aria-label="Scan this QR code to link a device!"]',
-                { state: "detached" },
+                { state: "detached" }
             );
             console.log("Logged in successfully!");
         } else {
@@ -166,12 +250,12 @@ const whatsappScraper = async (username: string, limit: number) => {
 
         // Select the main chat container once logged in
         const chatContainerSelector = 'div[aria-label="Chat list"]';
-        await page.waitForSelector(chatContainerSelector, { timeout: 60000 });
+        await page.waitForSelector(chatContainerSelector, { timeout: 10000 });
 
         await page.waitForTimeout(2500);
         // Iterate through each chat user tile
         const chatTiles = await page.$$(
-            chatContainerSelector + ' div[role="listitem"]',
+            chatContainerSelector + ' div[role="listitem"]'
         );
 
         for (const [index, chatTile] of chatTiles.entries()) {
@@ -184,13 +268,16 @@ const whatsappScraper = async (username: string, limit: number) => {
 
             // Click on each chat tile to open the chat
             await chatTile.click();
-            await page.waitForTimeout(2000); // Wait for chat to load 
+            await page.waitForTimeout(2000); // Wait for chat to load
+
+            await handleButtonSequence(page, receiverUsername);
+            console.log(`downloads done for ${receiverUsername}`);
 
             // Define the message container selector and output directory
             const messageContainerSelector = 'div[role="application"]';
             const outputDir = path.join(
                 __dirname,
-                `screenshots_chat_${index + 1}`,
+                `screenshots_chat_${index + 1}`
             );
             await scrollChatWithLogging(
                 username,
@@ -198,15 +285,15 @@ const whatsappScraper = async (username: string, limit: number) => {
                 page,
                 messageContainerSelector,
                 outputDir,
-                limit,
+                limit
             );
         }
         console.log("All chats processed successfully!");
     } catch (error) {
         console.error("Error in whatsappScraper:", error);
     } finally {
+        // Note: Do not close the browser as it's an existing instance
         if (page) await page.close();
-        if (browser) await browser.close();
     }
 };
 
