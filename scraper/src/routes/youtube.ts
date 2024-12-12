@@ -76,7 +76,7 @@ app.get("/youtube/users/:email", async (req: Request, res: Response) => {
 
 // Trigger scraping for YouTube activity
 app.post("/youtube/trigger-scraping", (req, res) => {
-    const { email, range } = req.body;
+    const { userId, email, range } = req.body;
 
     if (!email || !range) {
         return res.status(400).json({
@@ -134,7 +134,7 @@ app.post("/youtube/trigger-scraping", (req, res) => {
     }
 
     // Write email and range to the config file
-    fs.writeFileSync(configFilePath, JSON.stringify({ email, range }, null, 2));
+    fs.writeFileSync(configFilePath, JSON.stringify({ userId ,email, range }, null, 2));
     console.log(`Config file written to: ${configFilePath}`);
 
     // Step 4: Delay for 10 seconds before running the Playwright script

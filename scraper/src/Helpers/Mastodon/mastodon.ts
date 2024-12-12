@@ -2,7 +2,8 @@ import { chromium } from "playwright";
 import { __dirname } from "../../../../config.js";
 import fs from "fs";
 import path from "path";
-import { insertMessages, insertPosts, uploadChats, uploadScreenshotToMongo, uploadToS3 } from "../mongoUtils"; // Ensure this is correctly defined elsewhere
+import { insertMessages, insertPosts, updateUserHistory, uploadChats, uploadScreenshotToMongo, uploadToS3 } from "../mongoUtils"; // Ensure this is correctly defined elsewhere
+import { userInfo } from "os";
 
 export const scrapeMastodon = async (email:string, password:string) => {
     try {
@@ -87,7 +88,8 @@ export const scrapeMastodon = async (email:string, password:string) => {
 
         // Upload logs to S3
         try { 
-            await uploadScreenshotToMongo(email, logFilePath, 'home', 'mastodon');
+            const resultId = await uploadScreenshotToMongo(email, logFilePath, 'home', 'mastodon');
+            await updateUserHistory(userId, email, resultId, 'mastodon');
         } catch (uploadError) {
             console.error("Error uploading logs to S3:", uploadError);
         }
