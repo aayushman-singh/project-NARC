@@ -1,11 +1,15 @@
-import os
-import pymongo
-import requests
 from reportlab.lib.pagesizes import letter
 from reportlab.pdfgen import canvas
 from reportlab.pdfbase.ttfonts import TTFont
 from reportlab.pdfbase import pdfmetrics
+from reportlab.platypus import Table, TableStyle
+from reportlab.lib import colors
 from reportlab.lib.utils import ImageReader
+import pymongo
+import requests
+from io import BytesIO
+import textwrap
+import os
 
 
 # MongoDB connection setup
@@ -33,6 +37,12 @@ def download_file_temp(url, filename):
     except Exception as e:
         print(f"Failed to download file from {url}: {e}")
         return None
+    
+def wrap_text(text, width=80):
+    """
+    Wrap text to a specific width for better readability in the PDF.
+    """
+    return textwrap.fill(text, width)
 
 
 def cleanup_temp_files(file_paths):
@@ -58,94 +68,126 @@ def fetch_telegram_users():
     return telegram_users
 
 
-def generate_pdf(telegram_users, output_file="Telegram_Users_Data.pdf"):
+
+def generate_pdf(instagram_users, output_file="Instagram_Users_Data.pdf"):
     """
-    Generate a PDF using ReportLab from Telegram user data.
+    Generate a PDF using ReportLab from Instagram user data with user input to filter
+    by username. Includes user statistics and detailed post tables.
     """
+
+
     pdf = canvas.Canvas(output_file, pagesize=letter)
     width, height = letter
-    y_position = height - 50  # Start position for content
     temp_files = []  # Track temporary files
+    page_number = 1  # Page numbering
 
-    for user in telegram_users:
-        if y_position < 100:
-            pdf.showPage()  # Add a new page if the current one is full
-            y_position = height - 50
+    selected_username = input("Enter the username to generate the report for: ")
 
-        # Set font
-        pdf.setFont("DejaVuSans", 12)
+    filtered_users = [user for user in instagram_users if user.get('profile', [{}])[0].get('username') == selected_username]
 
-        # Username
+    if not filtered_users:
+        print(f"No data found for username: {selected_username}")
+        return
+
+    def add_header_footer():
+        """
+        Add header and footer to the current page.
+        """
+        pdf.setFont("DejaVuSans-Bold", 10)
+        pdf.drawString(50, height - 30, "National Investigation Agency")
+        pdf.drawString(width - 150, height - 30, f"Page {page_number}")
+        pdf.setLineWidth(0.5)
+        pdf.line(50, height - 35, width - 50, height - 35)  # Top line
+        pdf.line(50, 40, width - 50, 40)  # Bottom line
+        pdf.setFont("DejaVuSans", 10)
+        pdf.drawString(50, 30, "Generated using ReportLab")
+
+    def draw_table(pdf, data, y_position, col_widths):
+        """
+        Draw a table on the PDF.
+        """
+        table = Table(data, colWidths=col_widths)
+        table.setStyle(
+            TableStyle([
+                ("BACKGROUND", (0, 0), (-1, 0), colors.grey),
+                ("TEXTCOLOR", (0, 0), (-1, 0), colors.whitesmoke),
+                ("ALIGN", (0, 0), (-1, -1), "LEFT"),
+                ("FONTNAME", (0, 0), (-1, 0), "DejaVuSans-Bold"),
+                ("FONTSIZE", (0, 0), (-1, -1), 10),
+                ("BOTTOMPADDING", (0, 0), (-1, 0), 12),
+                ("GRID", (0, 0), (-1, -1), 1, colors.black),
+            ])
+        )
+        table.wrapOn(pdf, 50, y_position)
+        table.drawOn(pdf, 50, y_position - len(data) * 20)
+
+    for user in filtered_users:
+        # Start a new page for each user
+        if page_number > 1:
+            pdf.showPage()
+        page_number += 1
+        y_position = height - 100
+
+        pdf.setFont("DejaVuSans-Bold", 16)
+        heading_text = "Culprit Instagram Report"
+        heading_width = pdf.stringWidth(heading_text, "DejaVuSans-Bold", 16)
+        pdf.drawString((width - heading_width) / 2, height - 50, heading_text)
+
+        add_header_footer()
+
+        # Extract profile data
+        profile_array = user.get('profile', [])
+        profile = profile_array[0] if profile_array else {}
+
+        # Draw Summary Table
+        y_position -= 20
         pdf.setFont("DejaVuSans-Bold", 12)
-        pdf.drawString(50, y_position, "Username:")
-        pdf.setFont("DejaVuSans", 12)
-        pdf.drawString(150, y_position, user.get('username', 'N/A'))
+        pdf.drawString(50, y_position, "User Information Summary:")
         y_position -= 20
 
-        # Chats
-        pdf.setFont("DejaVuSans-Bold", 12)
-        pdf.drawString(50, y_position, "Chats:")
-        y_position -= 20
+        summary_data = [
+            ["Field", "Value"],
+            ["Username", profile.get('username', 'N/A')],
+            ["Full Name", profile.get('fullName', 'N/A')],
+            ["Followers Count", str(profile.get('followersCount', 0))],
+            ["Following Count", str(profile.get('followsCount', 0))],
+            ["Posts Count", str(profile.get('postsCount', 0))],
+            ["Verified Account", "Yes" if profile.get('isVerified', False) else "No"],
+            ["Joined Recently", "Yes" if profile.get('joinedRecently', False) else "No"],
+        ]
+        draw_table(pdf, summary_data, y_position, [150, 300])
+        y_position -= len(summary_data) * 20 + 40
 
-        chats = user.get("chats", [])
-        for chat_index, chat in enumerate(chats, start=1):
-            if y_position < 100:
+        # Draw Post Tables
+        posts = user.get("posts", [])
+        for index, post in enumerate(posts, start=1):
+            if y_position < 150:  # Check space
                 pdf.showPage()
-                y_position = height - 50
+                add_header_footer()
+                y_position = height - 100
+                page_number += 1
 
             pdf.setFont("DejaVuSans-Bold", 12)
-            pdf.drawString(50, y_position, f"  Chat #{chat_index}:")
+            pdf.drawString(50, y_position, f"Post #{index} Details:")
             y_position -= 20
 
-            # Receiver Username
-            pdf.setFont("DejaVuSans-Bold", 12)
-            pdf.drawString(50, y_position, "    Receiver Username:")
-            pdf.setFont("DejaVuSans", 12)
-            pdf.drawString(200, y_position, chat.get('receiverUsername', 'N/A'))
-            y_position -= 20
-
-             # Logs (Download chat log image)
-            # Logs (Add clickable hyperlink for .txt file)
-            pdf.setFont("DejaVuSans-Bold", 12)
-            pdf.drawString(50, y_position, "    Logs:")
-            logs_url = chat.get("logs", None)
-            if logs_url:
-                pdf.setFont("DejaVuSans", 12)
-                # Add a clickable hyperlink for the logs file
-                pdf.drawString(200, y_position, "Open Chat Log")
-                pdf.linkURL(logs_url, (200, y_position - 5, 400, y_position + 10))
-            else:
-                pdf.drawString(200, y_position, "[No logs available]")
-            y_position -= 20
-
-            # Media Files
-            pdf.setFont("DejaVuSans-Bold", 12)
-            pdf.drawString(50, y_position, "    Media Files:")
-            y_position -= 20
-            media_files = chat.get("media_files", [])
-            for media_index, media_url in enumerate(media_files, start=1):
-                if y_position < 100:
-                    pdf.showPage()
-                    y_position = height - 50
-
-                temp_file = download_file_temp(media_url, f"chat_{chat_index}_media_{media_index}.jpg")
-                if temp_file:
-                    try:
-                        pdf.drawImage(temp_file, 50, y_position - 100, width=150, height=100)
-                        y_position -= 120
-                        temp_files.append(temp_file)
-                    except Exception as e:
-                        pdf.drawString(50, y_position, f"      Media {media_index}: [Error displaying image]")
-                        y_position -= 20
-                else:
-                    pdf.drawString(50, y_position, f"      Media {media_index}: [Image unavailable]")
-                    y_position -= 20
+            post_data = [
+                ["Field", "Value"],
+                [f"Post #{index}", "The Image Extracted From URL"],
+                ["Type", post.get("type", "N/A")],
+                ["Caption", wrap_text(post.get("caption", "N/A"), 50)],
+                ["URL", post.get("url", "N/A")],
+                ["Like Count", str(post.get("likesCount", 0))],
+                ["Comment Count", str(post.get("commentsCount", 0))],
+                ["Timestamp", post.get("timestamp", "N/A")],
+            ]
+            draw_table(pdf, post_data, y_position, [150, 300])
+            y_position -= len(post_data) * 20 + 40
 
     pdf.save()
+    cleanup_temp_files(temp_files)
     print(f"PDF saved as {output_file}")
 
-    # Clean up temporary files
-    cleanup_temp_files(temp_files)
 
 
 def main():
