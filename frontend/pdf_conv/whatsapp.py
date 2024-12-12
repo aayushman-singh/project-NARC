@@ -1,6 +1,6 @@
 from pymongo import MongoClient
 from reportlab.lib import colors
-from reportlab.lib.pagesizes import letter, landscape
+from reportlab.lib.pagesizes import A4
 from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
 from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, Image, PageBreak
 from reportlab.lib.units import inch
@@ -11,22 +11,21 @@ import tempfile
 import shutil
 from urllib.parse import urlparse
 import time
-from reportlab.lib.pagesizes import A4
 
-# MongoDB Configuration
-MONGO_URI = "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
-DATABASE_NAME = "facebookDB"
-COLLECTION_NAME = "facebook_users"
-
-class FacebookDataReport:
+class WhatsAppDataReport:
     def __init__(self):
+        # MongoDB Configuration
+        self.MONGO_URI = "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0"
+        self.DATABASE_NAME = "whatsappDB"
+        self.COLLECTION_NAME = "whatsapp_users"
+
         try:
-            self.client = MongoClient(MONGO_URI)
-            self.db = self.client[DATABASE_NAME]
-            self.collection = self.db[COLLECTION_NAME]
+            self.client = MongoClient(self.MONGO_URI)
+            self.db = self.client[self.DATABASE_NAME]
+            self.collection = self.db[self.COLLECTION_NAME]
             self.temp_dir = tempfile.mkdtemp()
             self.client.server_info()
-            print(f"Successfully connected to MongoDB database: {DATABASE_NAME}")
+            print(f"Successfully connected to MongoDB database: {self.DATABASE_NAME}")
         except Exception as e:
             print(f"Error connecting to MongoDB: {str(e)}")
             raise
@@ -43,7 +42,7 @@ class FacebookDataReport:
             fontSize=28,
             spaceAfter=30,
             textColor=colors.HexColor('#000000'),
-            alignment=1,  # Center alignment
+            alignment=1,
             fontName='Helvetica-Bold'
         ))
         
@@ -96,6 +95,18 @@ class FacebookDataReport:
             fontName='Helvetica'
         ))
         
+        # Chat Content Style
+        self.styles.add(ParagraphStyle(
+            name='ChatContent',
+            parent=self.styles['Content'],
+            fontSize=11,
+            spaceAfter=8,
+            textColor=colors.HexColor('#000000'),
+            fontName='Helvetica',
+            allowWidows=0,
+            allowOrphans=0
+        ))
+        
         # Evidence Label Style
         self.styles.add(ParagraphStyle(
             name='EvidenceLabel',
@@ -119,7 +130,7 @@ class FacebookDataReport:
             if 'image' in content_type or url.endswith(('.png', '.jpg', '.jpeg')):
                 if not filename.endswith(('.jpg', '.png', '.jpeg')):
                     filename += '.png'
-            elif 'text' in content_type:
+            elif 'text' in content_type or url.endswith('.txt'):
                 if not filename.endswith('.txt'):
                     filename += '.txt'
             
@@ -133,93 +144,79 @@ class FacebookDataReport:
             print(f"Error downloading file from {url}: {str(e)}")
             return None
 
-    def process_text_file(self, file_path):
-        """Process and read content from a text file."""
+    def process_chat_log(self, file_path):
+        """Process and read content from a chat log file."""
         try:
             with open(file_path, 'r', encoding='utf-8') as f:
-                return f.read()
+                content = f.read()
+                
+                # Split content into lines and process
+                lines = content.split('\n')
+                processed_lines = []
+                
+                for line in lines:
+                    line = line.strip()
+                    if line:  # Skip empty lines
+                        # Make message numbers bold using reportlab markup
+                        # Check if line starts with "Message" followed by a number
+                        if line.lower().startswith('message'):
+                            # Find the position of the first colon
+                            colon_pos = line.find(':')
+                            if colon_pos != -1:
+                                # Make the "Message X" part bold
+                                message_header = line[:colon_pos]
+                                message_content = line[colon_pos:]
+                                formatted_line = f'<b>{message_header}</b>{message_content}'
+                                processed_lines.append(formatted_line)
+                            else:
+                                processed_lines.append(line)
+                        else:
+                            processed_lines.append(line)
+                        processed_lines.append('')  # Add empty line after each message
+                
+                # Join lines back together
+                processed_content = '\n'.join(processed_lines)
+                
+                # Limit content length for PDF
+                if len(processed_content) > 2000:
+                    truncate_point = processed_content[:2000].rfind('\n\n')
+                    if truncate_point == -1:
+                        truncate_point = 2000
+                    processed_content = processed_content[:truncate_point] + "\n\n[Content truncated...]"
+                
+                return processed_content
         except Exception as e:
-            print(f"Error reading text file {file_path}: {str(e)}")
-            return "Error reading file content"
+            print(f"Error reading chat log {file_path}: {str(e)}")
+            return "Error reading chat content"
 
-    def format_friends_section(self, friends):
-        """Format friends section for the report."""
-        story = []
-        story.append(Paragraph("KNOWN ASSOCIATES", self.styles['SectionHeader']))
-        story.append(Spacer(1, 20))
-
-        for friend in friends:
-            story.append(Paragraph(f"Associate #{friend['index']}", self.styles['DataHeader']))
-            story.append(Paragraph(f"Name: {friend['userName']}", self.styles['Content']))
-            story.append(Paragraph(f"Profile: {friend['profileUrl']}", self.styles['Content']))
-            
-            if friend.get('profilePicUrl'):
-                local_path = self.download_file(friend['profilePicUrl'])
-                if local_path and local_path.endswith(('.jpg', '.jpeg', '.png')):
-                    img = Image(local_path, width=2*inch, height=2*inch)
-                    story.append(img)
-                    story.append(Paragraph(
-                        f"Evidence ID: ASSOC-{datetime.now().strftime('%Y%m%d')}-{friend['index']}", 
-                        self.styles['EvidenceLabel']
-                    ))
-            
-            story.append(Spacer(1, 20))
-
-        return story
-
-    def format_posts_section(self, posts):
-        """Format posts section with new post structure."""
-        story = []
-        story.append(Paragraph("DIGITAL CONTENT", self.styles['SectionHeader']))
-        story.append(Spacer(1, 20))
-
-        # Sort posts by their numerical order
-        post_keys = sorted(posts.keys(), key=lambda x: int(x.split('_')[1]))
-        
-        for post_key in post_keys:
-            post_data = posts[post_key]
-            post_number = post_key.split('_')[1]
-            
-            story.append(Paragraph(f"Post Evidence #{post_number}", self.styles['DataHeader']))
-            
-            # Handle PNG URL
-            if post_data.get('png'):
-                local_path = self.download_file(post_data['png'])
-                if local_path:
-                    try:
-                        img = Image(local_path, width=6*inch, height=4*inch)
-                        story.append(img)
-                        story.append(Paragraph(
-                            f"Evidence ID: POST-{datetime.now().strftime('%Y%m%d')}-{post_number}", 
-                            self.styles['EvidenceLabel']
-                        ))
-                    except Exception as e:
-                        story.append(Paragraph(f"Error displaying image: {str(e)}", self.styles['Content']))
-            
-            story.append(Spacer(1, 30))
-
-        return story
-
-    def format_chats_section(self, chats):
+    def format_chat_section(self, chats):
         """Format chats section for the report."""
         story = []
         story.append(Paragraph("COMMUNICATION RECORDS", self.styles['SectionHeader']))
         story.append(Spacer(1, 20))
 
         for idx, chat in enumerate(chats, 1):
-            story.append(Paragraph(f"Communication with: {chat['receiverUsername']}", self.styles['DataHeader']))
-            
-            if chat.get('chats'):
-                chat_log_path = self.download_file(chat['chats'])
-                if chat_log_path:
-                    content = self.process_text_file(chat_log_path)
+            # Chat Header
+            story.append(Paragraph(f"Communication #{idx}", self.styles['DataHeader']))
+            story.append(Paragraph(f"Participant: {chat['receiverUsername']}", self.styles['Content']))
+            story.append(Spacer(1, 10))
+
+            # Chat Log
+            if 'chats' in chat and chat['chats'].startswith('http'):
+                local_path = self.download_file(chat['chats'])
+                if local_path:
+                    content = self.process_chat_log(local_path)
                     story.append(Paragraph("Message Log:", self.styles['Content']))
-                    story.append(Paragraph(content, self.styles['Content']))
+                    # Split content into paragraphs and create separate Paragraph objects
+                    for line in content.split('\n'):
+                        if line.strip():  # Only add non-empty lines
+                            story.append(Paragraph(line, self.styles['ChatContent']))
                     story.append(Paragraph(
-                        f"Evidence ID: CHAT-{datetime.now().strftime('%Y%m%d')}-{idx}", 
+                        f"Evidence ID: CHAT-{datetime.now().strftime('%Y%m%d')}-{idx}",
                         self.styles['EvidenceLabel']
                     ))
-            
+
+            # Screenshots
             if chat.get('screenshots'):
                 story.append(Paragraph("Visual Evidence:", self.styles['Content']))
                 for screen_idx, screenshot_url in enumerate(chat['screenshots'], 1):
@@ -228,11 +225,11 @@ class FacebookDataReport:
                         img = Image(local_path, width=6*inch, height=4*inch)
                         story.append(img)
                         story.append(Paragraph(
-                            f"Evidence ID: SCRN-{datetime.now().strftime('%Y%m%d')}-{idx}-{screen_idx}", 
+                            f"Evidence ID: SCRN-{datetime.now().strftime('%Y%m%d')}-{idx}-{screen_idx}",
                             self.styles['EvidenceLabel']
                         ))
                         story.append(Spacer(1, 10))
-            
+
             story.append(PageBreak())
 
         return story
@@ -262,58 +259,33 @@ class FacebookDataReport:
             story.append(Spacer(1, 30))
             story.append(Paragraph("Digital Evidence Report", self.styles['OfficialHeader']))
             story.append(Spacer(1, 20))
-            story.append(Paragraph("Facebook Account Investigation", self.styles['OfficialHeader']))
+            story.append(Paragraph("WhatsApp Account Investigation", self.styles['OfficialHeader']))
             story.append(Spacer(1, 40))
             
             # Case Information
             story.append(Paragraph("CASE DETAILS", self.styles['SectionHeader']))
             story.append(Paragraph(f"Subject Username: {username}", self.styles['DataHeader']))
             story.append(Paragraph(f"Report Generated: {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}", self.styles['Content']))
-            story.append(Paragraph(f"Report Reference: FB-{datetime.now().strftime('%Y%m%d-%H%M%S')}", self.styles['Content']))
-            story.append(Spacer(1, 20))
-
-            # Profile Picture
-            if user_data.get('profile'):
-                story.append(Paragraph("SUBJECT PROFILE IMAGE", self.styles['SectionHeader']))
-                local_path = self.download_file(user_data['profile'])
-                if local_path and local_path.endswith(('.jpg', '.jpeg', '.png')):
-                    img = Image(local_path, width=3*inch, height=3*inch)
-                    story.append(img)
-                    story.append(Paragraph(f"Evidence ID: PRF-{datetime.now().strftime('%Y%m%d')}-01", 
-                                        self.styles['EvidenceLabel']))
-            
+            story.append(Paragraph(f"Report Reference: WA-{datetime.now().strftime('%Y%m%d-%H%M%S')}", self.styles['Content']))
             story.append(PageBreak())
 
             # Evidence Index
             story.append(Paragraph("EVIDENCE INDEX", self.styles['SectionHeader']))
-            story.append(Paragraph("1. Profile Information", self.styles['DataHeader']))
-            story.append(Paragraph("2. Known Associates (Friends List)", self.styles['DataHeader']))
-            story.append(Paragraph("3. Timeline Activity (Posts)", self.styles['DataHeader']))
-            story.append(Paragraph("4. Communications (Chat History)", self.styles['DataHeader']))
+            story.append(Paragraph("1. Subject Information", self.styles['DataHeader']))
+            story.append(Paragraph("2. Communications (Chat History)", self.styles['DataHeader']))
+            story.append(Paragraph("3. Visual Evidence (Screenshots)", self.styles['DataHeader']))
             story.append(PageBreak())
-
-            # Add Friends Section
-            if user_data.get('friends_list'):
-                story.extend(self.format_friends_section(user_data['friends_list']))
-                story.append(PageBreak())
-
-            # Add Posts Section with new format
-            post_keys = [k for k in user_data.keys() if k.startswith('post_')]
-            if post_keys:
-                posts_data = {k: user_data[k] for k in post_keys}
-                story.extend(self.format_posts_section(posts_data))
-                story.append(PageBreak())
 
             # Add Chats Section
             if user_data.get('chats'):
-                story.extend(self.format_chats_section(user_data['chats']))
+                story.extend(self.format_chat_section(user_data['chats']))
 
             # Add footer to each page
             def add_page_number(canvas, doc):
                 canvas.saveState()
                 canvas.setFont('Helvetica', 9)
                 page_num = canvas.getPageNumber()
-                text = f"Page {page_num} | CONFIDENTIAL | Case Reference: FB-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
+                text = f"Page {page_num} | CONFIDENTIAL | Case Reference: WA-{datetime.now().strftime('%Y%m%d-%H%M%S')}"
                 canvas.drawString(doc.leftMargin, doc.bottomMargin - 20, text)
                 canvas.restoreState()
 
@@ -331,10 +303,10 @@ class FacebookDataReport:
 
 def main():
     try:
-        report_generator = FacebookDataReport()
+        report_generator = WhatsAppDataReport()
         username = input("Enter username to generate report for: ")
         output_dir = "reports"
-        output_path = os.path.join(output_dir, f"facebook_report_{username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
+        output_path = os.path.join(output_dir, f"whatsapp_report_{username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
         report_generator.generate_report(username, output_path)
     except Exception as e:
         print(f"Error in main: {str(e)}")
