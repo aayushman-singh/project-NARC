@@ -89,7 +89,7 @@ const GmailOutUserSchema = new Schema<IGmailOutUser>(
     emails: [emailSchema], // Embed the email schema
   },
   {
-    collection: "gmail-sent_users", // Collection name in MongoDB
+    collection: "gmail_sent", // Collection name in MongoDB
     timestamps: true, // Automatically manage `createdAt` and `updatedAt`
   }
 );
