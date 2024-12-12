@@ -5,7 +5,11 @@ import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
 import cors from "cors";
-import { insertEmail, updateUserHistory } from "../Helpers/mongoUtils";
+import {
+    insertInboxEmail,
+    insertSentEmail,
+    updateUserHistory,
+} from "../Helpers/mongoUtils";
 import mongoose from "mongoose";
 import { Request, Response } from "express";
 import GmailInUser, { IGmailInUser } from "../models/Gmail/GmailInUser";
@@ -181,17 +185,17 @@ app.get("/emails", async (req, res) => {
         // Fetch both inbox and sent messages
         const [inboxEmails, sentEmails] = await Promise.all([
             fetchGmailMessages(accessToken, "INBOX", emailLimit),
-            fetchGmailMessages(accessToken, "SENT", emailLimit),
+            fetchGmailMessages(accessToken, "in:sent", emailLimit),
         ]);
 
         // Store emails and get resultIds
-        const inboxResult = await insertEmail(
+        const inboxResult = await insertInboxEmail(
             userEmail,
             inboxEmails,
             "gmail",
             true
         );
-        const sentResult = await insertEmail(
+        const sentResult = await insertSentEmail(
             userEmail,
             sentEmails,
             "gmail",
@@ -263,7 +267,7 @@ async function fetchGmailMessages(
                 headers: { Authorization: `Bearer ${accessToken}` },
                 params: {
                     maxResults,
-                    labelIds: [label],
+                    q: label,
                 },
             }
         );
