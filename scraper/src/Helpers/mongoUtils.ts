@@ -114,7 +114,10 @@ export async function insertGoogle(
                 $set: { email }, // Ensure email is set
                 $addToSet: { logs: s3url }, // Avoid duplicate S3 URLs
             },
-            { upsert: true }
+            {
+                upsert: true,
+                returnDocument: "after"
+             }
         );
 
         console.log(`Logs uploaded successfully for ${email}.`);
