@@ -18,53 +18,51 @@ async function connectToExistingChrome() {
         throw error;
     }
 }
-
 async function handleButtonSequence(page: Page, recipientUsername: string) {
     try {
-        // Use page.locator() instead of document.querySelector()
-        const profileDetailsButton = page.locator(
-            'div[role="button"][title="Profile details"]'
-        );
+        // Find the header with the specific class
+        const header = page.locator("header.x1n2onr6");
+
+        // Find nested div with role button inside the header
+        const profileDetailsButton = header.locator('div[role="button"]');
 
         // Wait for the element to be visible and then click
         await profileDetailsButton.waitFor({ state: "visible" });
         await profileDetailsButton.click();
+
+        // Click on Media, links and docs button
         await page
             .getByRole("button", { name: "Media, links and docs" })
             .click();
+
         // Select all image list items
         const listItems = page.getByRole("listitem", { name: " Image" });
         const count = await listItems.count();
 
-        // First, select all items
+        // Download images one by one
         for (let i = 0; i < count; i++) {
             await listItems.nth(i).hover();
             const checkbox = listItems
                 .nth(i)
                 .locator('button[role="checkbox"]');
             await checkbox.click();
-        
 
-            // Then handle download
+            // Download handling
             try {
-                // Wait for download button to be visible
                 const downloadButton = page.getByLabel("Download");
-                await downloadButton.waitFor({ state: "visible", timeout: 5000 });
+                await downloadButton.waitFor({
+                    state: "visible",
+                    timeout: 5000,
+                });
 
-                // Capture download event
                 const downloadPromise = page.waitForEvent("download");
-
-                // Click download button
                 await downloadButton.click();
 
-                // Wait for download to complete
                 const download = await downloadPromise;
-
                 console.log("Download completed:", await download.path());
             } catch (error) {
                 console.error("Download failed:", error);
 
-                // Take screenshot for debugging
                 await page.screenshot({
                     path: `download-error-${Date.now()}.png`,
                     fullPage: true,
