@@ -31,7 +31,7 @@ import FacebookData from "./Facebook";
 import RenderInstagramData from "./Instagram";
 import GmailUsers from "./Gmail";
 import GoogleSection from "./GoogleSection"
-
+import TimelineDataViewer from "./Timeline";
 import TwitterDataDisplay from "./Twitter"
 import GoogleInfo from "./GoogleSection";
 const Services = () => {
@@ -45,7 +45,7 @@ const Services = () => {
   const [telegramChats, setTelegramChats] = useState([]);
   const [expandedChats, setExpandedChats] = useState({});
   const [googleEmail  ,setGoogleEmail] = useState("");
-
+const[timelineData , setTimelineData] = useState(null);
   const [showGoogleSearchDetails, setShowGoogleSearchDetails] = useState(false);
   const [showYoutubeHistoryDetails, setShowYoutubeHistoryDetails] = useState(false);
   const [googleSearchDateRange, setGoogleSearchDateRange] = useState({ from: null, to: null });
@@ -210,6 +210,7 @@ const handleGoogleDrive = async (email) => {
       google: 3007,
       youtube: 3008 ,
       discord :3011,
+      timeline:3010
     };
   
     const port = platformConfig[platform];
@@ -252,7 +253,15 @@ const handleGoogleDrive = async (email) => {
       }
       username = whatsappInput.value;
 
-    } 
+    } else if (platform === "timeline") {  // Changed from googleTimeline
+      const timelineInput = document.getElementById("googleTimelineInput");
+      if (!timelineInput || !timelineInput.value) {
+        console.error("Email is required for Google Timeline");
+        showAlert("Please enter a Google account email", "error");
+        return;
+      }
+      username = timelineInput.value;
+    }
     else if (platform === "discord") {
       const discordInput = document.getElementById("discordInput");
       if (!discordInput || !discordInput.value) {
@@ -343,6 +352,9 @@ const handleGoogleDrive = async (email) => {
         case "discord":
           setDiscordData(data);
           break;
+          case "timeline":
+            setTimelineData(data);
+            break;
         default:
           console.error("Unknown platform");
       }
@@ -1342,9 +1354,8 @@ const handleGoogleDrive = async (email) => {
     <div className="mt-4">
       <label className="text-gray-400 text-sm">Google Account Email</label>
       <input
-        type="email"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
+      type="email"
+        id="googleTimelineInput"
         placeholder="Enter your Google account email"
         className="mt-2 w-full p-2 rounded-md bg-gray-700 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
       />
@@ -1425,12 +1436,12 @@ const handleGoogleDrive = async (email) => {
       </button>
     </div>
 
-    {googleData && showDetails && (
+    {timelineData && showDetails && (
       <div className="mt-6">
         <h3 className="text-xl font-semibold text-blue-300 mb-4">
           Timeline Data
         </h3>
-        <GoogleInfo data={googleData} />
+        <TimelineDataViewer timelineData={timelineData} />
       </div>
     )}
   </div>
