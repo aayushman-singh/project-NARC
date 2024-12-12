@@ -6,13 +6,13 @@ import cors from "cors";
 import { __dirname } from "../../../config.js";
 import { Request, Response } from "express";
 import mongoose from "mongoose";
-import GoogleUser, { IGoogleUser } from "../models/GoogleSearchUser.js";
+import TimelineUser, { ITimelineUser } from "../models/TimelineUser.js";
 const app = express();
 const PORT = 3010;
 const connectDB = async () => {
     try {
         await mongoose.connect(
-            "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/googleDB?retryWrites=true&w=majority",
+            "mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/timelineDB?retryWrites=true&w=majority",
             {
                 useNewUrlParser: true,
                 useUnifiedTopology: true,
@@ -28,10 +28,10 @@ const connectDB = async () => {
 connectDB();
 app.use(cors());
 app.use(express.json()); // Middleware to parse JSON bodies
-app.get("/google/users", async (req: Request, res: Response) => {
+app.get("/timeline/users", async (req: Request, res: Response) => {
     try {
         console.log("Fetching users from database...");
-        const users: IGoogleUser[] = await GoogleUser.find().lean();
+        const users: ITimelineUser[] = await TimelineUser.find().lean();
         console.log(`Found ${users.length} users`);
 
         if (users.length === 0) {
@@ -46,20 +46,21 @@ app.get("/google/users", async (req: Request, res: Response) => {
     }
 });
 
-app.get("/google/users/:email", async (req: Request, res: Response) => {
+app.get("/timeline/users/:email", async (req: Request, res: Response) => {
     const { email } = req.params;
-
+    
     try {
         console.log(`Fetching user with email: ${email}`);
-        const user: IGoogleUser | null = await GoogleUser.findOne({
-            email, // Use email as the identifier
+        
+        const user: ITimelineUser | null = await TimelineUser.findOne({
+            username: email  // Changed from 'email' to 'username'
         }).lean();
-
+        
         if (!user) {
             console.log(`User not found: ${email}`);
             return res.status(404).json({ message: "User not found" });
         }
-
+        
         console.log(`User found: ${email}`);
         res.status(200).json(user);
     } catch (error) {
