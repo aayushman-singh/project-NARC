@@ -23,7 +23,7 @@ const scrollChatWithLogging = async (
         let totalMessageCount = 0;
         let attempt = 0;
 
-        while (totalMessageCount < (limit/2)) {
+        while (totalMessageCount < limit) {
             while (attempt < 10) {
                 const messageRows = await page.$$(
                     messageContainerSelector +
@@ -34,7 +34,7 @@ const scrollChatWithLogging = async (
                 if (newMessageCount > totalMessageCount) {
                     const messagesToLoad = Math.min(
                         newMessageCount - totalMessageCount,
-                        (limit/2) - totalMessageCount
+                        limit - totalMessageCount
                     );
 
                     console.log(
