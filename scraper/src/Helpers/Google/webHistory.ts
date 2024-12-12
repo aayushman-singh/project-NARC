@@ -2,7 +2,7 @@ import { chromium } from "playwright";
 import fs from "fs";
 import path from "path";
 import { __dirname } from "../../../../config.ts";
-import { insertGoogle, uploadToS3 } from "../mongoUtils.ts";
+import { insertGoogle, updateUserHistory, uploadToS3 } from "../mongoUtils.ts";
 
 const configBaseDir = path.join(__dirname, "/scraper/src/Helpers/Google");
 const outputFileBaseDir = configBaseDir;
@@ -31,7 +31,7 @@ if (!fs.existsSync(configFilePath)) {
 
 // Read configuration
 const config = JSON.parse(fs.readFileSync(configFilePath, "utf-8"));
-const { range } = config;
+const { userId, range } = config;
 
 // Validate the `range` object
 if (
@@ -158,6 +158,7 @@ const outputFile = path.join(
         fs.unlinkSync(outputFile);
 
         const result = await insertGoogle(email, s3url, "google");
+        updateUserHistory(userId, email, result, 'google')
         console.log("Upload complete:", result);
     } catch (error) {
         console.error("An error occurred:", error);
