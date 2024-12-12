@@ -1,6 +1,13 @@
 import React, { useState } from "react";
-import { ChevronDown, ChevronUp, X, ExternalLink, Image as ImageIcon } from "lucide-react";
 import axios from "axios";
+import {
+  ChevronDown,
+  ChevronUp,
+  X,
+  ExternalLink,
+  Image as ImageIcon,
+  Languages
+} from "lucide-react";
 
 const TelegramChat = ({ chat, index }) => {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
@@ -8,7 +15,7 @@ const TelegramChat = ({ chat, index }) => {
   const [chatLogs, setChatLogs] = useState(null);
   const [isLogsLoading, setIsLogsLoading] = useState(false);
   const [isChatLogsVisible, setIsChatLogsVisible] = useState(false);
-  const [translatedLogs, setTranslatedLogs] = useState(null);
+  const [translatedText, setTranslatedText] = useState(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
 
@@ -16,32 +23,8 @@ const TelegramChat = ({ chat, index }) => {
   const openImageViewer = (image) => setSelectedImage(image);
   const closeImageViewer = () => setSelectedImage(null);
 
-  const fetchChatLogs = async () => {
-    if (isChatLogsVisible) {
-      setIsChatLogsVisible(false);
-      return;
-    }
-    try {
-      setIsLogsLoading(true);
-      const response = await fetch(chat.logs);
-      if (!response.ok) {
-        throw new Error(`Failed to fetch chat logs: ${response.statusText}`);
-      }
-      const text = await response.text();
-      setChatLogs(text);
-      setTranslatedLogs(null); // Reset translated logs on new fetch
-      setIsChatLogsVisible(true);
-    } catch (error) {
-      console.error(error.message);
-      setChatLogs("Failed to load chat logs.");
-      setIsChatLogsVisible(true);
-    } finally {
-      setIsLogsLoading(false);
-    }
-  };
-
   const translateText = async (text, targetLanguage) => {
-    const apiKey = "AIzaSyCwqziN0xQTJUXtPRACkRwpMLrbY9P2uHg"; // Replace with your API key
+    const apiKey = "AIzaSyCwqziN0xQTJUXtPRACkRwpMLrbY9P2uHg";
     const url = `https://translation.googleapis.com/language/translate/v2?key=${apiKey}`;
 
     try {
@@ -60,8 +43,33 @@ const TelegramChat = ({ chat, index }) => {
     if (!chatLogs || !selectedLanguage) return;
     setIsTranslating(true);
     const translated = await translateText(chatLogs, selectedLanguage);
-    setTranslatedLogs(translated);
+    setTranslatedText(translated);
     setIsTranslating(false);
+  };
+
+  const fetchChatLogs = async () => {
+    if (isChatLogsVisible) {
+      setIsChatLogsVisible(false);
+      setTranslatedText(null);
+      return;
+    }
+    try {
+      setIsLogsLoading(true);
+      const response = await fetch(chat.logs);
+      if (!response.ok) {
+        throw new Error(`Failed to fetch chat logs: ${response.statusText}`);
+      }
+      const text = await response.text();
+      setChatLogs(text);
+      setTranslatedText(null);
+      setIsChatLogsVisible(true);
+    } catch (error) {
+      console.error(error.message);
+      setChatLogs("Failed to load chat logs.");
+      setIsChatLogsVisible(true);
+    } finally {
+      setIsLogsLoading(false);
+    }
   };
 
   return (
@@ -80,7 +88,56 @@ const TelegramChat = ({ chat, index }) => {
       </div>
 
       <div className="space-y-4">
-        {/* Existing media gallery and chat log fetching code */}
+        {chat.media_files && chat.media_files.length > 0 && (
+          <div className="bg-gray-800/50 rounded-xl p-4 backdrop-blur-sm">
+            <button
+              onClick={toggleMedia}
+              className="flex items-center justify-between w-full text-blue-400 hover:text-blue-300 transition-all duration-200 group"
+              aria-expanded={isMediaExpanded}
+            >
+              <div className="flex items-center space-x-2">
+                <ImageIcon className="h-5 w-5" />
+                <span className="font-medium">
+                  Media Gallery ({chat.media_files.length})
+                </span>
+              </div>
+              {isMediaExpanded ? (
+                <ChevronUp className="h-5 w-5 transition-transform duration-200" />
+              ) : (
+                <ChevronDown className="h-5 w-5 transition-transform duration-200" />
+              )}
+            </button>
+
+            <div
+              className={`grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4 mt-4 transition-all duration-300 ease-in-out ${
+                isMediaExpanded
+                  ? "opacity-100 max-h-[1000px]"
+                  : "opacity-0 max-h-0 overflow-hidden"
+              }`}
+            >
+              {chat.media_files.map((mediaFile, idx) => (
+                <div
+                  key={idx}
+                  className="relative group rounded-lg overflow-hidden cursor-pointer bg-gray-700/50 aspect-square"
+                  onClick={() => openImageViewer(mediaFile)}
+                >
+                  <img
+                    src={mediaFile}
+                    alt={`Media ${idx + 1}`}
+                    className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-110"
+                    loading="lazy"
+                  />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex items-end justify-center p-3">
+                    <span className="text-white text-sm font-medium">
+                      View Full
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div className="flex justify-between items-center">
           <button
             onClick={fetchChatLogs}
@@ -104,26 +161,32 @@ const TelegramChat = ({ chat, index }) => {
       </div>
 
       {isChatLogsVisible && (
-        <div className="bg-gray-800/50 rounded-xl p-4 mt-4 overflow-auto max-h-64">
-          {isLogsLoading ? (
-            <p className="text-blue-300">Loading chat logs...</p>
-          ) : (
-            <pre className="text-gray-300 whitespace-pre-wrap">
-              {translatedLogs || chatLogs}
-            </pre>
-          )}
-          <div className="flex items-center mt-4 space-x-4">
+        <div className="space-y-4">
+          <div className="bg-gray-800/50 rounded-xl p-4 mt-4 overflow-auto max-h-64">
+            {isLogsLoading ? (
+              <p className="text-blue-300">Loading chat logs...</p>
+            ) : (
+              <pre className="text-gray-300 whitespace-pre-wrap">
+                {translatedText || chatLogs}
+              </pre>
+            )}
+          </div>
+          
+          <div className="flex items-center space-x-4">
             <button
               onClick={handleTranslate}
-              disabled={isTranslating}
-              className="text-blue-400 hover:text-blue-300 transition-colors"
+              disabled={isTranslating || isLogsLoading}
+              className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
-              {isTranslating ? "Translating..." : "Translate"}
+              <Languages className="h-4 w-4" />
+              <span className="font-medium">
+                {isTranslating ? "Translating..." : "Translate"}
+              </span>
             </button>
             <select
               value={selectedLanguage}
               onChange={(e) => setSelectedLanguage(e.target.value)}
-              className="bg-gray-800 text-white text-sm rounded-lg p-2"
+              className="bg-gray-800 text-white text-sm rounded-lg p-2 border border-gray-700 focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="en">English</option>
               <option value="hi">Hindi</option>
@@ -135,8 +198,40 @@ const TelegramChat = ({ chat, index }) => {
           </div>
         </div>
       )}
+
+      {selectedImage && (
+        <div
+          className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"
+          onClick={closeImageViewer}
+        >
+          <div className="relative max-w-5xl w-full">
+            <img
+              src={selectedImage}
+              alt="Full size media"
+              className="w-full h-auto max-h-[90vh] object-contain rounded-lg"
+            />
+            <button
+              onClick={closeImageViewer}
+              className="absolute -top-2 -right-2 bg-blue-600 text-white p-2 rounded-full hover:bg-blue-700 transition-colors duration-200 shadow-lg"
+              aria-label="Close image viewer"
+            >
+              <X className="h-5 w-5" />
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
 
-export default TelegramChat;
+const TelegramChats = ({ chats }) => {
+  return (
+    <div className="space-y-6">
+      {chats.map((chat, index) => (
+        <TelegramChat key={index} chat={chat} index={index} />
+      ))}
+    </div>
+  );
+};
+
+export default TelegramChats;
