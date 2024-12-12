@@ -10,18 +10,16 @@ import {
 const TelegramChat = ({ chat, index }) => {
   const [isMediaExpanded, setIsMediaExpanded] = useState(false);
   const [selectedImage, setSelectedImage] = useState(null);
-  const [chatLogs, setChatLogs] = useState(null); // Stores chat logs
-  const [isLogsLoading, setIsLogsLoading] = useState(false); // Indicates loading state
-  const [isChatLogsVisible, setIsChatLogsVisible] = useState(false); // Controls visibility of chat logs
+  const [chatLogs, setChatLogs] = useState(null);
+  const [isLogsLoading, setIsLogsLoading] = useState(false);
+  const [isChatLogsVisible, setIsChatLogsVisible] = useState(false);
 
   const toggleMedia = () => setIsMediaExpanded(!isMediaExpanded);
-
   const openImageViewer = (image) => setSelectedImage(image);
   const closeImageViewer = () => setSelectedImage(null);
 
   const fetchChatLogs = async () => {
     if (isChatLogsVisible) {
-      // If already visible, toggle off and return
       setIsChatLogsVisible(false);
       return;
     }
@@ -33,7 +31,7 @@ const TelegramChat = ({ chat, index }) => {
       }
       const text = await response.text();
       setChatLogs(text);
-      setIsChatLogsVisible(true); // Make logs visible
+      setIsChatLogsVisible(true);
     } catch (error) {
       console.error(error.message);
       setChatLogs("Failed to load chat logs.");
@@ -42,6 +40,7 @@ const TelegramChat = ({ chat, index }) => {
       setIsLogsLoading(false);
     }
   };
+
   return (
     <div className="bg-gradient-to-br from-blue-900 to-gray-800 p-6 rounded-xl shadow-lg mt-6 border border-blue-700/20">
       <div className="flex items-center justify-between mb-6">
@@ -120,30 +119,26 @@ const TelegramChat = ({ chat, index }) => {
           </button>
           <a
             href={chat.logs}
-            className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 transition-colors duration-200 group"
+            className="inline-flex items-center space-x-2 text-blue-400 hover:text-blue-300 text-sm transition-colors duration-200 group"
             target="_blank"
             rel="noopener noreferrer"
-            className="text-blue-400 hover:text-blue-300 text-sm transition-colors duration-200"
           >
-            <span className="font-medium">View Chat History</span>
+            <span className="font-medium">Open Chat Log</span>
             <ExternalLink className="h-4 w-4 transition-transform duration-200 group-hover:translate-x-1" />
-            Open Chat Log
           </a>
         </div>
       </div>
 
-      {/* Chat logs viewer */}
       {isChatLogsVisible && (
         <div className="bg-gray-800/50 rounded-xl p-4 mt-4 overflow-auto max-h-64">
           {isLogsLoading ? (
             <p className="text-blue-300">Loading chat logs...</p>
           ) : (
-            <pre className="text-gray-300 whitespace-pre-wrap">
-              {chatLogs}
-            </pre>
+            <pre className="text-gray-300 whitespace-pre-wrap">{chatLogs}</pre>
           )}
         </div>
       )}
+
       {selectedImage && (
         <div
           className="fixed inset-0 bg-black/95 flex items-center justify-center z-50 p-4"

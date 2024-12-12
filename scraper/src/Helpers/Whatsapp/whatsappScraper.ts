@@ -21,7 +21,7 @@ async function connectToExistingChrome() {
 async function handleButtonSequence(page: Page, recipientUsername: string) {
     try {
         // Find the header with the specific class
-        const header = page.locator("header.x1n2onr6");
+        const header = page.locator("header");
 
         // Find nested div with role button inside the header
         const profileDetailsButton = header.locator('div[role="button"]');
