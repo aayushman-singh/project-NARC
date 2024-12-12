@@ -124,21 +124,21 @@ const PastData = () => {
   
   
 
-  const renderDropdown = (platform) => (
-    <select
-      id={`${platform}Dropdown`}
-      className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
-    >
-      <option value="1">1</option>
-      <option value="3">3</option>
-      <option value="5">5</option>
-      <option value="10">10</option>
-      <option value="20">20</option>
-      <option value="50">50</option>
-      <option value="100">100</option>
-      <option value="200">200</option>
-    </select>
-  );
+  // const renderDropdown = (platform) => (
+  //   <select
+  //     id={`${platform}Dropdown`}
+  //     className="w-full p-3 mt-4 bg-gray-700 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+  //   >
+  //     <option value="1">1</option>
+  //     <option value="3">3</option>
+  //     <option value="5">5</option>
+  //     <option value="10">10</option>
+  //     <option value="20">20</option>
+  //     <option value="50">50</option>
+  //     <option value="100">100</option>
+  //     <option value="200">200</option>
+  //   </select>
+  // );
 
   return (
     <div className="min-h-screen bg-gray-900 text-white p-8 relative">
