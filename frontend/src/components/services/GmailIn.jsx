@@ -12,20 +12,23 @@ const formatDate = (dateString) => {
 
 const Attachment = ({ attachment }) => (
   <div className="bg-gray-700 p-2 rounded-md text-white text-sm">
-    <p>Filename: {attachment.filename}</p>
-    <p>Type: {attachment.mimeType}</p>
-    <p>Size: {attachment.size} bytes</p>
+    <p><strong>Filename:</strong> {attachment.filename}</p>
+    <p><strong>Type:</strong> {attachment.mimeType}</p>
+    <p><strong>Size:</strong> {attachment.size} bytes</p>
   </div>
 );
 
 const EmailDetails = ({ email }) => (
   <div className="bg-gray-800 p-4 rounded-lg shadow-md border border-gray-700 mb-4">
-    <h4 className="text-lg font-bold text-blue-400">{email.subject}</h4>
-    <p className="text-gray-300">
-      From: {email.from} | To: {email.to}
-    </p>
-    <p className="text-gray-400">Date: {formatDate(email.internalDate)}</p>
-    <p className="text-gray-500 mt-2">{email.snippet}</p>
+    <h4 className="text-lg font-bold text-blue-400 mb-2">{email.metadata?.subject || "No Subject"}</h4>
+    <div className="text-gray-300 text-sm">
+      <p><strong>From:</strong> {email.metadata?.from || "Unknown"}</p>
+      <p><strong>To:</strong> {email.metadata?.to || "Unknown"}</p>
+      {email.metadata?.cc && <p><strong>CC:</strong> {email.metadata.cc}</p>}
+      {email.metadata?.bcc && <p><strong>BCC:</strong> {email.metadata.bcc}</p>}
+    </div>
+    <p className="text-gray-400 mt-2"><strong>Date:</strong> {formatDate(email.internalDate)}</p>
+    <p className="text-gray-500 mt-2"><strong>Snippet:</strong> {email.snippet}</p>
     {email.attachments && email.attachments.length > 0 && (
       <div className="mt-4">
         <h5 className="text-blue-400 font-semibold">Attachments:</h5>

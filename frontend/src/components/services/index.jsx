@@ -30,6 +30,7 @@ import GoogleDriveUsers from "./GoogleDrive"
 import FacebookData from "./Facebook";
 import RenderInstagramData from "./Instagram";
 import GmailInUsers from "./GmailIn";
+import GmailOutUsers from "./GmailOut";
 import GoogleSection from "./GoogleSection"
 import TimelineDataViewer from "./Timeline";
 import TwitterDataDisplay from "./Twitter"
@@ -53,7 +54,7 @@ const[timelineData , setTimelineData] = useState(null);
   const [youtubeHistoryDateRange, setYoutubeHistoryDateRange] = useState({ from: null, to: null });
   const [email, setEmail] = useState("");
   const[ gmailInData, setGmailInData] = useState(null);
-  const[ gmailOutData, setGmailIOutData] = useState(null);
+  const[ gmailOutData, setGmailOutData] = useState(null);
   const[youtubeEmail, setYoutubeEmail] = useState("");
   const [alert, setAlert] = useState({
     visible: false,
@@ -1385,6 +1386,12 @@ const handleGoogleDrive = async (email) => {
   <div className="mt-6">
     <h3 className="text-xl font-semibold text-blue-300 mb-4">Chats</h3>
     <GmailInUsers users={[gmailInData]} />
+  </div>
+)}
+ {gmailOutData && gmailOutData.emails && Array.isArray(gmailOutData.emails) && (
+  <div className="mt-6">
+    <h3 className="text-xl font-semibold text-blue-300 mb-4">Chats</h3>
+    <GmailOutUsers users={[gmailOutData]} />
   </div>
 )}
 
