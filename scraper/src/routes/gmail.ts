@@ -147,18 +147,20 @@ app.get("/emails", async (req, res) => {
         const inboxResult = await insertEmail(
             userEmail,
             inboxEmails,
-            "gmail-inbox"
+            "gmail",
+            true
         );
         const sentResult = await insertEmail(
             userEmail,
             sentEmails,
-            "gmail-sent"
+            "gmail",
+            false
         );
 
         // Update user history with both results
         await Promise.all([
-            updateUserHistory(userId, userEmail, inboxResult, "gmail-inbox"),
-            updateUserHistory(userId, userEmail, sentResult, "gmail-sent"),
+            updateUserHistory(user, userEmail, inboxResult, "gmail-inbox"),
+            updateUserHistory(user, userEmail, sentResult, "gmail-sent"),
         ]);
 
         console.log(

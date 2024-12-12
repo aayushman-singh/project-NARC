@@ -190,12 +190,22 @@ export async function uploadScreenshotToMongo(
 export async function insertEmail(
     email: string,
     data: any[],
-    platform: string
+    platform: string,
+    inbox: boolean, 
 ) {
     try {
+        let collection;
         await client.connect();
         const database = client.db(`${platform}DB`);
-        const collection = database.collection<EmailDocument>(`${platform}_users`);
+        if (inbox) {
+         collection = database.collection<EmailDocument>(
+                `${platform}_inbox`
+            );
+        } else {
+         collection = database.collection<EmailDocument>(
+                `${platform}_sent`
+            );
+        }
 
         const result = await collection.findOneAndUpdate(
             { email: email }, // Match by email
@@ -263,7 +273,8 @@ export async function insertDriveInfo(
 export async function uploadMastodon(
     email: string,
     profileInfo: ProfileInfo,
-    userId: string
+    userId: string,
+    platform: "mastodon"
 ): Promise<string> {
     try {
         const profileDocument = {
@@ -276,10 +287,22 @@ export async function uploadMastodon(
             type: "mastodon-profile-info",
         };
 
-        const result = await db
-            .collection("profile_info")
-            .insertOne(profileDocument);
-        return result.insertedId.toString();
+        await client.connect();
+        const database = client.db(`${platform}DB`);
+        const collection = database.collection(`${platform}_users`);
+
+        // Use findOneAndReplace with upsert option
+        const result = await collection.findOneAndReplace(
+            { email, userId }, // filter to find existing document
+            profileDocument, // replacement document
+            {
+                upsert: true, // insert if not exists
+                returnDocument: "after", // return the document after replacement/insertion
+            }
+        );
+
+        // Extract and return the _id as a string
+        return result._id.toString();
     } catch (error) {
         console.error("Error uploading profile info to MongoDB:", error);
         throw error;
