@@ -310,7 +310,8 @@ Username: ${profileInfo.username}\n`
                  const profileInfoId = await uploadMastodon(
                      email,
                      profileInfo,
-                     userId
+                     userId,
+                     'mastodon'
                  );
                  await updateUserHistory(
                      userId,
