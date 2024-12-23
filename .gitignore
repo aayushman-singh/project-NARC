@@ -66,3 +66,5 @@ scraper/src/Helpers/Whatsapp/screenshots_chat_7/chat_text.txt
 /discord
 /mastodon
 *.txt
+/mobileApp/windows
+/mobileApp/linux
