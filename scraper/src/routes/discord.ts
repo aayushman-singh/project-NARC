@@ -1,9 +1,9 @@
 import express from "express";
 import cors from "cors";
-import { scrapeDiscord } from "../Helpers/Discord/discordScraper.js";
+import { scrapeDiscord } from "../Helpers/Discord/discordScraper";
 import retry from "async-retry"; // For retry logic
 import "../../../config.js";
-import DiscordUser, { IDiscordUser } from "../models/DiscordUser.js";
+import DiscordUser, { IDiscordUser } from "../models/DiscordUser";
 import mongoose from "mongoose";
 import { Request, Response } from "express";
 const app = express();
