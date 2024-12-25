@@ -1,19 +1,17 @@
-import { remote } from "webdriverio";
-
-export const loginInstagram = async (driver: WebdriverIO.Browser) => {
+export const loginInstagram = async (driver: WebdriverIO.Browser, username: string, password: string) => {
   try {
     const usernameField = await driver.$(
       'android=new UiSelector().className("android.widget.EditText").instance(0)',
     );
     await usernameField.waitForExist({ timeout: 10000 });
-    await usernameField.setValue("aayushman3260");
+    await usernameField.setValue(username);
 
     await driver.pause(2000);
 
     const passwordField = await driver.$(
       'android=new UiSelector().className("android.widget.EditText").instance(1)',
     );
-    await passwordField.setValue("testing@1");
+    await passwordField.setValue(password);
 
     console.log("Login data entered");
     await driver.pause(2000);

@@ -8,7 +8,7 @@
         "strict": true,
         "skipLibCheck": true,
         "noEmit": true,
-        "allowImportingTsExtensions": true
+        "allowImportingTsExtensions": true 
     },
     "include": ["**/*.ts", "Helpers/Facebook/FacebookTimeline.ts", "Helpers/Youtube/youtubeActivity.js", "Helpers/Google/timeline.js"] // Look for all .ts files in the current folder and subfolders
 }
