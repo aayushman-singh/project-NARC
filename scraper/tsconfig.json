@@ -9,7 +9,7 @@
         "skipLibCheck": true,
         "noUnusedLocals": false,
         "strict": true,
-        "lib": ["DOM"]
+        "lib": ["DOM"] 
     },
     "include": ["./src/**/*", "src/Meta/MetaTimeline.ts"]
 }

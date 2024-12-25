@@ -2,7 +2,7 @@
   "name": "appium-scraper",
   "version": "1.0.0",
   "type": "module",
-  "scripts": {
+    "scripts": {
     "build": "tsc",
     "start": "tsx src/index.ts",
     "dev": "tsx watch src/index.ts",
