@@ -1,4 +1,6 @@
-from flask import Flask, request, jsonify
+from flask import Flask, request, send_file,jsonify
+from io import BytesIO
+
 from telethon import TelegramClient
 from flask_cors import CORS
 import re
@@ -10,14 +12,15 @@ sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../.
 sys.path.append(os.path.abspath(os.path.join(os.path.dirname(__file__), '../../../')))
 from scraper.src.Helpers.Telegram.mongoUtils import upload_telegram_chats_to_mongo, updateUserHistory
 from scraper.src.Helpers.Telegram.s3 import upload_to_s3
-
+from telegramReport import TelegramDataReport
+from datetime import datetime
 
 load_dotenv()
 API_ID = '26264571'
 API_HASH = 'eb3970da203e1ab5b55081d5f1ae6311'
 def connect_db():
     try:
-        client = MongoClient('mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/telegramDB?retryWrites=true&w=majority?ssl=true&ssl_cert_reqs=CERT_NONE')
+        client = MongoClient('mongodb+srv://aayushman2702:Lmaoded%4011@cluster0.eivmu.mongodb.net/telegramDB?retryWrites=true&w=majority&ssl=true&ssl_cert_reqs=CERT_NONE')
         db = client.get_database('telegramDB')  # Replace with your database name
         print("MongoDB connected successfully")
         return db
@@ -30,6 +33,44 @@ db = connect_db()
 # Initialize Flask app
 app = Flask(__name__)
 CORS(app)
+
+
+
+
+@app.route('/telegram/generate-report', methods=['POST'])
+def generate_report():
+    try:
+        # Get the username from the request
+        username = request.json.get('username')
+        if not username:
+            return jsonify({'error': 'Username is required'}), 400
+
+        # Create a report generator instance
+        report_generator = TelegramDataReport()
+
+        # Define the output path where the PDF will be saved
+        output_dir = "/reports"
+        os.makedirs(output_dir, exist_ok=True)
+        output_path = os.path.join(output_dir, f"telegram_report_{username}_{datetime.now().strftime('%Y%m%d_%H%M%S')}.pdf")
+
+        # Generate the report and save it locally
+        report_generator.generate_report(username, output_path)
+
+        # After saving, serve the file for download
+        return send_file(
+            output_path,
+            as_attachment=True,
+            download_name=os.path.basename(output_path),
+            mimetype='application/pdf'
+        )
+
+    except Exception as e:
+        print(f"Error generating report: {str(e)}")
+        return jsonify({'error': str(e)}), 500
+
+
+
+
 
 # Telegram scraping function for all chats
 async def scrape_all_chats(phone_number, client, output_base_dir, limit):

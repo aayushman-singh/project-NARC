@@ -1,12 +1,15 @@
 import React, { useState } from "react";
 import axios from "axios";
+import jsPDF from "jspdf";
+import "jspdf-autotable";
 import {
   ChevronDown,
   ChevronUp,
   X,
   ExternalLink,
   Image as ImageIcon,
-  Languages
+  Languages,
+  Download 
 } from "lucide-react";
 
 const TelegramChat = ({ chat, index }) => {
@@ -18,7 +21,7 @@ const TelegramChat = ({ chat, index }) => {
   const [translatedText, setTranslatedText] = useState(null);
   const [isTranslating, setIsTranslating] = useState(false);
   const [selectedLanguage, setSelectedLanguage] = useState("en");
-
+  const [isDownloading, setIsDownloading] = useState(false);
   const toggleMedia = () => setIsMediaExpanded(!isMediaExpanded);
   const openImageViewer = (image) => setSelectedImage(image);
   const closeImageViewer = () => setSelectedImage(null);
@@ -46,7 +49,29 @@ const TelegramChat = ({ chat, index }) => {
     setTranslatedText(translated);
     setIsTranslating(false);
   };
+  const downloadReport = async () => {
+    setIsDownloading(true);
+    try {
+      const response = await axios.post(
+        "http://localhost:3005/telegram/generate-report",
+        { username: username },
+        { responseType: "blob" } // Ensure the response is treated as a file
+      );
 
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement("a");
+      link.href = url;
+      link.setAttribute("download", `telegram_report_${chat.receiverUsername}.pdf`);
+      document.body.appendChild(link);
+      link.click();
+      link.remove();
+    } catch (error) {
+      console.error("Error downloading report:", error);
+      alert("Failed to download the report. Please try again.");
+    } finally {
+      setIsDownloading(false);
+    }
+  };
   const fetchChatLogs = async () => {
     if (isChatLogsVisible) {
       setIsChatLogsVisible(false);
@@ -85,6 +110,7 @@ const TelegramChat = ({ chat, index }) => {
             {chat.receiverUsername}
           </h3>
         </div>
+       
       </div>
 
       <div className="space-y-4">

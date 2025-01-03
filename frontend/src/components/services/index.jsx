@@ -15,7 +15,7 @@ import {
 } from "phosphor-react";
 import { FaGoogle, FaDiscord as DiscordLogo } from "react-icons/fa";
 import { Info } from "lucide-react"; // Adjust based on the library you're using
-
+import axios from "axios";
 import MastodonProfile from "./mastodon";
 import DiscordChat from "./Discord";
 import "./style.css";
@@ -28,7 +28,7 @@ import { Button } from "@/components/ui/button";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
-import { CalendarIcon } from 'lucide-react';
+import { CalendarIcon ,Download} from 'lucide-react';
 import GoogleDriveUsers from "./GoogleDrive"
 import FacebookData from "./Facebook";
 import RenderInstagramData from "./Instagram";
@@ -1666,13 +1666,44 @@ const handleGoogleDrive = async (email) => {
             </button>
           </div>
           {telegramData && showDetails && (
-            <div className="mt-6">
-              <h3 className="text-xl font-semibold text-blue-300 mb-4">
-                Chats
-              </h3>
-              <TelegramChats chats={telegramData.chats} />
-            </div>
-          )}
+  <div className="mt-6">
+    <h3 className="text-xl font-semibold text-blue-300 mb-4">Chats</h3>
+    <TelegramChats chats={telegramData.chats} />
+
+    {/* Download Report Button */}
+    <div className="mt-6">
+      <button
+        onClick={async () => {
+          try {
+            // Directly use the username from telegramData
+            const response = await axios.post(
+              "http://localhost:3005/telegram/generate-report",
+              { username: telegramData.username }, // Pass username directly
+              { responseType: "blob" } // Ensure the response is treated as a file
+            );
+
+            // Create a Blob URL and trigger download
+            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const link = document.createElement("a");
+            link.href = url;
+            link.setAttribute("download", `telegram_report_${telegramData.username}.pdf`); // Use telegramData.username
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+          } catch (error) {
+            console.error("Error downloading report:", error);
+            alert("Failed to download the report. Please try again.");
+          }
+        }}
+        className="flex items-center space-x-2 bg-blue-600 text-white px-4 py-2 rounded-lg shadow-lg hover:bg-blue-700 transition-colors"
+      >
+        <Download className="h-5 w-5" />
+        <span>Download Report</span>
+      </button>
+    </div>
+  </div>
+)}
+
         </div>
       )}
 
