@@ -149,7 +149,7 @@ class _PersistentStructureState extends State<PersistentStructure> {
                 ),
                 AppBarImageItem(
                   imagePath: 
-                    'assets/detective-logo.png',
+                    'assets/detective.PNG',
                    
                   
                   isSelected: _currentPage == AppPage.socialMedia,
