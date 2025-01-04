@@ -68,3 +68,4 @@ scraper/src/Helpers/Whatsapp/screenshots_chat_7/chat_text.txt
 *.txt
 /mobileApp/windows
 /mobileApp/linux
+package-lock.json
