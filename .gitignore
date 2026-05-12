@@ -25,7 +25,15 @@ yarn.lock
 scraper/followers_log.txt
 scraper/following_log.txt
 *.session
-*.session
+
+# Secrets — never commit. See *.example.json shims for format.
+token.json
+drive_token.json
+google.json
+*_token.json
+*.log
+server.log
+
 /scraper/src/Helpers/Telegram/__pycache__
 *.jpg
 /output

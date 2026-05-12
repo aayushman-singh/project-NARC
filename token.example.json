@@ -1,0 +1,7 @@
+{
+  "access_token": "ya29.YOUR_GMAIL_ACCESS_TOKEN",
+  "expires_in": 3599,
+  "refresh_token": "1//YOUR_REFRESH_TOKEN",
+  "scope": "https://www.googleapis.com/auth/gmail.modify https://www.googleapis.com/auth/gmail.readonly",
+  "token_type": "Bearer"
+}
